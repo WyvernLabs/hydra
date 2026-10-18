@@ -20,6 +20,7 @@ import { ChevronDoubleRightIcon } from '@heroicons/react/solid';
 
 import 'xterm/css/xterm.css';
 import styles from './style.module.css';
+import { useTranslation } from 'react-i18next';
 
 const theme = {
     background: hydraColor('black'),
@@ -55,6 +56,7 @@ const terminalProps: ITerminalOptions = {
 
 export default () => {
     const TERMINAL_PRELUDE = '\u001b[1m\u001b[33mcontainer@hydra~ \u001b[0m';
+    const { t } = useTranslation('client/server');
     const ref = useRef<HTMLDivElement>(null);
     const terminal = useMemo(() => new Terminal({ ...terminalProps }), []);
     const fitAddon = new FitAddon();
@@ -82,7 +84,7 @@ export default () => {
         switch (status) {
             // Sent by either the source or target node if a failure occurs.
             case 'failure':
-                terminal.writeln(TERMINAL_PRELUDE + 'Transfer has failed.\u001b[0m');
+                terminal.writeln(TERMINAL_PRELUDE + t('console.transfer_failed') + '\u001b[0m');
                 return;
         }
     };
@@ -93,7 +95,9 @@ export default () => {
         );
 
     const handlePowerChangeEvent = (state: string) =>
-        terminal.writeln(TERMINAL_PRELUDE + 'Server marked as ' + state + '...\u001b[0m');
+        terminal.writeln(
+            TERMINAL_PRELUDE + t('console.marked_as', { state: t(`status.${state}`, state) }) + '\u001b[0m'
+        );
 
     const handleCommandKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'ArrowUp') {
@@ -214,8 +218,8 @@ export default () => {
                     <input
                         className={classNames('peer', styles.command_input)}
                         type={'text'}
-                        placeholder={'Type a command...'}
-                        aria-label={'Console command input.'}
+                        placeholder={t('console.command_placeholder')}
+                        aria-label={t('console.command_label')}
                         disabled={!instance || !connected}
                         onKeyDown={handleCommandKeyDown}
                         autoCorrect={'off'}

@@ -8,6 +8,7 @@ import getServerAllocations from '@/api/swr/getServerAllocations';
 import { useFlashKey } from '@/plugins/useFlash';
 import { Dialog } from '@/components/elements/dialog';
 import { Button } from '@/components/elements/button/index';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     allocation: number;
@@ -17,6 +18,7 @@ const DeleteAllocationButton = ({ allocation }: Props) => {
     const [confirm, setConfirm] = useState(false);
 
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
+    const { t } = useTranslation('client/server');
     const setServerFromState = ServerContext.useStoreActions((actions) => actions.server.setServerFromState);
 
     const { mutate } = getServerAllocations();
@@ -39,11 +41,11 @@ const DeleteAllocationButton = ({ allocation }: Props) => {
             <Dialog.Confirm
                 open={confirm}
                 onClose={() => setConfirm(false)}
-                title={'Remove Allocation'}
-                confirm={'Delete'}
+                title={t('network.remove_title')}
+                confirm={t('client/common:actions.delete')}
                 onConfirmed={deleteAllocation}
             >
-                This allocation will be immediately removed from your server.
+                {t('network.remove_text')}
             </Dialog.Confirm>
             <Button.Danger
                 variant={Button.Variants.Secondary}

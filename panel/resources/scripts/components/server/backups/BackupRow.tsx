@@ -1,7 +1,7 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArchive, faEllipsisH, faLock } from '@fortawesome/free-solid-svg-icons';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDate, formatDistanceToNow } from '@/lib/date';
 import Spinner from '@/components/elements/Spinner';
 import { bytesToString } from '@/lib/formatters';
 import Can from '@/components/elements/Can';
@@ -12,6 +12,7 @@ import GreyRowBox from '@/components/elements/GreyRowBox';
 import getServerBackups from '@/api/swr/getServerBackups';
 import { ServerBackup } from '@/api/server/types';
 import { SocketEvent } from '@/components/server/events';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     backup: ServerBackup;
@@ -20,6 +21,7 @@ interface Props {
 
 export default ({ backup, className }: Props) => {
     const { mutate } = getServerBackups();
+    const { t } = useTranslation('client/server');
 
     useWebsocketEvent(`${SocketEvent.BACKUP_COMPLETED}:${backup.uuid}` as SocketEvent, (data) => {
         try {
@@ -67,7 +69,7 @@ export default ({ backup, className }: Props) => {
                             <span
                                 css={tw`bg-red-500 py-px px-2 rounded-full text-white text-xs uppercase border border-red-600 mr-2`}
                             >
-                                Failed
+                                {t('backups.failed')}
                             </span>
                         )}
                         <p css={tw`break-words truncate`}>{backup.name}</p>
@@ -81,10 +83,10 @@ export default ({ backup, className }: Props) => {
                 </div>
             </div>
             <div css={tw`flex-1 md:flex-none md:w-48 mt-4 md:mt-0 md:ml-8 md:text-center`}>
-                <p title={format(backup.createdAt, 'ddd, MMMM do, yyyy HH:mm:ss')} css={tw`text-sm`}>
+                <p title={formatDate(backup.createdAt, 'datetimeSeconds')} css={tw`text-sm`}>
                     {formatDistanceToNow(backup.createdAt, { includeSeconds: true, addSuffix: true })}
                 </p>
-                <p css={tw`text-2xs text-neutral-500 uppercase mt-1`}>Created</p>
+                <p css={tw`text-2xs text-neutral-500 uppercase mt-1`}>{t('backups.created')}</p>
             </div>
             <Can action={['backup.download', 'backup.restore', 'backup.delete']} matchAny>
                 <div css={tw`mt-4 md:mt-0 ml-6`} style={{ marginRight: '-0.5rem' }}>

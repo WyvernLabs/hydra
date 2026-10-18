@@ -28,8 +28,10 @@ const patterns = {
 export const formatDate = (date: Date | number, pattern: keyof typeof patterns = 'datetime'): string =>
     formatFns(date, patterns[pattern], { locale: dateLocale() });
 
-export const formatDistanceToNow = (date: Date | number, options: { addSuffix?: boolean } = {}): string =>
-    formatDistanceToNowFns(date, { ...options, locale: dateLocale() });
+export const formatDistanceToNow = (
+    date: Date | number,
+    options: { addSuffix?: boolean; includeSeconds?: boolean } = {}
+): string => formatDistanceToNowFns(date, { ...options, locale: dateLocale() });
 
 export const formatDistanceToNowStrict = (date: Date | number, options: { addSuffix?: boolean } = {}): string =>
     formatDistanceToNowStrictFns(date, { ...options, locale: dateLocale() });

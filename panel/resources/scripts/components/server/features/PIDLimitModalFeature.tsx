@@ -9,9 +9,11 @@ import { SocketEvent } from '@/components/server/events';
 import { useStoreState } from 'easy-peasy';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import { Trans, useTranslation } from 'react-i18next';
 
 const PIDLimitModalFeature = () => {
     const [visible, setVisible] = useState(false);
+    const { t } = useTranslation('client/server');
     const [loading] = useState(false);
 
     const status = ServerContext.useStoreState((state) => state.status.value);
@@ -60,20 +62,22 @@ const PIDLimitModalFeature = () => {
                 <>
                     <div css={tw`mt-4 sm:flex items-center`}>
                         <FontAwesomeIcon css={tw`pr-4`} icon={faExclamationTriangle} color={'orange'} size={'4x'} />
-                        <h2 css={tw`text-2xl mb-4 text-neutral-100 `}>Memory or process limit reached...</h2>
+                        <h2 css={tw`text-2xl mb-4 text-neutral-100 `}>{t('features.pid.admin_title')}</h2>
                     </div>
-                    <p css={tw`mt-4`}>This server has reached the maximum process or memory limit.</p>
+                    <p css={tw`mt-4`}>{t('features.pid.admin_text')}</p>
                     <p css={tw`mt-4`}>
-                        Increasing <code css={tw`font-mono bg-neutral-900`}>container_pid_limit</code> in the wings
-                        configuration, <code css={tw`font-mono bg-neutral-900`}>config.yml</code>, might help resolve
-                        this issue.
+                        <Trans
+                            t={t}
+                            i18nKey={'features.pid.admin_help'}
+                            components={{ code: <code css={tw`font-mono bg-neutral-900 rounded py-1 px-2`} /> }}
+                        />
                     </p>
                     <p css={tw`mt-4`}>
-                        <b>Note: Wings must be restarted for the configuration file changes to take effect</b>
+                        <b>{t('features.pid.admin_note')}</b>
                     </p>
                     <div css={tw`mt-8 sm:flex items-center justify-end`}>
                         <Button onClick={() => setVisible(false)} css={tw`w-full sm:w-auto border-transparent`}>
-                            Close
+                            {t('client/common:actions.close')}
                         </Button>
                     </div>
                 </>
@@ -81,20 +85,15 @@ const PIDLimitModalFeature = () => {
                 <>
                     <div css={tw`mt-4 sm:flex items-center`}>
                         <FontAwesomeIcon css={tw`pr-4`} icon={faExclamationTriangle} color={'orange'} size={'4x'} />
-                        <h2 css={tw`text-2xl mb-4 text-neutral-100`}>Possible resource limit reached...</h2>
+                        <h2 css={tw`text-2xl mb-4 text-neutral-100`}>{t('features.pid.user_title')}</h2>
                     </div>
+                    <p css={tw`mt-4`}>{t('features.pid.user_text')}</p>
                     <p css={tw`mt-4`}>
-                        This server is attempting to use more resources than allocated. Please contact the administrator
-                        and give them the error below.
-                    </p>
-                    <p css={tw`mt-4`}>
-                        <code css={tw`font-mono bg-neutral-900`}>
-                            pthread_create failed, Possibly out of memory or process/resource limits reached
-                        </code>
+                        <code css={tw`font-mono bg-neutral-900`}>{t('features.pid.error')}</code>
                     </p>
                     <div css={tw`mt-8 sm:flex items-center justify-end`}>
                         <Button onClick={() => setVisible(false)} css={tw`w-full sm:w-auto border-transparent`}>
-                            Close
+                            {t('client/common:actions.close')}
                         </Button>
                     </div>
                 </>

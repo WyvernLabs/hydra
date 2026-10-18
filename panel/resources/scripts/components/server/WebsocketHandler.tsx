@@ -6,11 +6,13 @@ import ContentContainer from '@/components/elements/ContentContainer';
 import { CSSTransition } from 'react-transition-group';
 import Spinner from '@/components/elements/Spinner';
 import tw from 'twin.macro';
+import { useTranslation } from 'react-i18next';
 
 const reconnectErrors = ['jwt: exp claim is invalid', 'jwt: created too far in past (denylist)'];
 
 export default () => {
     let updatingToken = false;
+    const { t } = useTranslation('client/server');
     const [error, setError] = useState<'connecting' | string>('');
     const { connected, instance } = ServerContext.useStoreState((state) => state.socket);
     const uuid = ServerContext.useStoreState((state) => state.server.data?.uuid);
@@ -35,7 +37,7 @@ export default () => {
         socket.on('auth success', () => setConnectionState(true));
         socket.on('SOCKET_CLOSE', () => setConnectionState(false));
         socket.on('SOCKET_CONNECT_ERROR', () => {
-            setError('Failed to connect to websocket instance after multiple attempts: try refreshing the page.');
+            setError(t('websocket.failed'));
         });
         socket.on('SOCKET_ERROR', () => {
             setError('connecting');
@@ -56,9 +58,7 @@ export default () => {
             if (reconnectErrors.find((v) => error.toLowerCase().indexOf(v) >= 0)) {
                 updateToken(uuid, socket);
             } else {
-                setError(
-                    'There was an error validating the credentials provided for the websocket. Please refresh the page.'
-                );
+                setError(t('websocket.jwt_error'));
             }
         });
 
@@ -114,9 +114,7 @@ export default () => {
                     {error === 'connecting' ? (
                         <>
                             <Spinner size={'small'} />
-                            <p css={tw`ml-2 text-sm text-red-100`}>
-                                We&apos;re having some trouble connecting to your server, please wait...
-                            </p>
+                            <p css={tw`ml-2 text-sm text-red-100`}>{t('websocket.connecting')}</p>
                         </>
                     ) : (
                         <p css={tw`ml-2 text-sm text-white`}>{error}</p>

@@ -7,9 +7,11 @@ import FlashMessageRender from '@/components/FlashMessageRender';
 import useFlash from '@/plugins/useFlash';
 import { SocketEvent } from '@/components/server/events';
 import { useStoreState } from 'easy-peasy';
+import { Trans, useTranslation } from 'react-i18next';
 
 const SteamDiskSpaceFeature = () => {
     const [visible, setVisible] = useState(false);
+    const { t } = useTranslation('client/server');
     const [loading] = useState(false);
 
     const status = ServerContext.useStoreState((state) => state.status.value);
@@ -50,35 +52,33 @@ const SteamDiskSpaceFeature = () => {
             {isAdmin ? (
                 <>
                     <div css={tw`mt-4 sm:flex items-center`}>
-                        <h2 css={tw`text-2xl mb-4 text-neutral-100 `}>Out of available disk space...</h2>
+                        <h2 css={tw`text-2xl mb-4 text-neutral-100 `}>{t('features.disk.title')}</h2>
                     </div>
+                    <p css={tw`mt-4`}>{t('features.disk.text')}</p>
                     <p css={tw`mt-4`}>
-                        This server has run out of available disk space and cannot complete the install or update
-                        process.
-                    </p>
-                    <p css={tw`mt-4`}>
-                        Ensure the machine has enough disk space by typing{' '}
-                        <code css={tw`font-mono bg-neutral-900 rounded py-1 px-2`}>df -h</code> on the machine hosting
-                        this server. Delete files or increase the available disk space to resolve the issue.
+                        <Trans
+                            t={t}
+                            i18nKey={'features.disk.admin_help'}
+                            components={{ code: <code css={tw`font-mono bg-neutral-900 rounded py-1 px-2`} /> }}
+                        />
                     </p>
                     <div css={tw`mt-8 sm:flex items-center justify-end`}>
                         <Button onClick={() => setVisible(false)} css={tw`w-full sm:w-auto border-transparent`}>
-                            Close
+                            {t('client/common:actions.close')}
                         </Button>
                     </div>
                 </>
             ) : (
                 <>
                     <div css={tw`mt-4 sm:flex items-center`}>
-                        <h2 css={tw`text-2xl mb-4 text-neutral-100`}>Out of available disk space...</h2>
+                        <h2 css={tw`text-2xl mb-4 text-neutral-100`}>{t('features.disk.title')}</h2>
                     </div>
                     <p css={tw`mt-4`}>
-                        This server has run out of available disk space and cannot complete the install or update
-                        process. Please get in touch with the administrator(s) and inform them of disk space issues.
+                        {t('features.disk.text')} {t('features.disk.user_help')}
                     </p>
                     <div css={tw`mt-8 sm:flex items-center justify-end`}>
                         <Button onClick={() => setVisible(false)} css={tw`w-full sm:w-auto border-transparent`}>
-                            Close
+                            {t('client/common:actions.close')}
                         </Button>
                     </div>
                 </>

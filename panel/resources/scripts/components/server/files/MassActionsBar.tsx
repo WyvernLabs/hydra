@@ -11,8 +11,10 @@ import deleteFiles from '@/api/server/files/deleteFiles';
 import RenameFileModal from '@/components/server/files/RenameFileModal';
 import Portal from '@/components/elements/Portal';
 import { Dialog } from '@/components/elements/dialog';
+import { Trans, useTranslation } from 'react-i18next';
 
 const MassActionsBar = () => {
+    const { t } = useTranslation('client/server');
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
 
     const { mutate } = useFileManagerSwr();
@@ -33,7 +35,7 @@ const MassActionsBar = () => {
     const onClickCompress = () => {
         setLoading(true);
         clearFlashes('files');
-        setLoadingMessage('Archiving files...');
+        setLoadingMessage(t('files.archiving'));
 
         compressFiles(uuid, directory, selectedFiles)
             .then(() => mutate())
@@ -46,7 +48,7 @@ const MassActionsBar = () => {
         setLoading(true);
         setShowConfirm(false);
         clearFlashes('files');
-        setLoadingMessage('Deleting files...');
+        setLoadingMessage(t('files.deleting'));
 
         deleteFiles(uuid, directory, selectedFiles)
             .then(() => {
@@ -67,21 +69,26 @@ const MassActionsBar = () => {
                     {loadingMessage}
                 </SpinnerOverlay>
                 <Dialog.Confirm
-                    title={'Delete Files'}
+                    title={t('files.delete_files_title')}
                     open={showConfirm}
-                    confirm={'Delete'}
+                    confirm={t('files.actions.delete')}
                     onClose={() => setShowConfirm(false)}
                     onConfirmed={onClickConfirmDeletion}
                 >
                     <p className={'mb-2'}>
-                        Are you sure you want to delete&nbsp;
-                        <span className={'font-semibold text-gray-50'}>{selectedFiles.length} files</span>? This is a
-                        permanent action and the files cannot be recovered.
+                        <Trans
+                            t={t}
+                            i18nKey={'files.delete_files_text'}
+                            values={{ count: selectedFiles.length }}
+                            components={{ bold: <span className={'font-semibold text-gray-50'} /> }}
+                        />
                     </p>
                     {selectedFiles.slice(0, 15).map((file) => (
                         <li key={file}>{file}</li>
                     ))}
-                    {selectedFiles.length > 15 && <li>and {selectedFiles.length - 15} others</li>}
+                    {selectedFiles.length > 15 && (
+                        <li>{t('files.and_others', { count: selectedFiles.length - 15 })}</li>
+                    )}
                 </Dialog.Confirm>
                 {showMove && (
                     <RenameFileModal
@@ -98,10 +105,10 @@ const MassActionsBar = () => {
                             <div
                                 css={tw`flex items-center space-x-4 pointer-events-auto rounded p-4 bg-black bg-opacity-50`}
                             >
-                                <Button onClick={() => setShowMove(true)}>Move</Button>
-                                <Button onClick={onClickCompress}>Archive</Button>
+                                <Button onClick={() => setShowMove(true)}>{t('files.actions.move')}</Button>
+                                <Button onClick={onClickCompress}>{t('files.actions.archive')}</Button>
                                 <Button.Danger variant={Button.Variants.Secondary} onClick={() => setShowConfirm(true)}>
-                                    Delete
+                                    {t('files.actions.delete')}
                                 </Button.Danger>
                             </div>
                         </Fade>

@@ -10,10 +10,12 @@ import StatGraphs from '@/components/server/console/StatGraphs';
 import PowerButtons from '@/components/server/console/PowerButtons';
 import ServerDetailsBlock from '@/components/server/console/ServerDetailsBlock';
 import { Alert } from '@/components/elements/alert';
+import { useTranslation } from 'react-i18next';
 
 export type PowerAction = 'start' | 'stop' | 'restart' | 'kill';
 
 const ServerConsoleContainer = () => {
+    const { t } = useTranslation('client/server');
     const name = ServerContext.useStoreState((state) => state.server.data!.name);
     const description = ServerContext.useStoreState((state) => state.server.data!.description);
     const isInstalling = ServerContext.useStoreState((state) => state.server.isInstalling);
@@ -22,14 +24,14 @@ const ServerConsoleContainer = () => {
     const isNodeUnderMaintenance = ServerContext.useStoreState((state) => state.server.data!.isNodeUnderMaintenance);
 
     return (
-        <ServerContentBlock title={'Console'}>
+        <ServerContentBlock title={t('console.title')}>
             {(isNodeUnderMaintenance || isInstalling || isTransferring) && (
                 <Alert type={'warning'} className={'mb-4'}>
                     {isNodeUnderMaintenance
-                        ? 'The node of this server is currently under maintenance and all actions are unavailable.'
+                        ? t('console.maintenance')
                         : isInstalling
-                        ? 'This server is currently running its installation process and most actions are unavailable.'
-                        : 'This server is currently being transferred to another node and all actions are unavailable.'}
+                        ? t('console.installing')
+                        : t('console.transferring')}
                 </Alert>
             )}
             <div className={'grid grid-cols-4 gap-4 mb-4'}>

@@ -115,6 +115,25 @@ Die Sidebar im Kundenbereich entsteht aus `resources/scripts/routers/routes.ts`.
 
 ---
 
+## Sprachen
+
+Das Panel ist vollständig zweisprachig (Englisch/Deutsch): Kundenbereich, Adminbereich, Fehlermeldungen und E-Mails.
+
+- **Welche Sprache gilt?** Die Sprache des Benutzers (Konto › Sprache), sonst die Browsersprache, sonst die Standardsprache aus Admin › Settings. E-Mails gehen in der Sprache des Empfängers raus.
+- **Wo liegen die Texte?** In `panel/resources/lang/<sprache>/`:
+
+| Datei | Verwendet von |
+|-------|---------------|
+| `client/common.php`, `client/auth.php`, `client/dashboard.php`, `client/account.php`, `client/server.php` | Kundenbereich (React, i18next-Namespaces `client/…`) |
+| `admin/*.php` | Adminbereich (Blade, `__('admin/…')`) |
+| `server/permissions.php` | Bezeichnungen der Unterbenutzer-Rechte |
+| `mail.php` | E-Mails |
+| `validation.php`, `auth.php`, `exceptions.php`, … | Laravel und Upstream |
+
+- **Neue Texte** kommen immer als Schlüssel in die englische **und** deutsche Datei, nie fest in den Code. Im React-Code: `const { t } = useTranslation('client/server'); t('files.title')`, für andere Namespaces `t('client/common:actions.save')`. In Blade: `{{ __('admin/nodes.title') }}`, in JavaScript innerhalb von Blade: `@json(__('…'))`.
+- **Prüfen:** `php panel/resources/lang/check.php` meldet fehlende Übersetzungen und Schlüssel, die im Code verwendet werden, aber nirgends definiert sind.
+- **Weitere Sprache:** Ordner `resources/lang/en` nach z. B. `resources/lang/fr` kopieren und übersetzen. Die Sprache erscheint dann automatisch in allen Auswahllisten. Für Datumsformate im Kundenbereich die date-fns-Locale in `resources/scripts/lib/date.ts` ergänzen.
+
 ## Entwicklung
 
 ### Panel-Frontend

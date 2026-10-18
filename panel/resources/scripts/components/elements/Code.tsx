@@ -4,7 +4,8 @@ import classNames from 'classnames';
 interface CodeProps {
     dark?: boolean | undefined;
     className?: string;
-    children: React.ReactChild | React.ReactFragment | React.ReactPortal;
+    // Optional so it can be used as a <Trans> component, which fills in the content itself.
+    children?: React.ReactNode;
 }
 
 export default ({ dark, className, children }: CodeProps) => (

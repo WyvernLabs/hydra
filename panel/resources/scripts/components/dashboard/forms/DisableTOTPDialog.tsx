@@ -8,10 +8,12 @@ import disableAccountTwoFactor from '@/api/account/disableAccountTwoFactor';
 import { useFlashKey } from '@/plugins/useFlash';
 import { useStoreActions } from '@/state/hooks';
 import FlashMessageRender from '@/components/FlashMessageRender';
+import { useTranslation } from 'react-i18next';
 
 const DisableTOTPDialog = () => {
     const [submitting, setSubmitting] = useState(false);
     const [password, setPassword] = useState('');
+    const { t } = useTranslation('client/account');
     const { clearAndAddHttpError } = useFlashKey('account:two-step');
     const { close, setProps } = useContext(DialogWrapperContext);
     const updateUserData = useStoreActions((actions) => actions.user.updateUserData);
@@ -41,7 +43,7 @@ const DisableTOTPDialog = () => {
         <form id={'disable-totp-form'} className={'mt-6'} onSubmit={submit}>
             <FlashMessageRender byKey={'account:two-step'} className={'-mt-2 mb-6'} />
             <label className={'block pb-1'} htmlFor={'totp-password'}>
-                Password
+                {t('two_factor.password')}
             </label>
             <Input.Text
                 id={'totp-password'}
@@ -51,14 +53,10 @@ const DisableTOTPDialog = () => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.currentTarget.value)}
             />
             <Dialog.Footer>
-                <Button.Text onClick={close}>Cancel</Button.Text>
-                <Tooltip
-                    delay={100}
-                    disabled={password.length > 0}
-                    content={'You must enter your account password to continue.'}
-                >
+                <Button.Text onClick={close}>{t('client/common:actions.cancel')}</Button.Text>
+                <Tooltip delay={100} disabled={password.length > 0} content={t('two_factor.enter_password')}>
                     <Button.Danger type={'submit'} form={'disable-totp-form'} disabled={submitting || !password.length}>
-                        Disable
+                        {t('two_factor.disable')}
                     </Button.Danger>
                 </Tooltip>
             </Dialog.Footer>
@@ -67,6 +65,6 @@ const DisableTOTPDialog = () => {
 };
 
 export default asDialog({
-    title: 'Disable Two-Step Verification',
-    description: 'Disabling two-step verification will make your account less secure.',
+    title: 'client/account:two_factor.disable_title',
+    description: 'client/account:two_factor.disable_description',
 })(DisableTOTPDialog);

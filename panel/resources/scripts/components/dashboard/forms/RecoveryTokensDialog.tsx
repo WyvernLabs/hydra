@@ -3,6 +3,7 @@ import { Dialog, DialogProps } from '@/components/elements/dialog';
 import { Button } from '@/components/elements/button/index';
 import CopyOnClick from '@/components/elements/CopyOnClick';
 import { Alert } from '@/components/elements/alert';
+import { useTranslation } from 'react-i18next';
 
 interface RecoveryTokenDialogProps extends DialogProps {
     tokens: string[];
@@ -10,6 +11,7 @@ interface RecoveryTokenDialogProps extends DialogProps {
 
 export default ({ tokens, open, onClose }: RecoveryTokenDialogProps) => {
     const grouped = [] as [string, string][];
+    const { t } = useTranslation('client/account');
     tokens.forEach((token, index) => {
         if (index % 2 === 0) {
             grouped.push([token, tokens[index + 1] || '']);
@@ -20,10 +22,8 @@ export default ({ tokens, open, onClose }: RecoveryTokenDialogProps) => {
         <Dialog
             open={open}
             onClose={onClose}
-            title={'Two-Step Authentication Enabled'}
-            description={
-                'Store the codes below somewhere safe. If you lose access to your phone you can use these backup codes to sign in.'
-            }
+            title={t('two_factor.enabled_title')}
+            description={t('two_factor.recovery_description')}
             hideCloseIcon
             preventExternalClose
         >
@@ -41,10 +41,10 @@ export default ({ tokens, open, onClose }: RecoveryTokenDialogProps) => {
                 </pre>
             </CopyOnClick>
             <Alert type={'danger'} className={'mt-3'}>
-                These codes will not be shown again.
+                {t('two_factor.recovery_warning')}
             </Alert>
             <Dialog.Footer>
-                <Button.Text onClick={onClose}>Done</Button.Text>
+                <Button.Text onClick={onClose}>{t('two_factor.done')}</Button.Text>
             </Dialog.Footer>
         </Dialog>
     );

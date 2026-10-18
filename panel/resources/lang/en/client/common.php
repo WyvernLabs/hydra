@@ -93,6 +93,18 @@ return [
         'clear_filter' => 'Clear filter',
     ],
 
+    // Default messages for form validation (yup).
+    'validation' => [
+        'required' => 'This field is required.',
+        'email' => 'Please enter a valid email address.',
+        'string_min' => 'Must be at least :min characters long.',
+        'string_max' => 'May not be longer than :max characters.',
+        'number' => 'Must be a number.',
+        'number_min' => 'Must be at least :min.',
+        'number_max' => 'May not be greater than :max.',
+        'invalid' => 'This value is invalid.',
+    ],
+
     'units' => [
         'mib' => 'MiB',
         'percent' => '%',

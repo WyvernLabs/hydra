@@ -13,6 +13,7 @@ import Button from '@/components/elements/Button';
 import Input, { Textarea } from '@/components/elements/Input';
 import styled from 'styled-components/macro';
 import ApiKeyModal from '@/components/dashboard/ApiKeyModal';
+import { useTranslation } from 'react-i18next';
 
 interface Values {
     description: string;
@@ -25,6 +26,7 @@ const CustomTextarea = styled(Textarea)`
 
 export default ({ onKeyCreated }: { onKeyCreated: (key: ApiKey) => void }) => {
     const [apiKey, setApiKey] = useState('');
+    const { t } = useTranslation('client/account');
     const { addError, clearFlashes } = useStoreActions((actions: Actions<ApplicationStore>) => actions.flashes);
 
     const submit = (values: Values, { setSubmitting, resetForm }: FormikHelpers<Values>) => {
@@ -59,24 +61,22 @@ export default ({ onKeyCreated }: { onKeyCreated: (key: ApiKey) => void }) => {
                     <Form>
                         <SpinnerOverlay visible={isSubmitting} />
                         <FormikFieldWrapper
-                            label={'Description'}
+                            label={t('api.description')}
                             name={'description'}
-                            description={'A description of this API key.'}
+                            description={t('api.description_help')}
                             css={tw`mb-6`}
                         >
                             <Field name={'description'} as={Input} />
                         </FormikFieldWrapper>
                         <FormikFieldWrapper
-                            label={'Allowed IPs'}
+                            label={t('api.allowed_ips')}
                             name={'allowedIps'}
-                            description={
-                                'Leave blank to allow any IP address to use this API key, otherwise provide each IP address on a new line.'
-                            }
+                            description={t('api.allowed_ips_help')}
                         >
                             <Field name={'allowedIps'} as={CustomTextarea} />
                         </FormikFieldWrapper>
                         <div css={tw`flex justify-end mt-6`}>
-                            <Button>Create</Button>
+                            <Button>{t('api.create')}</Button>
                         </div>
                     </Form>
                 )}

@@ -9,7 +9,7 @@ import Select from '@/components/elements/Select';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 
 export default () => {
-    const { t, i18n } = useTranslation('client/account');
+    const { t } = useTranslation('client/account');
     const languages = useStoreState((state) => state.settings.data!.languages);
     const current = useStoreState((state) => state.user.data!.language);
     const updateUserData = useStoreActions((actions) => actions.user.updateUserData);
@@ -21,20 +21,21 @@ export default () => {
         setIsSubmitting(true);
 
         updateAccountLanguage(language)
-            .then(() => i18n.changeLanguage(language))
             .then(() => {
                 updateUserData({ language });
-                addFlash({ type: 'success', key: 'account:language', message: t('language.updated') });
+                // Reload so that everything follows the new language: server rendered texts,
+                // error messages from the API and date formats included.
+                window.location.reload();
             })
-            .catch((error) =>
+            .catch((error) => {
                 addFlash({
                     type: 'error',
                     key: 'account:language',
                     title: t('client/common:error'),
                     message: httpErrorToHuman(error),
-                })
-            )
-            .then(() => setIsSubmitting(false));
+                });
+                setIsSubmitting(false);
+            });
     };
 
     return (

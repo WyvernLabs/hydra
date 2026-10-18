@@ -2,6 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import I18NextHttpBackend, { HttpBackendOptions } from 'i18next-http-backend';
 import I18NextMultiloadBackendAdapter from 'i18next-multiload-backend-adapter';
+import { setLocale } from 'yup';
 
 // If we're using HMR use a unique hash per page reload so that we're always
 // doing cache busting. Otherwise just use the builder provided hash value in
@@ -41,6 +42,16 @@ i18n.use(I18NextMultiloadBackendAdapter)
 
 i18n.on('languageChanged', (language) => {
     document.documentElement.lang = language;
+});
+
+// Default validation messages of yup, resolved when a form is validated (by then the
+// translations are loaded). Forms can still pass their own, more specific message.
+const v = (key: string) => (params: object) =>
+    i18n.t(`client/common:validation.${key}`, params as Record<string, unknown>);
+setLocale({
+    mixed: { required: v('required'), notType: v('invalid'), default: v('invalid') },
+    string: { email: v('email'), min: v('string_min'), max: v('string_max') },
+    number: { min: v('number_min'), max: v('number_max') },
 });
 
 export default i18n;

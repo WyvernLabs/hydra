@@ -91,6 +91,18 @@ return [
         'clear_filter' => 'Filter entfernen',
     ],
 
+    // Standardmeldungen der Formularprüfung (yup).
+    'validation' => [
+        'required' => 'Dieses Feld muss ausgefüllt werden.',
+        'email' => 'Bitte gib eine gültige E-Mail-Adresse ein.',
+        'string_min' => 'Muss mindestens :min Zeichen lang sein.',
+        'string_max' => 'Darf höchstens :max Zeichen lang sein.',
+        'number' => 'Muss eine Zahl sein.',
+        'number_min' => 'Muss mindestens :min sein.',
+        'number_max' => 'Darf höchstens :max sein.',
+        'invalid' => 'Dieser Wert ist ungültig.',
+    ],
+
     'units' => [
         'mib' => 'MiB',
         'percent' => '%',

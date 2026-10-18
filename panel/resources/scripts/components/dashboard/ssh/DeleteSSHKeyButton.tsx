@@ -6,10 +6,12 @@ import { useFlashKey } from '@/plugins/useFlash';
 import { deleteSSHKey, useSSHKeys } from '@/api/account/ssh-keys';
 import { Dialog } from '@/components/elements/dialog';
 import Code from '@/components/elements/Code';
+import { Trans, useTranslation } from 'react-i18next';
 
 export default ({ name, fingerprint }: { name: string; fingerprint: string }) => {
     const { clearAndAddHttpError } = useFlashKey('account');
     const [visible, setVisible] = useState(false);
+    const { t } = useTranslation('client/account');
     const { mutate } = useSSHKeys();
 
     const onClick = () => {
@@ -28,12 +30,12 @@ export default ({ name, fingerprint }: { name: string; fingerprint: string }) =>
         <>
             <Dialog.Confirm
                 open={visible}
-                title={'Delete SSH Key'}
-                confirm={'Delete Key'}
+                title={t('ssh.delete_title')}
+                confirm={t('ssh.delete_confirm')}
                 onConfirmed={onClick}
                 onClose={() => setVisible(false)}
             >
-                Removing the <Code>{name}</Code> SSH key will invalidate its usage across the Panel.
+                <Trans t={t} i18nKey={'ssh.delete_text'} values={{ name }} components={{ code: <Code /> }} />
             </Dialog.Confirm>
             <button css={tw`ml-4 p-2 text-sm`} onClick={() => setVisible(true)}>
                 <FontAwesomeIcon

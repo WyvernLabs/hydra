@@ -82,6 +82,7 @@ class Kernel extends HttpKernel
         'client-api' => [
             SubstituteClientBindings::class,
             RequireClientApiKey::class,
+            LanguageMiddleware::class,
         ],
         'daemon' => [
             SubstituteBindings::class,

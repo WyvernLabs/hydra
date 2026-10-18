@@ -1,0 +1,33 @@
+<?php
+
+return [
+    'permissions' => [
+        'websocket_*' => 'Erlaubt den Zugriff auf den Websocket dieses Servers.',
+        'control_console' => 'Erlaubt das Senden von Befehlen an die Serverkonsole.',
+        'control_start' => 'Erlaubt das Starten des Servers.',
+        'control_stop' => 'Erlaubt das Stoppen des Servers.',
+        'control_restart' => 'Erlaubt den Neustart des Servers.',
+        'control_kill' => 'Erlaubt das sofortige Beenden des Servers.',
+        'user_create' => 'Erlaubt das Anlegen neuer Unterbenutzer für den Server.',
+        'user_read' => 'Erlaubt das Ansehen der Unterbenutzer dieses Servers.',
+        'user_update' => 'Erlaubt das Bearbeiten anderer Unterbenutzer dieses Servers.',
+        'user_delete' => 'Erlaubt das Löschen anderer Unterbenutzer dieses Servers.',
+        'file_create' => 'Erlaubt das Anlegen neuer Dateien und Ordner.',
+        'file_read' => 'Erlaubt das Ansehen der Dateien und Ordner dieses Servers und ihres Inhalts.',
+        'file_update' => 'Erlaubt das Ändern von Dateien und Ordnern des Servers.',
+        'file_delete' => 'Erlaubt das Löschen von Dateien und Ordnern.',
+        'file_archive' => 'Erlaubt das Erstellen und Entpacken von Archiven.',
+        'file_sftp' => 'Erlaubt die oben genannten Dateiaktionen über einen SFTP-Client.',
+        'allocation_read' => 'Erlaubt den Zugriff auf die Netzwerkverwaltung des Servers.',
+        'allocation_update' => 'Erlaubt das Ändern der Netzwerkadressen des Servers.',
+        'database_create' => 'Erlaubt das Anlegen neuer Datenbanken für den Server.',
+        'database_read' => 'Erlaubt das Ansehen der Datenbanken des Servers.',
+        'database_update' => 'Erlaubt das Ändern einer Datenbank. Ohne die Berechtigung „Passwort ansehen“ kann das Passwort nicht geändert werden.',
+        'database_delete' => 'Erlaubt das Löschen einer Datenbank.',
+        'database_view_password' => 'Erlaubt das Ansehen von Datenbankpasswörtern.',
+        'schedule_create' => 'Erlaubt das Anlegen neuer Zeitpläne für den Server.',
+        'schedule_read' => 'Erlaubt das Ansehen der Zeitpläne eines Servers.',
+        'schedule_update' => 'Erlaubt das Ändern bestehender Zeitpläne.',
+        'schedule_delete' => 'Erlaubt das Löschen von Zeitplänen.',
+    ],
+];

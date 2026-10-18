@@ -42,6 +42,11 @@ class UserCreationService
             $data['password'] = $this->hasher->make(str_random(30));
         }
 
+        // Hydra: new accounts start with the panel's default language instead of English.
+        if (empty($data['language'])) {
+            $data['language'] = config('app.locale', 'en');
+        }
+
         /** @var User $user */
         $user = $this->repository->create(array_merge($data, [
             'uuid' => Uuid::uuid4()->toString(),

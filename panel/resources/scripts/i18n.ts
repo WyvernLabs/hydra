@@ -8,13 +8,22 @@ import I18NextMultiloadBackendAdapter from 'i18next-multiload-backend-adapter';
 // the URL to allow cache busting to occur whenever the front-end is rebuilt.
 const hash = module.hot ? Date.now().toString(16) : process.env.WEBPACK_BUILD_HASH;
 
+// Hydra: the server already resolved the language for this request (user setting >
+// browser language > panel default) and hands it over in window.SiteConfiguration.
+const locale = (window as { SiteConfiguration?: { locale?: string } }).SiteConfiguration?.locale || 'en';
+
 i18n.use(I18NextMultiloadBackendAdapter)
     .use(initReactI18next)
     .init({
         debug: process.env.DEBUG === 'true',
-        lng: 'en',
+        lng: locale,
         fallbackLng: 'en',
         keySeparator: '.',
+        // Translations live in resources/lang/<locale>/<namespace>.php. Keys can name their
+        // namespace explicitly, e.g. t('client/common:actions.save').
+        nsSeparator: ':',
+        ns: ['client/common'],
+        defaultNS: 'client/common',
         backend: {
             backend: I18NextHttpBackend,
             backendOption: {
@@ -29,5 +38,9 @@ i18n.use(I18NextMultiloadBackendAdapter)
             escapeValue: false,
         },
     });
+
+i18n.on('languageChanged', (language) => {
+    document.documentElement.lang = language;
+});
 
 export default i18n;

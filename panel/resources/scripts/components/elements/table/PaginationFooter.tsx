@@ -3,6 +3,7 @@ import { PaginationDataSet } from '@/api/http';
 import classNames from 'classnames';
 import { Button } from '@/components/elements/button/index';
 import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon } from '@heroicons/react/solid';
+import { Trans, useTranslation } from 'react-i18next';
 
 interface Props {
     className?: string;
@@ -15,6 +16,7 @@ const PaginationFooter = ({ pagination, className, onPageSelect }: Props) => {
     const end = (pagination.currentPage - 1) * pagination.perPage + pagination.count;
 
     const { currentPage: current, totalPages: total } = pagination;
+    const { t } = useTranslation();
 
     const pages = { previous: [] as number[], next: [] as number[] };
     for (let i = 1; i <= 2; i++) {
@@ -40,13 +42,12 @@ const PaginationFooter = ({ pagination, className, onPageSelect }: Props) => {
     return (
         <div className={classNames('flex items-center justify-between my-2', className)}>
             <p className={'text-sm text-neutral-500'}>
-                Showing&nbsp;
-                <span className={'font-semibold text-neutral-400'}>
-                    {Math.max(start, Math.min(pagination.total, 1))}
-                </span>
-                &nbsp;to&nbsp;
-                <span className={'font-semibold text-neutral-400'}>{end}</span> of&nbsp;
-                <span className={'font-semibold text-neutral-400'}>{pagination.total}</span> results.
+                <Trans
+                    t={t}
+                    i18nKey={'pagination.summary'}
+                    values={{ start: Math.max(start, Math.min(pagination.total, 1)), end, total: pagination.total }}
+                    components={{ bold: <span className={'font-semibold text-neutral-400'} /> }}
+                />
             </p>
             {pagination.totalPages > 1 && (
                 <div className={'flex space-x-1'}>

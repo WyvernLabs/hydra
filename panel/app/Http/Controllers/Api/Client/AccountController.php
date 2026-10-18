@@ -12,6 +12,7 @@ use Pterodactyl\Services\Users\UserUpdateService;
 use Pterodactyl\Transformers\Api\Client\AccountTransformer;
 use Pterodactyl\Http\Requests\Api\Client\Account\UpdateEmailRequest;
 use Pterodactyl\Http\Requests\Api\Client\Account\UpdatePasswordRequest;
+use Pterodactyl\Http\Requests\Api\Client\Account\UpdateLanguageRequest;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 class AccountController extends ClientApiController
@@ -34,6 +35,16 @@ class AccountController extends ClientApiController
         return $this->fractal->item($request->user())
             ->transformWith($this->getTransformer(AccountTransformer::class))
             ->toArray();
+    }
+
+    /**
+     * Update the language of the authenticated user.
+     */
+    public function updateLanguage(UpdateLanguageRequest $request): Response
+    {
+        $this->updateService->handle($request->user(), $request->validated());
+
+        return new Response('', Response::HTTP_NO_CONTENT);
     }
 
     /**

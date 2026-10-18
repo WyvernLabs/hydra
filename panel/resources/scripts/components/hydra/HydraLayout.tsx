@@ -3,6 +3,7 @@ import { useLocation } from 'react-router';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';
 import Sidebar, { SidebarSection } from '@/components/hydra/Sidebar';
 import { useStoreState } from '@/state/hooks';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     sections: SidebarSection[];
@@ -18,6 +19,7 @@ export default ({ sections, children }: Props) => {
     const [open, setOpen] = useState(false);
     const branding = useStoreState((state) => state.settings.data!.branding);
     const name = useStoreState((state) => state.settings.data!.name);
+    const { t } = useTranslation();
 
     useEffect(() => setOpen(false), [location.pathname]);
 
@@ -26,7 +28,7 @@ export default ({ sections, children }: Props) => {
             <header className={'hydra-topbar'}>
                 <button type={'button'} className={'hydra-icon-btn'} onClick={() => setOpen(!open)}>
                     {open ? <XIcon className={'hydra-nav-icon'} /> : <MenuIcon className={'hydra-nav-icon'} />}
-                    <span className={'sr-only'}>Menu</span>
+                    <span className={'sr-only'}>{t('nav.menu')}</span>
                 </button>
                 <img src={branding.logo} alt={name} className={'hydra-topbar-logo'} />
             </header>

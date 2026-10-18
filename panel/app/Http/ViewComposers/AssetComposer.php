@@ -5,9 +5,12 @@ namespace Pterodactyl\Http\ViewComposers;
 use Illuminate\View\View;
 use Pterodactyl\Services\Hydra\BrandingService;
 use Pterodactyl\Services\Helpers\AssetHashService;
+use Pterodactyl\Traits\Helpers\AvailableLanguages;
 
 class AssetComposer
 {
+    use AvailableLanguages;
+
     /**
      * AssetComposer constructor.
      */
@@ -24,7 +27,10 @@ class AssetComposer
         $view->with('branding', $this->branding);
         $view->with('siteConfiguration', [
             'name' => config('app.name') ?? 'Hydra',
-            'locale' => config('app.locale') ?? 'en',
+            // The language resolved for this request (user > browser > panel default).
+            'locale' => app()->getLocale(),
+            // All installed languages with their native names, e.g. ['de' => 'Deutsch'].
+            'languages' => $this->getAvailableLanguages(true),
             'recaptcha' => [
                 'enabled' => config('recaptcha.enabled', false),
                 'siteKey' => config('recaptcha.website_key') ?? '',

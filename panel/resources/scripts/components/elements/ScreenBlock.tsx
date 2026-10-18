@@ -7,6 +7,7 @@ import tw from 'twin.macro';
 import Button from '@/components/elements/Button';
 import NotFoundSvg from '@/assets/images/not_found.svg';
 import ServerErrorSvg from '@/assets/images/server_error.svg';
+import { useTranslation } from 'react-i18next';
 
 interface BaseProps {
     title: string;
@@ -43,9 +44,7 @@ const ActionButton = styled(Button)`
 const ScreenBlock = ({ title, image, message, onBack, onRetry }: ScreenBlockProps) => (
     <PageContentBlock>
         <div css={tw`flex justify-center`}>
-            <div
-                css={tw`w-full sm:w-3/4 md:w-1/2 p-12 md:p-20 bg-neutral-100 rounded-lg shadow-lg text-center relative`}
-            >
+            <div className={'hydra-card'} css={tw`w-full sm:w-3/4 md:w-1/2 p-12 md:p-20 text-center relative`}>
                 {(typeof onBack === 'function' || typeof onRetry === 'function') && (
                     <div css={tw`absolute left-0 top-0 ml-4 mt-4`}>
                         <ActionButton
@@ -57,8 +56,8 @@ const ScreenBlock = ({ title, image, message, onBack, onRetry }: ScreenBlockProp
                     </div>
                 )}
                 <img src={image} css={tw`w-2/3 h-auto select-none mx-auto`} />
-                <h2 css={tw`mt-10 text-neutral-900 font-bold text-4xl`}>{title}</h2>
-                <p css={tw`text-sm text-neutral-700 mt-2`}>{message}</p>
+                <h2 css={tw`mt-10 text-neutral-100 font-bold text-4xl`}>{title}</h2>
+                <p css={tw`text-sm text-neutral-300 mt-2`}>{message}</p>
             </div>
         </div>
     </PageContentBlock>
@@ -68,18 +67,24 @@ type ServerErrorProps = (Omit<PropsWithBack, 'image' | 'title'> | Omit<PropsWith
     title?: string;
 };
 
-const ServerError = ({ title, ...props }: ServerErrorProps) => (
-    <ScreenBlock title={title || 'Something went wrong'} image={ServerErrorSvg} {...props} />
-);
+const ServerError = ({ title, ...props }: ServerErrorProps) => {
+    const { t } = useTranslation();
 
-const NotFound = ({ title, message, onBack }: Partial<Pick<ScreenBlockProps, 'title' | 'message' | 'onBack'>>) => (
-    <ScreenBlock
-        title={title || '404'}
-        image={NotFoundSvg}
-        message={message || 'The requested resource was not found.'}
-        onBack={onBack}
-    />
-);
+    return <ScreenBlock title={title || t('errors.generic_title')} image={ServerErrorSvg} {...props} />;
+};
+
+const NotFound = ({ title, message, onBack }: Partial<Pick<ScreenBlockProps, 'title' | 'message' | 'onBack'>>) => {
+    const { t } = useTranslation();
+
+    return (
+        <ScreenBlock
+            title={title || '404'}
+            image={NotFoundSvg}
+            message={message || t('errors.not_found')}
+            onBack={onBack}
+        />
+    );
+};
 
 export { ServerError, NotFound };
 export default ScreenBlock;

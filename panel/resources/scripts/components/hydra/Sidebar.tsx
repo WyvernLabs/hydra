@@ -7,6 +7,7 @@ import http from '@/api/http';
 import Avatar from '@/components/Avatar';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
+import { useTranslation } from 'react-i18next';
 
 type IconComponent = React.ComponentType<{ className?: string }>;
 
@@ -71,6 +72,7 @@ export default ({ sections, open, onNavigate }: Props) => {
     const branding = useStoreState((state) => state.settings.data!.branding);
     const name = useStoreState((state) => state.settings.data!.name);
     const rootAdmin = useStoreState((state) => state.user.data!.rootAdmin);
+    const { t } = useTranslation();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const onTriggerLogout = () => {
@@ -107,22 +109,22 @@ export default ({ sections, open, onNavigate }: Props) => {
                 ))}
             </nav>
             <div className={'hydra-sidebar-footer'}>
-                <Tooltip placement={'top'} content={'Account'}>
+                <Tooltip placement={'top'} content={t('nav.account')}>
                     <NavLink to={'/account'} className={'hydra-icon-btn'} onClick={onNavigate}>
                         <span className={'hydra-avatar'}>
                             <Avatar.User />
                         </span>
-                        <span className={'sr-only'}>Account</span>
+                        <span className={'sr-only'}>{t('nav.account')}</span>
                     </NavLink>
                 </Tooltip>
                 {rootAdmin && (
-                    <Tooltip placement={'top'} content={'Administration'}>
+                    <Tooltip placement={'top'} content={t('nav.administration')}>
                         <a href={'/admin'} className={'hydra-icon-btn'}>
                             <ShieldCheckIcon className={'hydra-nav-icon'} />
                         </a>
                     </Tooltip>
                 )}
-                <Tooltip placement={'top'} content={'Sign Out'}>
+                <Tooltip placement={'top'} content={t('nav.sign_out')}>
                     <button type={'button'} className={'hydra-icon-btn'} onClick={onTriggerLogout}>
                         <LogoutIcon className={'hydra-nav-icon'} />
                     </button>

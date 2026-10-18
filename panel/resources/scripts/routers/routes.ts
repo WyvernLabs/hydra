@@ -39,8 +39,9 @@ const ScheduleEditContainer = lazy(() => import('@/components/server/schedules/S
 
 interface RouteDefinition {
     path: string;
-    // If undefined is passed this route is still rendered into the router itself
-    // but no navigation link is displayed in the sub-navigation menu.
+    // Translation key (namespace "client/common" unless given as "ns:key"). If undefined
+    // is passed this route is still rendered into the router itself but no navigation
+    // link is displayed in the sidebar.
     name: string | undefined;
     component: React.ComponentType;
     exact?: boolean;
@@ -63,26 +64,26 @@ export default {
     account: [
         {
             path: '/',
-            name: 'Account',
+            name: 'routes.account',
             icon: UserCircleIcon,
             component: AccountOverviewContainer,
             exact: true,
         },
         {
             path: '/api',
-            name: 'API Credentials',
+            name: 'routes.api',
             icon: CodeIcon,
             component: AccountApiContainer,
         },
         {
             path: '/ssh',
-            name: 'SSH Keys',
+            name: 'routes.ssh',
             icon: KeyIcon,
             component: AccountSSHContainer,
         },
         {
             path: '/activity',
-            name: 'Activity',
+            name: 'routes.activity',
             icon: ClockIcon,
             component: ActivityLogContainer,
         },
@@ -91,7 +92,7 @@ export default {
         {
             path: '/',
             permission: null,
-            name: 'Console',
+            name: 'routes.console',
             icon: TerminalIcon,
             component: ServerConsole,
             exact: true,
@@ -99,7 +100,7 @@ export default {
         {
             path: '/files',
             permission: 'file.*',
-            name: 'Files',
+            name: 'routes.files',
             icon: FolderIcon,
             component: FileManagerContainer,
         },
@@ -112,14 +113,14 @@ export default {
         {
             path: '/databases',
             permission: 'database.*',
-            name: 'Databases',
+            name: 'routes.databases',
             icon: DatabaseIcon,
             component: DatabasesContainer,
         },
         {
             path: '/schedules',
             permission: 'schedule.*',
-            name: 'Schedules',
+            name: 'routes.schedules',
             icon: CalendarIcon,
             component: ScheduleContainer,
         },
@@ -132,42 +133,42 @@ export default {
         {
             path: '/users',
             permission: 'user.*',
-            name: 'Users',
+            name: 'routes.users',
             icon: UsersIcon,
             component: UsersContainer,
         },
         {
             path: '/backups',
             permission: 'backup.*',
-            name: 'Backups',
+            name: 'routes.backups',
             icon: ArchiveIcon,
             component: BackupContainer,
         },
         {
             path: '/network',
             permission: 'allocation.*',
-            name: 'Network',
+            name: 'routes.network',
             icon: GlobeAltIcon,
             component: NetworkContainer,
         },
         {
             path: '/startup',
             permission: 'startup.*',
-            name: 'Startup',
+            name: 'routes.startup',
             icon: PlayIcon,
             component: StartupContainer,
         },
         {
             path: '/settings',
             permission: ['settings.*', 'file.sftp'],
-            name: 'Settings',
+            name: 'routes.settings',
             icon: CogIcon,
             component: SettingsContainer,
         },
         {
             path: '/activity',
             permission: 'activity.*',
-            name: 'Activity',
+            name: 'routes.activity',
             icon: ClockIcon,
             component: ServerActivityLogContainer,
         },

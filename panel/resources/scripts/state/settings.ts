@@ -3,6 +3,8 @@ import { action, Action } from 'easy-peasy';
 export interface SiteSettings {
     name: string;
     locale: string;
+    // Installed languages with their native names, e.g. { en: 'English', de: 'Deutsch' }.
+    languages: Record<string, string>;
     recaptcha: {
         enabled: boolean;
         siteKey: string;

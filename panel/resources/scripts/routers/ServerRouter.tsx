@@ -20,6 +20,7 @@ import HydraLayout from '@/components/hydra/HydraLayout';
 import { SidebarLink, SidebarSection } from '@/components/hydra/Sidebar';
 import { useWorkspaceSection } from '@/components/hydra/sections';
 import ServerSidebarHeader from '@/components/hydra/ServerSidebarHeader';
+import { useTranslation } from 'react-i18next';
 
 export default () => {
     const match = useRouteMatch<{ id: string }>();
@@ -33,6 +34,7 @@ export default () => {
     const inConflictState = ServerContext.useStoreState((state) => state.server.inConflictState);
     const serverId = ServerContext.useStoreState((state) => state.server.data?.internalId);
     const workspace = useWorkspaceSection();
+    const { t } = useTranslation();
     const getServer = ServerContext.useStoreActions((actions) => actions.server.getServer);
     const clearServerState = ServerContext.useStoreActions((actions) => actions.clearServerState);
 
@@ -45,7 +47,7 @@ export default () => {
 
     const serverSection: SidebarSection = {
         key: 'server',
-        title: 'Server',
+        title: t('nav.server'),
         header: uuid ? <ServerSidebarHeader /> : undefined,
         items: !uuid
             ? []
@@ -56,7 +58,7 @@ export default () => {
                           const link = (
                               <SidebarLink
                                   key={path}
-                                  item={{ key: path, name: name!, icon, exact, to: to(path, true) }}
+                                  item={{ key: path, name: t(name!), icon, exact, to: to(path, true) }}
                               />
                           );
 
@@ -74,7 +76,7 @@ export default () => {
                                 key={'admin'}
                                 item={{
                                     key: 'admin',
-                                    name: 'Manage as Admin',
+                                    name: t('nav.manage_as_admin'),
                                     icon: ExternalLinkIcon,
                                     href: `/admin/servers/view/${serverId}`,
                                 }}

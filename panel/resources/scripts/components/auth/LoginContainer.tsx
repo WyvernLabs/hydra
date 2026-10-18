@@ -10,6 +10,7 @@ import tw from 'twin.macro';
 import Button from '@/components/elements/Button';
 import Reaptcha from 'reaptcha';
 import useFlash from '@/plugins/useFlash';
+import { useTranslation } from 'react-i18next';
 
 interface Values {
     username: string;
@@ -18,6 +19,7 @@ interface Values {
 
 const LoginContainer = ({ history }: RouteComponentProps) => {
     const ref = useRef<Reaptcha>(null);
+    const { t } = useTranslation('client/auth');
     const [token, setToken] = useState('');
 
     const { clearFlashes, clearAndAddHttpError } = useFlash();
@@ -69,19 +71,24 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
             onSubmit={onSubmit}
             initialValues={{ username: '', password: '' }}
             validationSchema={object().shape({
-                username: string().required('A username or email must be provided.'),
-                password: string().required('Please enter your account password.'),
+                username: string().required(t('login.username_required')),
+                password: string().required(t('login.password_required')),
             })}
         >
             {({ isSubmitting, setSubmitting, submitForm }) => (
-                <LoginFormContainer title={'Login to Continue'}>
-                    <Field type={'text'} label={'Username or Email'} name={'username'} disabled={isSubmitting} />
+                <LoginFormContainer title={t('login.title')}>
+                    <Field type={'text'} label={t('login.username')} name={'username'} disabled={isSubmitting} />
                     <div css={tw`mt-6`}>
-                        <Field type={'password'} label={'Password'} name={'password'} disabled={isSubmitting} />
+                        <Field
+                            type={'password'}
+                            label={t('login.password')}
+                            name={'password'}
+                            disabled={isSubmitting}
+                        />
                     </div>
                     <div css={tw`mt-6`}>
                         <Button type={'submit'} size={'xlarge'} isLoading={isSubmitting} disabled={isSubmitting}>
-                            Login
+                            {t('login.submit')}
                         </Button>
                     </div>
                     {recaptchaEnabled && (
@@ -104,7 +111,7 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
                             to={'/auth/password'}
                             css={tw`text-xs text-neutral-500 tracking-wide no-underline uppercase hover:text-neutral-600`}
                         >
-                            Forgot password?
+                            {t('login.forgot_password')}
                         </Link>
                     </div>
                 </LoginFormContainer>

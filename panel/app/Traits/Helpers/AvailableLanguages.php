@@ -17,7 +17,10 @@ trait AvailableLanguages
      */
     public function getAvailableLanguages(bool $localize = false): array
     {
-        return collect($this->getFilesystemInstance()->directories(resource_path('lang')))->mapWithKeys(function ($path) use ($localize) {
+        // Hydra: called by middleware and view composers on every request, so cache the result.
+        static $cache = [];
+
+        return $cache[(int) $localize] ??= collect($this->getFilesystemInstance()->directories(resource_path('lang')))->mapWithKeys(function ($path) use ($localize) {
             $code = basename($path);
             $value = $localize ? $this->getIsoInstance()->nativeByCode1($code) : $this->getIsoInstance()->languageByCode1($code);
 

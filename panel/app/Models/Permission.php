@@ -216,4 +216,35 @@ class Permission extends Model
     {
         return Collection::make(self::$permissions);
     }
+
+    /**
+     * Hydra: the permissions with title, description and per-key labels in the active
+     * language (resources/lang/<locale>/server/permissions.php). Missing translations
+     * fall back to the English texts defined above, so permissions added later (e.g.
+     * by addons) work without a translation file.
+     */
+    public static function translated(): Collection
+    {
+        $translate = function (string $key, string $fallback): string {
+            $line = "server/permissions.$key";
+
+            return trans()->has($line) ? trans($line) : $fallback;
+        };
+
+        return self::permissions()->map(function (array $group, string $name) use ($translate) {
+            $keys = [];
+            $labels = [];
+            foreach ($group['keys'] as $key => $description) {
+                $keys[$key] = $translate("$name.keys.$key", $description);
+                $labels[$key] = $translate("$name.labels.$key", $key);
+            }
+
+            return [
+                'title' => $translate("$name.title", $name),
+                'description' => $translate("$name.description", $group['description']),
+                'keys' => $keys,
+                'labels' => $labels,
+            ];
+        });
+    }
 }

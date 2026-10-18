@@ -13,6 +13,7 @@ import getServerStartup from '@/api/swr/getServerStartup';
 import Select from '@/components/elements/Select';
 import isEqual from 'react-fast-compare';
 import { ServerContext } from '@/state/server';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     variable: ServerEggVariable;
@@ -20,6 +21,7 @@ interface Props {
 
 const VariableBox = ({ variable }: Props) => {
     const FLASH_KEY = `server:startup:${variable.envVariable}`;
+    const { t } = useTranslation('client/server');
 
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
     const [loading, setLoading] = useState(false);
@@ -62,7 +64,9 @@ const VariableBox = ({ variable }: Props) => {
             title={
                 <p className='text-sm uppercase'>
                     {!variable.isEditable && (
-                        <span className='bg-neutral-700 text-xs py-1 px-2 rounded-full mr-2 mb-1'>Read Only</span>
+                        <span className='bg-neutral-700 text-xs py-1 px-2 rounded-full mr-2 mb-1'>
+                            {t('startup.read_only')}
+                        </span>
                     )}
                     {variable.name}
                 </p>

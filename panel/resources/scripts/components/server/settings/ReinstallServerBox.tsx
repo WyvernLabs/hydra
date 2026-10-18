@@ -8,9 +8,11 @@ import { httpErrorToHuman } from '@/api/http';
 import tw from 'twin.macro';
 import { Button } from '@/components/elements/button/index';
 import { Dialog } from '@/components/elements/dialog';
+import { useTranslation } from 'react-i18next';
 
 export default () => {
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
+    const { t } = useTranslation('client/server');
     const skipScripts = ServerContext.useStoreState((state) => state.server.data!.skipScripts);
     const [modalVisible, setModalVisible] = useState(false);
     const { addFlash, clearFlashes } = useStoreActions((actions: Actions<ApplicationStore>) => actions.flashes);
@@ -22,7 +24,7 @@ export default () => {
                 addFlash({
                     key: 'settings',
                     type: 'success',
-                    message: 'Your server has begun the reinstallation process.',
+                    message: t('settings.reinstall_started'),
                 });
             })
             .catch((error) => {
@@ -39,38 +41,30 @@ export default () => {
 
     if (skipScripts) {
         return (
-            <TitledGreyBox title={'Reinstall Server'}>
-                <p css={tw`text-sm`}>
-                    Reinstalling this server has been disabled because it is configured to skip its egg&apos;s install
-                    script. If you would like to reinstall this server, contact a server administrator.
-                </p>
+            <TitledGreyBox title={t('settings.reinstall_title')}>
+                <p css={tw`text-sm`}>{t('settings.reinstall_disabled')}</p>
             </TitledGreyBox>
         );
     }
 
     return (
-        <TitledGreyBox title={'Reinstall Server'} css={tw`relative`}>
+        <TitledGreyBox title={t('settings.reinstall_title')} css={tw`relative`}>
             <Dialog.Confirm
                 open={modalVisible}
-                title={'Confirm server reinstallation'}
-                confirm={'Yes, reinstall server'}
+                title={t('settings.reinstall_confirm_title')}
+                confirm={t('settings.reinstall_confirm')}
                 onClose={() => setModalVisible(false)}
                 onConfirmed={reinstall}
             >
-                Your server will be stopped and some files may be deleted or modified during this process, are you sure
-                you wish to continue?
+                {t('settings.reinstall_confirm_text')}
             </Dialog.Confirm>
             <p css={tw`text-sm`}>
-                Reinstalling your server will stop it, and then re-run the installation script that initially set it
-                up.&nbsp;
-                <strong css={tw`font-medium`}>
-                    Some files may be deleted or modified during this process, please back up your data before
-                    continuing.
-                </strong>
+                {t('settings.reinstall_text')}&nbsp;
+                <strong css={tw`font-medium`}>{t('settings.reinstall_warning')}</strong>
             </p>
             <div css={tw`mt-6 text-right`}>
                 <Button.Danger variant={Button.Variants.Secondary} onClick={() => setModalVisible(true)}>
-                    Reinstall Server
+                    {t('settings.reinstall_button')}
                 </Button.Danger>
             </div>
         </TitledGreyBox>

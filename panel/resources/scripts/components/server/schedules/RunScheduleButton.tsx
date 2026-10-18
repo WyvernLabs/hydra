@@ -5,9 +5,11 @@ import triggerScheduleExecution from '@/api/server/schedules/triggerScheduleExec
 import { ServerContext } from '@/state/server';
 import useFlash from '@/plugins/useFlash';
 import { Schedule } from '@/api/server/schedules/getServerSchedules';
+import { useTranslation } from 'react-i18next';
 
 const RunScheduleButton = ({ schedule }: { schedule: Schedule }) => {
     const [loading, setLoading] = useState(false);
+    const { t } = useTranslation('client/server');
     const { clearFlashes, clearAndAddHttpError } = useFlash();
 
     const id = ServerContext.useStoreState((state) => state.server.data!.id);
@@ -37,7 +39,7 @@ const RunScheduleButton = ({ schedule }: { schedule: Schedule }) => {
                 disabled={schedule.isProcessing}
                 onClick={onTriggerExecute}
             >
-                Run Now
+                {t('schedules.run_now')}
             </Button>
         </>
     );

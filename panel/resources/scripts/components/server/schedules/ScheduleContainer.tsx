@@ -13,12 +13,14 @@ import tw from 'twin.macro';
 import GreyRowBox from '@/components/elements/GreyRowBox';
 import { Button } from '@/components/elements/button/index';
 import ServerContentBlock from '@/components/elements/ServerContentBlock';
+import { useTranslation } from 'react-i18next';
 
 export default () => {
     const match = useRouteMatch();
     const history = useHistory();
 
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
+    const { t } = useTranslation('client/server');
     const { clearFlashes, addError } = useFlash();
     const [loading, setLoading] = useState(true);
     const [visible, setVisible] = useState(false);
@@ -38,16 +40,14 @@ export default () => {
     }, []);
 
     return (
-        <ServerContentBlock title={'Schedules'}>
+        <ServerContentBlock title={t('schedules.title')}>
             <FlashMessageRender byKey={'schedules'} css={tw`mb-4`} />
             {!schedules.length && loading ? (
                 <Spinner size={'large'} centered />
             ) : (
                 <>
                     {schedules.length === 0 ? (
-                        <p css={tw`text-sm text-center text-neutral-300`}>
-                            There are no schedules configured for this server.
-                        </p>
+                        <p css={tw`text-sm text-center text-neutral-300`}>{t('schedules.none')}</p>
                     ) : (
                         schedules.map((schedule) => (
                             <GreyRowBox
@@ -68,7 +68,7 @@ export default () => {
                         <div css={tw`mt-8 flex justify-end`}>
                             <EditScheduleModal visible={visible} onModalDismissed={() => setVisible(false)} />
                             <Button type={'button'} onClick={() => setVisible(true)}>
-                                Create schedule
+                                {t('schedules.create')}
                             </Button>
                         </div>
                     </Can>

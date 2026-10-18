@@ -52,7 +52,7 @@ const PermissionRow = ({ permission, disabled }: Props) => {
             </div>
             <div css={tw`flex-1`}>
                 <Label as={'p'} css={tw`font-medium`}>
-                    {pkey}
+                    {permissions[key].labels?.[pkey] || pkey}
                 </Label>
                 {permissions[key].keys[pkey].length > 0 && (
                     <p css={tw`text-xs text-neutral-400 mt-1`}>{permissions[key].keys[pkey]}</p>

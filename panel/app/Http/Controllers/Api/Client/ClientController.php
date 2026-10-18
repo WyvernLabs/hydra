@@ -74,7 +74,7 @@ class ClientController extends ClientApiController
         return [
             'object' => 'system_permissions',
             'attributes' => [
-                'permissions' => Permission::permissions(),
+                'permissions' => Permission::translated(),
             ],
         ];
     }

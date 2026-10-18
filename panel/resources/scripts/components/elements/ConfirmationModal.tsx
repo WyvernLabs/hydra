@@ -3,6 +3,7 @@ import tw from 'twin.macro';
 import Button from '@/components/elements/Button';
 import asModal from '@/hoc/asModal';
 import ModalContext from '@/context/ModalContext';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
     title: string;
@@ -13,6 +14,7 @@ type Props = {
 
 const ConfirmationModal: React.FC<Props> = ({ title, children, buttonText, onConfirmed }) => {
     const { dismiss } = useContext(ModalContext);
+    const { t } = useTranslation();
 
     return (
         <>
@@ -20,7 +22,7 @@ const ConfirmationModal: React.FC<Props> = ({ title, children, buttonText, onCon
             <div css={tw`text-neutral-300`}>{children}</div>
             <div css={tw`flex flex-wrap items-center justify-end mt-8`}>
                 <Button isSecondary onClick={() => dismiss()} css={tw`w-full sm:w-auto border-transparent`}>
-                    Cancel
+                    {t('actions.cancel')}
                 </Button>
                 <Button color={'red'} css={tw`w-full sm:w-auto mt-4 sm:mt-0 sm:ml-4`} onClick={() => onConfirmed()}>
                     {buttonText}

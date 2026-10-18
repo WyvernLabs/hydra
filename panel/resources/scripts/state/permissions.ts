@@ -3,8 +3,11 @@ import getSystemPermissions from '@/api/getSystemPermissions';
 
 export interface PanelPermissions {
     [key: string]: {
+        // Hydra: title and labels are translated by the API (Permission::translated()).
+        title?: string;
         description: string;
         keys: { [k: string]: string };
+        labels?: { [k: string]: string };
     };
 }
 

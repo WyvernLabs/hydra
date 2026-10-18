@@ -17,6 +17,7 @@ import PermissionTitleBox from '@/components/server/users/PermissionTitleBox';
 import asModal from '@/hoc/asModal';
 import PermissionRow from '@/components/server/users/PermissionRow';
 import ModalContext from '@/context/ModalContext';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
     subuser?: Subuser;
@@ -29,6 +30,7 @@ interface Values {
 
 const EditSubuserModal = ({ subuser }: Props) => {
     const ref = useRef<HTMLHeadingElement>(null);
+    const { t } = useTranslation('client/server');
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
     const appendSubuser = ServerContext.useStoreActions((actions) => actions.subusers.appendSubuser);
     const { clearFlashes, clearAndAddHttpError } = useStoreActions(
@@ -96,9 +98,9 @@ const EditSubuserModal = ({ subuser }: Props) => {
             }
             validationSchema={object().shape({
                 email: string()
-                    .max(191, 'Email addresses must not exceed 191 characters.')
-                    .email('A valid email address must be provided.')
-                    .required('A valid email address must be provided.'),
+                    .max(191, t('users.email_max'))
+                    .email(t('users.email_invalid'))
+                    .required(t('users.email_invalid')),
                 permissions: array().of(string()),
             })}
         >
@@ -106,33 +108,24 @@ const EditSubuserModal = ({ subuser }: Props) => {
                 <div css={tw`flex justify-between`}>
                     <h2 css={tw`text-2xl`} ref={ref}>
                         {subuser
-                            ? `${canEditUser ? 'Modify' : 'View'} permissions for ${subuser.email}`
-                            : 'Create new subuser'}
+                            ? t(canEditUser ? 'users.modify_title' : 'users.view_title', { email: subuser.email })
+                            : t('users.create_title')}
                     </h2>
                     <div>
                         <Button type={'submit'} css={tw`w-full sm:w-auto`}>
-                            {subuser ? 'Save' : 'Invite User'}
+                            {subuser ? t('users.save') : t('users.invite')}
                         </Button>
                     </div>
                 </div>
                 <FlashMessageRender byKey={'user:edit'} css={tw`mt-4`} />
                 {!isRootAdmin && loggedInPermissions[0] !== '*' && (
                     <div css={tw`mt-4 pl-4 py-2 border-l-4 border-cyan-400`}>
-                        <p css={tw`text-sm text-neutral-300`}>
-                            Only permissions which your account is currently assigned may be selected when creating or
-                            modifying other users.
-                        </p>
+                        <p css={tw`text-sm text-neutral-300`}>{t('users.own_permissions_only')}</p>
                     </div>
                 )}
                 {!subuser && (
                     <div css={tw`mt-6`}>
-                        <Field
-                            name={'email'}
-                            label={'User Email'}
-                            description={
-                                'Enter the email address of the user you wish to invite as a subuser for this server.'
-                            }
-                        />
+                        <Field name={'email'} label={t('users.email')} description={t('users.email_help')} />
                     </div>
                 )}
                 <div css={tw`my-6`}>
@@ -141,7 +134,7 @@ const EditSubuserModal = ({ subuser }: Props) => {
                         .map((key, index) => (
                             <PermissionTitleBox
                                 key={`permission_${key}`}
-                                title={key}
+                                title={permissions[key].title || key}
                                 isEditable={canEditUser}
                                 permissions={Object.keys(permissions[key].keys).map((pkey) => `${key}.${pkey}`)}
                                 css={index > 0 ? tw`mt-4` : undefined}
@@ -160,7 +153,7 @@ const EditSubuserModal = ({ subuser }: Props) => {
                 <Can action={subuser ? 'user.update' : 'user.create'}>
                     <div css={tw`pb-6 flex justify-end`}>
                         <Button type={'submit'} css={tw`w-full sm:w-auto`}>
-                            {subuser ? 'Save' : 'Invite User'}
+                            {subuser ? t('users.save') : t('users.invite')}
                         </Button>
                     </div>
                 </Can>

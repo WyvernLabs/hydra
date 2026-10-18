@@ -48,7 +48,7 @@ var (
 
 var rootCommand = &cobra.Command{
 	Use:   "wings",
-	Short: "Runs the API server allowing programmatic control of game servers for Pterodactyl Panel.",
+	Short: "Runs the API server allowing programmatic control of game servers for Hydra Panel.",
 	PreRun: func(cmd *cobra.Command, args []string) {
 		initConfig()
 		initLogging()
@@ -66,7 +66,7 @@ var versionCommand = &cobra.Command{
 	Use:   "version",
 	Short: "Prints the current executable version and exits.",
 	Run: func(cmd *cobra.Command, _ []string) {
-		fmt.Printf("wings v%s\nCopyright © 2018 - %d Dane Everitt & Contributors\n", system.Version, time.Now().Year())
+		fmt.Printf("hydra-wings v%s\nCopyright © 2018 - %d Dane Everitt & Contributors, Hydra contributors\n", system.Version, time.Now().Year())
 	},
 }
 
@@ -111,11 +111,11 @@ func rootCmdRun(cmd *cobra.Command, _ []string) {
 	}
 	log.WithField("timezone", config.Get().System.Timezone).Info("configured wings with system timezone")
 	if err := config.ConfigureDirectories(); err != nil {
-		log.WithField("error", err).Fatal("failed to configure system directories for pterodactyl")
+		log.WithField("error", err).Fatal("failed to configure system directories for hydra")
 		return
 	}
 	if err := config.EnsurePterodactylUser(); err != nil {
-		log.WithField("error", err).Fatal("failed to create pterodactyl system user")
+		log.WithField("error", err).Fatal("failed to create hydra system user")
 		return
 	}
 	if err := config.ConfigurePasswd(); err != nil {
@@ -492,18 +492,15 @@ func initLogging() {
 // Prints the wings logo, nothing special here!
 func printLogo() {
 	fmt.Printf(colorstring.Color(`
-                     ____
-__ [blue][bold]Pterodactyl[reset] _____/___/_______ _______ ______
-\_____\    \/\/    /   /       /  __   /   ___/
-   \___\          /   /   /   /  /_/  /___   /
-        \___/\___/___/___/___/___    /______/
-                            /_______/ [bold]%s[reset]
+ [green][bold]_   _           _
+| | | |_   _  __| |_ __ __ _
+| |_| | | | |/ _` + "`" + ` | '__/ _` + "`" + ` |
+|  _  | |_| | (_| | | | (_| |
+|_| |_|\__, |\__,_|_|  \__,_|
+       |___/[reset]  Wings [bold]%s[reset]
 
-Copyright © 2018 - %d Dane Everitt & Contributors
-
-Website:  https://pterodactyl.io
- Source:  https://github.com/pterodactyl/wings
-License:  https://github.com/pterodactyl/wings/blob/develop/LICENSE
+Hydra Wings, a fork of Pterodactyl Wings.
+Copyright © 2018 - %d Dane Everitt & Contributors, Hydra contributors
 
 This software is made available under the terms of the MIT license.
 The above copyright notice and this permission notice shall be included

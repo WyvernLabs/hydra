@@ -1,8 +1,11 @@
 GIT_HEAD = $(shell git rev-parse HEAD | head -c8)
 
+VERSION ?= 1.0.0-dev
+LDFLAGS = -s -w -X github.com/pterodactyl/wings/system.Version=$(VERSION)
+
 build:
-	GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -gcflags "all=-trimpath=$(pwd)" -o build/wings_linux_amd64 -v wings.go
-	GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -gcflags "all=-trimpath=$(pwd)" -o build/wings_linux_arm64 -v wings.go
+	GOOS=linux GOARCH=amd64 go build -ldflags="$(LDFLAGS)" -gcflags "all=-trimpath=$(pwd)" -o build/hydra-wings_linux_amd64 -v wings.go
+	GOOS=linux GOARCH=arm64 go build -ldflags="$(LDFLAGS)" -gcflags "all=-trimpath=$(pwd)" -o build/hydra-wings_linux_arm64 -v wings.go
 
 debug:
 	go build -ldflags="-X github.com/pterodactyl/wings/system.Version=$(GIT_HEAD)"
@@ -21,6 +24,6 @@ lint:
 	GOOS=linux golangci-lint run ./...
 
 clean:
-	rm -rf build/wings_*
+	rm -rf build/hydra-wings_*
 
 .PHONY: all build compress clean lint

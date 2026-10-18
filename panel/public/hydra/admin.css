@@ -1,0 +1,658 @@
+/*
+ * Hydra admin theme.
+ *
+ * The admin area still uses the AdminLTE / Bootstrap 3 markup from upstream. This
+ * file restyles those components with the Hydra design tokens (public/hydra/tokens.css)
+ * so that the admin area looks exactly like the client area. The page shell itself
+ * (sidebar, topbar) comes from public/hydra/layout.css.
+ *
+ * Everything is scoped to .hydra-admin to win over AdminLTE and pterodactyl.css
+ * without having to resort to !important.
+ */
+
+.hydra-admin {
+    font-family: var(--hydra-font);
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.hydra-admin h1, .hydra-admin h2, .hydra-admin h3, .hydra-admin h4, .hydra-admin h5, .hydra-admin h6,
+.hydra-admin .h1, .hydra-admin .h2, .hydra-admin .h3, .hydra-admin .h4, .hydra-admin .h5, .hydra-admin .h6 {
+    font-family: var(--hydra-font);
+    color: var(--hydra-text);
+}
+
+.hydra-admin a { color: rgb(var(--hydra-accent-400)); }
+.hydra-admin a:hover, .hydra-admin a:focus { color: rgb(var(--hydra-accent-300)); }
+.hydra-admin a.hydra-nav-item, .hydra-admin a.hydra-icon-btn { color: var(--hydra-text-2); text-decoration: none; }
+.hydra-admin a.hydra-nav-item.active { color: rgb(var(--hydra-accent-400)); }
+.hydra-admin a.hydra-nav-item:hover, .hydra-admin a.hydra-icon-btn:hover { color: var(--hydra-text); }
+
+.hydra-admin hr { border-top-color: var(--hydra-border); }
+.hydra-admin code {
+    padding: 2px 6px;
+    background: var(--hydra-panel-2);
+    border-radius: 6px;
+    color: rgb(var(--hydra-accent-300));
+    font-family: var(--hydra-font-mono);
+}
+.hydra-admin pre {
+    background: rgb(var(--hydra-black));
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius-sm);
+    color: var(--hydra-text-2);
+    font-family: var(--hydra-font-mono);
+}
+
+/* ---------------------------------------------------------------- Text helpers */
+
+.hydra-admin .text-muted,
+.hydra-admin .text-gray,
+.hydra-admin .help-block { color: var(--hydra-muted); }
+.hydra-admin .text-danger, .hydra-admin .text-red { color: var(--hydra-danger); }
+.hydra-admin .text-success, .hydra-admin .text-green { color: rgb(var(--hydra-accent-400)); }
+.hydra-admin .text-warning, .hydra-admin .text-yellow { color: var(--hydra-warning); }
+.hydra-admin .text-info, .hydra-admin .text-aqua, .hydra-admin .text-primary { color: rgb(var(--hydra-accent-400)); }
+
+/* ---------------------------------------------------------------- Page header */
+
+.hydra-admin .content-header {
+    position: relative;
+    margin: 0 0 var(--hydra-gap);
+    padding: 16px 18px;
+    background: var(--hydra-panel);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius);
+    box-shadow: var(--hydra-shadow);
+}
+
+.hydra-admin .content-header > h1 {
+    margin: 0;
+    color: var(--hydra-text);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.hydra-admin .content-header > h1 > small {
+    display: block;
+    margin-top: 2px;
+    padding: 0;
+    color: var(--hydra-muted);
+    font-size: 12.5px;
+    font-weight: 400;
+}
+
+.hydra-admin .content-header > .breadcrumb {
+    position: absolute;
+    top: 50%;
+    right: 18px;
+    float: none;
+    margin: 0;
+    padding: 0;
+    transform: translateY(-50%);
+    background: transparent;
+    font-size: 12.5px;
+}
+
+.hydra-admin .breadcrumb > li, .hydra-admin .breadcrumb > li > a { color: var(--hydra-muted); }
+.hydra-admin .breadcrumb > li > a:hover { color: var(--hydra-text); }
+.hydra-admin .breadcrumb > .active { color: rgb(var(--hydra-accent-400)); }
+.hydra-admin .breadcrumb > li + li:before { color: var(--hydra-border-strong); }
+
+.hydra-admin .content {
+    min-height: 0;
+    padding: 0;
+}
+
+.hydra-admin .hydra-footer {
+    margin-top: 8px;
+}
+
+/* ---------------------------------------------------------------- Boxes */
+
+.hydra-admin .box {
+    margin-bottom: var(--hydra-gap);
+    background: var(--hydra-panel);
+    border: 1px solid var(--hydra-border);
+    border-top: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius);
+    box-shadow: var(--hydra-shadow);
+    color: var(--hydra-text-2);
+}
+
+/* Colored box variants get a thin accent line instead of AdminLTE's thick top border. */
+.hydra-admin .box.box-primary,
+.hydra-admin .box.box-info { box-shadow: inset 0 2px 0 rgb(var(--hydra-accent-500)), var(--hydra-shadow); }
+.hydra-admin .box.box-success { box-shadow: inset 0 2px 0 var(--hydra-success), var(--hydra-shadow); }
+.hydra-admin .box.box-warning { box-shadow: inset 0 2px 0 var(--hydra-warning), var(--hydra-shadow); }
+.hydra-admin .box.box-danger { box-shadow: inset 0 2px 0 var(--hydra-danger), var(--hydra-shadow); }
+
+.hydra-admin .box-header {
+    padding: 14px 16px 12px;
+    background: transparent;
+    color: var(--hydra-text);
+}
+
+.hydra-admin .box-header.with-border,
+.hydra-admin .box-header { border-bottom: 1px solid var(--hydra-border); }
+
+.hydra-admin .box-header > .box-title,
+.hydra-admin .box-header .box-title {
+    color: var(--hydra-text);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.hydra-admin .box-header > .box-tools { top: 9px; right: 12px; }
+.hydra-admin .box-body { padding: 16px; border-radius: 0 0 var(--hydra-radius) var(--hydra-radius); }
+.hydra-admin .box-body.table-responsive,
+.hydra-admin .box-body.no-padding { padding: 0; }
+
+.hydra-admin .box-footer {
+    padding: 12px 16px;
+    background: transparent;
+    border-top: 1px solid var(--hydra-border);
+    border-radius: 0 0 var(--hydra-radius) var(--hydra-radius);
+}
+
+.hydra-admin .box .overlay,
+.hydra-admin .overlay-wrapper .overlay {
+    background: var(--hydra-overlay);
+    border-radius: var(--hydra-radius);
+}
+
+/* ---------------------------------------------------------------- Info & small boxes (overview) */
+
+.hydra-admin .info-box,
+.hydra-admin .small-box {
+    background: var(--hydra-panel);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius);
+    box-shadow: var(--hydra-shadow);
+    color: var(--hydra-text);
+    overflow: hidden;
+}
+
+.hydra-admin .info-box-icon {
+    background: var(--hydra-accent-soft) !important;
+    color: rgb(var(--hydra-accent-400)) !important;
+    border-radius: var(--hydra-radius) 0 0 var(--hydra-radius);
+}
+
+.hydra-admin .info-box-text { color: var(--hydra-muted); font-size: 12px; letter-spacing: .05em; }
+.hydra-admin .info-box-number { color: var(--hydra-text); }
+.hydra-admin .small-box h3, .hydra-admin .small-box p { color: var(--hydra-text); }
+.hydra-admin .small-box .icon { color: rgb(var(--hydra-accent-500) / 0.25); }
+.hydra-admin .small-box-footer { background: var(--hydra-panel-2); color: var(--hydra-text-2) !important; }
+
+.hydra-admin .bg-gray, .hydra-admin .bg-gray-light { background-color: var(--hydra-panel-2) !important; color: var(--hydra-text) !important; }
+.hydra-admin .bg-green, .hydra-admin .bg-aqua, .hydra-admin .bg-blue, .hydra-admin .bg-light-blue {
+    background-color: rgb(var(--hydra-accent-500)) !important;
+    color: var(--hydra-on-accent) !important;
+}
+.hydra-admin .bg-red { background-color: var(--hydra-danger) !important; }
+.hydra-admin .bg-yellow, .hydra-admin .bg-orange { background-color: var(--hydra-warning) !important; color: #1b1405 !important; }
+
+/* ---------------------------------------------------------------- Forms */
+
+.hydra-admin label,
+.hydra-admin .control-label,
+.hydra-admin .form-label {
+    color: var(--hydra-muted);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+}
+
+.hydra-admin .radio label, .hydra-admin .checkbox label, .hydra-admin .radio-inline, .hydra-admin .checkbox-inline,
+.hydra-admin .btn-group label.btn {
+    color: var(--hydra-text-2);
+    font-size: 13px;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.hydra-admin .form-control,
+.hydra-admin .select2-container--default .select2-selection--single,
+.hydra-admin .select2-container--default .select2-selection--multiple {
+    min-height: 38px;
+    background: var(--hydra-panel-2);
+    border: 1px solid var(--hydra-border-strong);
+    border-radius: var(--hydra-radius-sm);
+    box-shadow: none;
+    color: var(--hydra-text);
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.hydra-admin textarea.form-control { min-height: 80px; }
+.hydra-admin .form-control::placeholder { color: var(--hydra-muted); }
+
+.hydra-admin .form-control:focus,
+.hydra-admin .select2-container--default.select2-container--focus .select2-selection--multiple,
+.hydra-admin .select2-container--default.select2-container--open .select2-selection--single {
+    border-color: rgb(var(--hydra-accent-500));
+    box-shadow: 0 0 0 3px var(--hydra-accent-soft);
+    outline: none;
+}
+
+.hydra-admin .form-control[disabled],
+.hydra-admin .form-control[readonly],
+.hydra-admin fieldset[disabled] .form-control {
+    background: var(--hydra-panel-3);
+    color: var(--hydra-muted);
+    opacity: 1;
+}
+
+.hydra-admin select.form-control option { background: var(--hydra-panel-2); color: var(--hydra-text); }
+.hydra-admin input[type="file"].form-control { padding: 7px 10px; }
+.hydra-admin input[type="color"] {
+    width: 44px;
+    height: 38px;
+    padding: 3px;
+    background: var(--hydra-panel-2);
+    border: 1px solid var(--hydra-border-strong);
+    border-radius: var(--hydra-radius-sm);
+    cursor: pointer;
+}
+
+.hydra-admin .input-group-addon {
+    background: var(--hydra-panel-3);
+    border-color: var(--hydra-border-strong);
+    color: var(--hydra-muted);
+}
+
+.hydra-admin .input-group .form-control:first-child,
+.hydra-admin .input-group-addon:first-child { border-radius: var(--hydra-radius-sm) 0 0 var(--hydra-radius-sm); }
+.hydra-admin .input-group .form-control:last-child,
+.hydra-admin .input-group-addon:last-child,
+.hydra-admin .input-group-btn:last-child > .btn { border-radius: 0 var(--hydra-radius-sm) var(--hydra-radius-sm) 0; }
+.hydra-admin .input-group .form-control:not(:first-child):not(:last-child) { border-radius: 0; }
+
+.hydra-admin .has-error .form-control { border-color: var(--hydra-danger); }
+.hydra-admin .has-error .help-block, .hydra-admin .has-error .control-label { color: var(--hydra-danger); }
+
+/* Select2 */
+.hydra-admin .select2-container--default .select2-selection--single .select2-selection__rendered { color: var(--hydra-text); line-height: 36px; }
+.hydra-admin .select2-container--default .select2-selection--single .select2-selection__arrow { height: 36px; }
+.hydra-admin .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background: var(--hydra-accent-soft);
+    border: 1px solid rgb(var(--hydra-accent-500) / 0.4);
+    border-radius: 6px;
+    color: rgb(var(--hydra-accent-300));
+}
+.hydra-admin .select2-container--default .select2-selection--multiple .select2-selection__choice__remove { color: rgb(var(--hydra-accent-300)); }
+.hydra-admin .select2-container--default .select2-search--inline .select2-search__field { color: var(--hydra-text); }
+.select2-dropdown {
+    background: var(--hydra-panel-2);
+    border-color: var(--hydra-border-strong);
+    color: var(--hydra-text);
+}
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    background: var(--hydra-panel);
+    border: 1px solid var(--hydra-border-strong);
+    border-radius: 6px;
+    color: var(--hydra-text);
+}
+.select2-container--default .select2-results__option[aria-selected=true] { background: var(--hydra-panel-3); }
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background: rgb(var(--hydra-accent-500));
+    color: var(--hydra-on-accent);
+}
+.select2-container--default .select2-results__group { color: var(--hydra-muted); }
+
+/* Checkbox / radio from pterodactyl.css (checkbox.css) */
+.hydra-admin .checkbox label::before,
+.hydra-admin .radio label::before {
+    background: var(--hydra-panel-2);
+    border-color: var(--hydra-border-strong);
+}
+.hydra-admin .checkbox-primary input[type="checkbox"]:checked + label::before,
+.hydra-admin .checkbox-success input[type="checkbox"]:checked + label::before {
+    background: rgb(var(--hydra-accent-500));
+    border-color: rgb(var(--hydra-accent-500));
+}
+.hydra-admin .checkbox-primary input[type="checkbox"]:checked + label::after,
+.hydra-admin .checkbox-success input[type="checkbox"]:checked + label::after { color: var(--hydra-on-accent); }
+.hydra-admin .radio-primary input[type="radio"] + label::after,
+.hydra-admin .radio-success input[type="radio"] + label::after { background: rgb(var(--hydra-accent-500)); }
+.hydra-admin .radio-primary input[type="radio"]:checked + label::before,
+.hydra-admin .radio-success input[type="radio"]:checked + label::before { border-color: rgb(var(--hydra-accent-500)); }
+
+/* ---------------------------------------------------------------- Buttons */
+
+.hydra-admin .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--hydra-border-strong);
+    border-radius: var(--hydra-radius-sm);
+    background: var(--hydra-panel-2);
+    box-shadow: none;
+    color: var(--hydra-text);
+    font-size: 13px;
+    font-weight: 600;
+    text-shadow: none;
+    transition: background .15s, border-color .15s, color .15s, opacity .15s;
+}
+
+.hydra-admin .btn.pull-right, .hydra-admin .btn.pull-left { display: inline-flex; }
+.hydra-admin .btn-sm { min-height: 32px; padding: 0 12px; font-size: 12.5px; }
+.hydra-admin .btn-xs { min-height: 24px; padding: 0 8px; border-radius: 6px; font-size: 11.5px; }
+.hydra-admin .btn-lg { min-height: 44px; padding: 0 18px; font-size: 15px; }
+.hydra-admin .btn-block { display: flex; width: 100%; }
+
+.hydra-admin .btn:hover, .hydra-admin .btn:focus { background: var(--hydra-panel-3); color: var(--hydra-text); outline: none; }
+.hydra-admin .btn:focus-visible { box-shadow: 0 0 0 3px var(--hydra-accent-soft); }
+.hydra-admin .btn.disabled, .hydra-admin .btn[disabled] { opacity: .55; }
+
+.hydra-admin .btn-primary,
+.hydra-admin .btn-success,
+.hydra-admin .btn-info {
+    background: rgb(var(--hydra-accent-500));
+    border-color: transparent;
+    color: var(--hydra-on-accent);
+}
+
+.hydra-admin .btn-primary:hover, .hydra-admin .btn-primary:focus, .hydra-admin .btn-primary.active, .hydra-admin .btn-primary:active,
+.hydra-admin .btn-success:hover, .hydra-admin .btn-success:focus, .hydra-admin .btn-success.active, .hydra-admin .btn-success:active,
+.hydra-admin .btn-info:hover, .hydra-admin .btn-info:focus, .hydra-admin .btn-info.active, .hydra-admin .btn-info:active {
+    background: rgb(var(--hydra-accent-400));
+    border-color: transparent;
+    color: var(--hydra-on-accent);
+}
+
+/* Toggle groups (e.g. "Require 2FA") – inactive options stay neutral. */
+.hydra-admin .btn-group[data-toggle="buttons"] .btn-primary:not(.active) {
+    background: var(--hydra-panel-2);
+    border-color: var(--hydra-border-strong);
+    color: var(--hydra-text-2);
+}
+
+.hydra-admin .btn-danger {
+    background: var(--hydra-danger-soft);
+    border-color: transparent;
+    color: var(--hydra-danger);
+}
+
+.hydra-admin .btn-danger:hover, .hydra-admin .btn-danger:focus, .hydra-admin .btn-danger:active {
+    background: var(--hydra-danger);
+    border-color: transparent;
+    color: #fff;
+}
+
+.hydra-admin .btn-warning {
+    background: var(--hydra-warning-soft);
+    border-color: transparent;
+    color: var(--hydra-warning);
+}
+
+.hydra-admin .btn-warning:hover, .hydra-admin .btn-warning:focus {
+    background: var(--hydra-warning);
+    color: #1b1405;
+}
+
+.hydra-admin .btn-default, .hydra-admin .btn-clear { background: var(--hydra-panel-2); color: var(--hydra-text); }
+.hydra-admin .btn-link { background: transparent; border-color: transparent; color: rgb(var(--hydra-accent-400)); }
+
+/* ---------------------------------------------------------------- Tables */
+
+.hydra-admin .table { margin-bottom: 0; color: var(--hydra-text-2); }
+.hydra-admin .table > thead > tr > th,
+.hydra-admin .table > tbody > tr > th {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--hydra-border);
+    color: var(--hydra-muted);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+}
+
+.hydra-admin .table > tbody > tr > td,
+.hydra-admin .table > tfoot > tr > td {
+    padding: 11px 16px;
+    border-top: 1px solid var(--hydra-border);
+    vertical-align: middle;
+}
+
+.hydra-admin .table > tbody > tr:first-child > td { border-top: 0; }
+.hydra-admin .table > tbody > tr:first-child > th + td { border-top: 0; }
+.hydra-admin .table-hover > tbody > tr:hover,
+.hydra-admin .table-striped > tbody > tr:nth-of-type(odd) { background: rgb(var(--hydra-gray-700) / 0.55); }
+.hydra-admin .table-bordered, .hydra-admin .table-bordered > tbody > tr > td { border-color: var(--hydra-border); }
+.hydra-admin .table > tbody > tr.danger > td { background: var(--hydra-danger-soft); }
+.hydra-admin .table > tbody > tr.warning > td { background: var(--hydra-warning-soft); }
+.hydra-admin .table > tbody > tr.success > td, .hydra-admin .table > tbody > tr.info > td { background: var(--hydra-accent-soft); }
+
+/* ---------------------------------------------------------------- Labels & badges */
+
+.hydra-admin .label, .hydra-admin .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .02em;
+}
+
+.hydra-admin .label-default, .hydra-admin .badge { background: var(--hydra-panel-3); color: var(--hydra-text-2); }
+.hydra-admin .label-primary, .hydra-admin .label-success, .hydra-admin .label-info { background: var(--hydra-accent-soft); color: rgb(var(--hydra-accent-300)); }
+.hydra-admin .label-warning { background: var(--hydra-warning-soft); color: var(--hydra-warning); }
+.hydra-admin .label-danger { background: var(--hydra-danger-soft); color: var(--hydra-danger); }
+
+/* ---------------------------------------------------------------- Alerts & callouts */
+
+.hydra-admin .alert,
+.hydra-admin .callout {
+    margin-bottom: var(--hydra-gap);
+    padding: 12px 16px;
+    border: 1px solid var(--hydra-border);
+    border-left-width: 3px;
+    border-radius: var(--hydra-radius-sm);
+    background: var(--hydra-panel);
+    color: var(--hydra-text-2) !important;
+}
+
+.hydra-admin .alert a, .hydra-admin .callout a { color: var(--hydra-text); text-decoration: underline; }
+.hydra-admin .alert-success, .hydra-admin .alert-info, .hydra-admin .callout-success, .hydra-admin .callout-info {
+    background: var(--hydra-accent-soft) !important;
+    border-color: rgb(var(--hydra-accent-500) / 0.35);
+    border-left-color: rgb(var(--hydra-accent-500));
+}
+.hydra-admin .alert-warning, .hydra-admin .callout-warning {
+    background: var(--hydra-warning-soft) !important;
+    border-color: rgb(227 179 65 / 0.35);
+    border-left-color: var(--hydra-warning);
+}
+.hydra-admin .alert-danger, .hydra-admin .callout-danger {
+    background: var(--hydra-danger-soft) !important;
+    border-color: rgb(229 83 75 / 0.35);
+    border-left-color: var(--hydra-danger);
+}
+.hydra-admin .callout h4 { color: var(--hydra-text); }
+.hydra-admin .close { color: var(--hydra-text); text-shadow: none; opacity: .5; }
+.hydra-admin .close:hover { color: var(--hydra-text); opacity: .9; }
+
+/* ---------------------------------------------------------------- Tabs */
+
+.hydra-admin .nav-tabs-custom {
+    margin-bottom: var(--hydra-gap);
+    background: var(--hydra-panel);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius);
+    box-shadow: var(--hydra-shadow);
+}
+
+.hydra-admin .nav-tabs-custom > .nav-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px;
+    border: 0;
+    border-radius: var(--hydra-radius);
+}
+
+.hydra-admin .nav-tabs-custom > .nav-tabs:before,
+.hydra-admin .nav-tabs-custom > .nav-tabs:after { display: none; }
+
+.hydra-admin .nav-tabs-custom > .nav-tabs > li { float: none; margin: 0; border: 0; }
+
+.hydra-admin .nav-tabs-custom > .nav-tabs > li > a {
+    margin: 0;
+    padding: 8px 14px;
+    border: 0;
+    border-radius: var(--hydra-radius-sm);
+    background: transparent;
+    color: var(--hydra-text-2);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.hydra-admin .nav-tabs-custom > .nav-tabs > li > a:hover { background: var(--hydra-panel-2); color: var(--hydra-text); }
+
+.hydra-admin .nav-tabs-custom > .nav-tabs > li.active > a,
+.hydra-admin .nav-tabs-custom > .nav-tabs > li.active:hover > a {
+    background: var(--hydra-accent-soft);
+    color: rgb(var(--hydra-accent-300));
+}
+
+.hydra-admin .nav-tabs-custom > .tab-content { background: transparent; color: var(--hydra-text-2); }
+.hydra-admin .nav-tabs-custom > .nav-tabs > li.header { color: var(--hydra-text); }
+
+/* ---------------------------------------------------------------- Pagination */
+
+.hydra-admin .pagination > li > a,
+.hydra-admin .pagination > li > span {
+    margin: 0 2px;
+    background: var(--hydra-panel-2);
+    border: 1px solid var(--hydra-border);
+    border-radius: 6px !important;
+    color: var(--hydra-text-2);
+}
+
+.hydra-admin .pagination > li > a:hover { background: var(--hydra-panel-3); color: var(--hydra-text); }
+.hydra-admin .pagination > .active > a,
+.hydra-admin .pagination > .active > span,
+.hydra-admin .pagination > .active > a:hover {
+    background: rgb(var(--hydra-accent-500));
+    border-color: transparent;
+    color: var(--hydra-on-accent);
+}
+.hydra-admin .pagination > .disabled > span { background: transparent; color: var(--hydra-muted); }
+
+/* ---------------------------------------------------------------- Modals, dropdowns, popovers */
+
+.modal-backdrop.in { opacity: 1; background: var(--hydra-overlay); }
+
+.hydra-admin .modal-content {
+    background: var(--hydra-panel);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius);
+    box-shadow: var(--hydra-shadow);
+    color: var(--hydra-text-2);
+}
+
+.hydra-admin .modal-header, .hydra-admin .modal-footer { border-color: var(--hydra-border); background: transparent; }
+.hydra-admin .modal-body { background: transparent; }
+.hydra-admin .modal-title { color: var(--hydra-text); font-weight: 600; }
+
+.hydra-admin .dropdown-menu {
+    padding: 6px;
+    background: var(--hydra-panel-2);
+    border: 1px solid var(--hydra-border-strong);
+    border-radius: var(--hydra-radius-sm);
+    box-shadow: var(--hydra-shadow);
+}
+
+.hydra-admin .dropdown-menu > li > a { border-radius: 6px; color: var(--hydra-text-2); }
+.hydra-admin .dropdown-menu > li > a:hover { background: var(--hydra-panel-3); color: var(--hydra-text); }
+.hydra-admin .dropdown-menu .divider { background: var(--hydra-border); }
+
+.hydra-admin .tooltip-inner {
+    padding: 5px 9px;
+    background: rgb(var(--hydra-black));
+    border-radius: 6px;
+    color: var(--hydra-text);
+    font-size: 12px;
+}
+.hydra-admin .tooltip.top .tooltip-arrow { border-top-color: rgb(var(--hydra-black)); }
+.hydra-admin .tooltip.bottom .tooltip-arrow { border-bottom-color: rgb(var(--hydra-black)); }
+
+.hydra-admin .well, .hydra-admin .list-group-item {
+    background: var(--hydra-panel-2);
+    border-color: var(--hydra-border);
+    color: var(--hydra-text-2);
+    box-shadow: none;
+}
+
+.hydra-admin .progress { background: var(--hydra-panel-3); border-radius: 999px; box-shadow: none; }
+.hydra-admin .progress-bar { background: rgb(var(--hydra-accent-500)); }
+
+/* SweetAlert */
+.sweet-overlay { background: var(--hydra-overlay) !important; }
+.sweet-alert {
+    background: var(--hydra-panel) !important;
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius) !important;
+    font-family: var(--hydra-font) !important;
+}
+.sweet-alert h2 { color: var(--hydra-text) !important; }
+.sweet-alert p { color: var(--hydra-text-2) !important; }
+.sweet-alert button { border-radius: var(--hydra-radius-sm) !important; font-weight: 600 !important; }
+.sweet-alert button.cancel { background: var(--hydra-panel-3) !important; }
+.sweet-alert .sa-icon.sa-success .sa-fix,
+.sweet-alert .sa-icon.sa-success::before,
+.sweet-alert .sa-icon.sa-success::after { background: var(--hydra-panel) !important; }
+
+/* Notifications (bootstrap-notify) */
+[data-notify="container"].alert {
+    background: var(--hydra-panel-2);
+    border: 1px solid var(--hydra-border-strong);
+    border-radius: var(--hydra-radius-sm);
+    color: var(--hydra-text);
+}
+
+/* ---------------------------------------------------------------- Appearance settings */
+
+.hydra-color-field { display: flex; gap: 8px; }
+.hydra-color-field .form-control { max-width: 140px; font-family: var(--hydra-font-mono); text-transform: lowercase; }
+
+.hydra-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.hydra-swatch {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--hydra-border-strong);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform .15s;
+}
+
+.hydra-swatch:hover { transform: scale(1.12); }
+
+.hydra-branding-preview {
+    display: grid;
+    place-items: center;
+    min-height: 96px;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: var(--hydra-bg) var(--hydra-pattern) center / 380px;
+    border: 1px dashed var(--hydra-border-strong);
+    border-radius: var(--hydra-radius-sm);
+}
+
+/* ---------------------------------------------------------------- Responsive */
+
+@media (max-width: 767px) {
+    .hydra-admin .content-header > .breadcrumb {
+        position: static;
+        margin-top: 10px;
+        transform: none;
+    }
+}

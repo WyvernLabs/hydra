@@ -85,6 +85,8 @@ class Mount extends Model implements Identifiable
      * Blacklisted source paths.
      */
     public static $invalidSourcePaths = [
+        '/etc/hydra',
+        '/var/lib/hydra/volumes',
         '/etc/pterodactyl',
         '/var/lib/pterodactyl/volumes',
         '/srv/daemon-data',

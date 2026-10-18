@@ -1,7 +1,7 @@
 /*
- * Hydra client area layout – floating sidebar in the style of the Sylas panel.
- * Design tokens (colors, radius, sizes) live in public/hydra/tokens.css and are
- * shared with the admin area.
+ * Hydra layout – floating sidebar in the style of the Sylas panel. Used by the
+ * client area (React) and the admin area (Blade) alike.
+ * Design tokens (colors, radius, sizes) live in public/hydra/tokens.css.
  */
 
 body.hydra-body {
@@ -258,7 +258,8 @@ a { color: rgb(var(--hydra-accent-400)); }
 /* ---------------------------------------------------------------- Mobile */
 
 .hydra-topbar,
-.hydra-backdrop { display: none; }
+.hydra-backdrop,
+.hydra-backdrop[hidden] { display: none; }
 
 @media (max-width: 1023px) {
     .hydra-shell {
@@ -299,7 +300,7 @@ a { color: rgb(var(--hydra-accent-400)); }
 
     .hydra-sidebar--open { transform: none; }
 
-    .hydra-backdrop {
+    .hydra-backdrop:not([hidden]) {
         display: block;
         position: fixed;
         inset: 0;

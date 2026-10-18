@@ -1,0 +1,416 @@
+#!/usr/bin/env bash
+# =============================================================================
+#  Hydra Wings – Installer · Debian 12/13 · Ubuntu 22.04/24.04
+#
+#  Richtet einen Node für das Hydra Panel ein: Docker, Hydra Wings (aus dem
+#  Quellcode gebaut oder als fertige Binary), systemd-Dienst, optional ein
+#  Let's-Encrypt-Zertifikat und die automatische Verbindung zum Panel.
+#
+#  Installation (aus dem Hydra-Repository heraus):
+#    sudo bash installer/wings-install.sh --fqdn node1.example.com
+#
+#  Mit automatischer Konfiguration (Token aus Admin > Nodes > Configuration):
+#    sudo bash installer/wings-install.sh --fqdn node1.example.com --email admin@example.com \
+#      --panel-url https://panel.example.com --token <token> --node <id>
+#
+#  Update: dasselbe Kommando erneut ausführen oder
+#    sudo hydra-node update
+#
+#  Weitere Optionen: --help
+# =============================================================================
+set -Eeuo pipefail
+
+BIN=/usr/local/bin/hydra-wings
+CONF_DIR=/etc/hydra
+NODE_CONF=$CONF_DIR/node.conf
+WINGS_CONFIG=$CONF_DIR/config.yml
+SERVICE=hydra-wings
+GO_DIR=/opt/hydra/go
+
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+ORIGINAL_ARGS=("$@")
+
+FQDN=""
+EMAIL=""
+PANEL_URL=""
+TOKEN=""
+NODE_ID=""
+SOURCE=""
+REF=""
+BINARY_URL=""
+SSL=""              # leer = automatisch (FQDN → Zertifikat, sonst keins)
+ALLOW_INSECURE=0
+ASSUME_YES=0
+MODE=install        # install | update | status
+
+# ------------------------------------------------------------------ Ausgabe
+
+if [[ -t 1 ]]; then
+  C_G=$'\e[32m'; C_Y=$'\e[33m'; C_R=$'\e[31m'; C_B=$'\e[1m'; C_D=$'\e[2m'; C_0=$'\e[0m'
+else
+  C_G=""; C_Y=""; C_R=""; C_B=""; C_D=""; C_0=""
+fi
+step() { printf '\n%s==>%s %s%s%s\n' "$C_G" "$C_0" "$C_B" "$*" "$C_0"; }
+info() { printf '    %s\n' "$*"; }
+warn() { printf '%s  ! %s%s\n' "$C_Y" "$*" "$C_0"; }
+die()  { printf '%s  ✗ %s%s\n' "$C_R" "$*" "$C_0" >&2; exit 1; }
+trap 'die "Abbruch in Zeile $LINENO: $BASH_COMMAND"' ERR
+
+ask() { # ask "Frage" "Standard" -> Antwort
+  local answer
+  if (( ASSUME_YES )); then echo "$2"; return; fi
+  read -r -p "    $1 ${C_D}[$2]${C_0}: " answer </dev/tty
+  echo "${answer:-$2}"
+}
+
+confirm() { # confirm "Frage" -> 0 = ja
+  local answer
+  (( ASSUME_YES )) && return 0
+  read -r -p "    $1 [J/n]: " answer </dev/tty
+  [[ -z "$answer" || "$answer" =~ ^[JjYy] ]]
+}
+
+usage() {
+  cat <<EOF
+Hydra Wings – Installer
+
+Aufruf: sudo bash wings-install.sh [Befehl] [Optionen]
+
+Befehle:
+  install              Installieren bzw. aktualisieren (Standard)
+  update               Nur Wings neu bauen/laden und neu starten
+  status               Zustand von Docker und Wings anzeigen
+
+Optionen:
+  --fqdn <domain>      Domain des Nodes, z. B. node1.example.com (für das SSL-Zertifikat)
+  --email <mail>       E-Mail für Let's Encrypt
+  --ssl / --no-ssl     Zertifikat erzwingen bzw. weglassen (z. B. Panel ohne HTTPS)
+  --panel-url <url>    URL des Panels      ┐
+  --token <token>      Konfigurations-Token ├ aus Admin > Nodes > <Node> > Configuration
+  --node <id>          ID des Nodes         ┘   ("Generate Token")
+  --allow-insecure     Zertifikat des Panels beim Konfigurieren nicht prüfen
+  --source <quelle>    Lokales Verzeichnis oder Git-URL des Hydra-Repositorys
+                       (Standard: das Repository, aus dem dieses Skript stammt)
+  --ref <ref>          Git-Branch oder -Tag (nur mit Git-URL), Standard: main
+  --binary-url <url>   Fertige hydra-wings-Binary laden statt aus dem Quellcode zu bauen
+  --yes                Keine Rückfragen
+  --help               Diese Hilfe
+EOF
+}
+
+# ------------------------------------------------------------------ Argumente
+
+while (( $# )); do
+  case "$1" in
+    install|update|status) MODE="$1" ;;
+    --fqdn) FQDN="${2:-}"; shift ;;
+    --email) EMAIL="${2:-}"; shift ;;
+    --panel-url) PANEL_URL="${2:-}"; shift ;;
+    --token) TOKEN="${2:-}"; shift ;;
+    --node) NODE_ID="${2:-}"; shift ;;
+    --source) SOURCE="${2:-}"; shift ;;
+    --ref) REF="${2:-}"; shift ;;
+    --binary-url) BINARY_URL="${2:-}"; shift ;;
+    --ssl) SSL=1 ;;
+    --no-ssl) SSL=0 ;;
+    --allow-insecure) ALLOW_INSECURE=1 ;;
+    --yes|-y) ASSUME_YES=1 ;;
+    --help|-h) usage; exit 0 ;;
+    *) die "Unbekannte Option: $1 (siehe --help)" ;;
+  esac
+  shift
+done
+
+[[ $EUID -eq 0 ]] || die "Bitte als root ausführen (sudo)."
+
+if [[ -f "$NODE_CONF" ]]; then
+  # shellcheck disable=SC1090
+  source "$NODE_CONF"
+  FQDN="${FQDN:-${HYDRA_FQDN:-}}"
+  EMAIL="${EMAIL:-${HYDRA_EMAIL:-}}"
+  SOURCE="${SOURCE:-${HYDRA_SOURCE:-}}"
+  REF="${REF:-${HYDRA_REF:-}}"
+  BINARY_URL="${BINARY_URL:-${HYDRA_BINARY_URL:-}}"
+  SSL="${SSL:-${HYDRA_SSL:-}}"
+  INSTALLED=1
+else
+  INSTALLED=0
+fi
+
+if [[ "$MODE" == status ]]; then
+  printf '  %-16s %s\n' docker "$(systemctl is-active docker 2>/dev/null || true)"
+  printf '  %-16s %s\n' "$SERVICE" "$(systemctl is-active "$SERVICE" 2>/dev/null || true)"
+  [[ -x "$BIN" ]] && printf '  %-16s %s\n' Version "$("$BIN" version 2>/dev/null | head -n1)"
+  [[ -f "$WINGS_CONFIG" ]] && printf '  %-16s %s\n' Konfiguration "$WINGS_CONFIG" || printf '  %-16s %s\n' Konfiguration "fehlt"
+  exit 0
+fi
+
+if [[ "$MODE" == update ]]; then
+  (( INSTALLED )) || die "Hydra Wings ist noch nicht installiert – zuerst ohne 'update' ausführen."
+  ASSUME_YES=1
+fi
+
+# ------------------------------------------------------------------ System prüfen
+
+step "System prüfen"
+[[ -r /etc/os-release ]] || die "/etc/os-release fehlt – unbekanntes Betriebssystem."
+# shellcheck disable=SC1091
+. /etc/os-release
+case "${ID:-}:${VERSION_ID:-}" in
+  debian:12|debian:13|ubuntu:22.04|ubuntu:24.04) info "${PRETTY_NAME} ok" ;;
+  *) warn "${PRETTY_NAME:-Unbekanntes System} wird nicht offiziell unterstützt (Debian 12/13, Ubuntu 22.04/24.04)."
+     confirm "Trotzdem fortfahren?" || exit 1 ;;
+esac
+ARCH="$(dpkg --print-architecture)"
+case "$ARCH" in
+  amd64|arm64) ;;
+  *) die "Architektur $ARCH wird nicht unterstützt (amd64 oder arm64)." ;;
+esac
+VIRT="$(systemd-detect-virt 2>/dev/null || true)"
+case "$VIRT" in
+  openvz|lxc|lxc-libvirt)
+    warn "Virtualisierung '$VIRT' erkannt – Docker läuft dort meist nicht. Empfohlen ist KVM."
+    confirm "Trotzdem fortfahren?" || exit 1 ;;
+  *) info "Virtualisierung: ${VIRT:-keine} ok" ;;
+esac
+
+if [[ -z "$SOURCE" && -z "$BINARY_URL" ]]; then
+  if [[ -f "$SCRIPT_DIR/../wings/go.mod" ]]; then
+    SOURCE="$(cd "$SCRIPT_DIR/.." && pwd)"
+  else
+    die "Hydra-Quelle unbekannt. Bitte --source <Verzeichnis|Git-URL> oder --binary-url <url> angeben."
+  fi
+fi
+REF="${REF:-main}"
+
+# ------------------------------------------------------------------ Fragen
+
+if (( ! INSTALLED )); then
+  step "Einstellungen"
+  DEFAULT_FQDN="$(hostname -f 2>/dev/null || hostname)"
+  [[ -n "$FQDN" ]] || FQDN="$(ask "Domain des Nodes (leer lassen für kein SSL)" "$DEFAULT_FQDN")"
+  if [[ -z "$SSL" ]]; then
+    if [[ -n "$FQDN" && "$FQDN" == *.* && ! "$FQDN" =~ ^[0-9.]+$ ]]; then SSL=1; else SSL=0; fi
+  fi
+  if (( SSL )) && [[ -z "$EMAIL" ]]; then
+    EMAIL="$(ask "E-Mail-Adresse für Let's Encrypt" "admin@${FQDN#*.}")"
+  fi
+fi
+SSL="${SSL:-0}"
+
+if (( SSL )) && (( ! INSTALLED )); then
+  PUBLIC_IP="$(curl -fsS4 --max-time 5 https://api.ipify.org 2>/dev/null || true)"
+  DNS_IP="$(getent ahostsv4 "$FQDN" 2>/dev/null | awk 'NR==1 {print $1}' || true)"
+  if [[ -n "$PUBLIC_IP" && "$DNS_IP" != "$PUBLIC_IP" ]]; then
+    warn "$FQDN zeigt auf ${DNS_IP:-nichts}, dieser Server hat aber $PUBLIC_IP."
+    warn "Ohne passenden A-Record kann kein Let's-Encrypt-Zertifikat ausgestellt werden."
+    confirm "Trotzdem fortfahren?" || exit 1
+  fi
+fi
+
+info "Node:   ${FQDN:-(ohne Domain)} $( (( SSL )) && echo "mit SSL" || echo "ohne SSL")"
+info "Wings:  $( [[ -n "$BINARY_URL" ]] && echo "Binary von $BINARY_URL" || echo "aus dem Quellcode ($SOURCE)")"
+(( INSTALLED )) || confirm "Installation starten?" || exit 1
+
+# ------------------------------------------------------------------ Pakete & Docker
+
+export DEBIAN_FRONTEND=noninteractive
+step "Pakete installieren"
+apt-get update -qq || die "apt-get update fehlgeschlagen."
+apt-get install -y -qq curl ca-certificates gnupg tar git rsync >/dev/null
+info "Basis-Pakete ok"
+
+if ! command -v docker >/dev/null; then
+  info "Installiere Docker (offizielles Repository) …"
+  install -m 0755 -d /etc/apt/keyrings
+  curl -fsSL "https://download.docker.com/linux/$ID/gpg" -o /etc/apt/keyrings/docker.asc
+  chmod a+r /etc/apt/keyrings/docker.asc
+  echo "deb [arch=$ARCH signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/$ID ${VERSION_CODENAME} stable" \
+    > /etc/apt/sources.list.d/docker.list
+  apt-get update -qq || die "apt-get update fehlgeschlagen (Docker-Repository)."
+  apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin >/dev/null
+fi
+systemctl enable --now docker >/dev/null 2>&1
+info "Docker $(docker version --format '{{.Server.Version}}' 2>/dev/null || echo '?') ok"
+
+# ------------------------------------------------------------------ Wings bauen / laden
+
+step "Hydra Wings bereitstellen"
+WORK="$(mktemp -d)"
+trap 'rm -rf "$WORK"; die "Abbruch in Zeile $LINENO: $BASH_COMMAND"' ERR
+
+if [[ -n "$BINARY_URL" ]]; then
+  info "Lade $BINARY_URL …"
+  curl -fsSL -o "$WORK/hydra-wings" "$BINARY_URL" || die "Download der Binary fehlgeschlagen."
+else
+  if [[ -d "$SOURCE" ]]; then
+    [[ -f "$SOURCE/wings/go.mod" ]] || die "$SOURCE enthält kein Hydra-Repository (wings/go.mod fehlt)."
+    WINGS_SRC="$SOURCE/wings"
+  else
+    info "Lade $SOURCE ($REF) …"
+    git clone -q --depth 1 --branch "$REF" "$SOURCE" "$WORK/repo" || die "git clone fehlgeschlagen."
+    WINGS_SRC="$WORK/repo/wings"
+  fi
+
+  # Bringt die Quelle einen neueren Installer mit (typisch bei "hydra-node update"), übernimmt der.
+  NEW_INSTALLER="$(dirname "$WINGS_SRC")/installer/wings-install.sh"
+  if [[ -z "${HYDRA_REEXEC:-}" && -f "$NEW_INSTALLER" ]] && ! cmp -s "$NEW_INSTALLER" "$SCRIPT_PATH"; then
+    info "Neuere Installer-Version gefunden – starte sie"
+    cp "$NEW_INSTALLER" "$WORK/wings-install.sh"
+    HYDRA_REEXEC=1 exec bash "$WORK/wings-install.sh" "${ORIGINAL_ARGS[@]}" --source "$SOURCE" --ref "$REF"
+  fi
+
+  # Go in genau der Version, die wings/go.mod verlangt (toolchain-Zeile), nach /opt/hydra/go.
+  GO_VERSION="$(sed -n 's/^toolchain go\(.*\)$/\1/p' "$WINGS_SRC/go.mod")"
+  [[ -n "$GO_VERSION" ]] || GO_VERSION="$(sed -n 's/^go \(.*\)$/\1/p' "$WINGS_SRC/go.mod")"
+  if [[ ! -x "$GO_DIR/bin/go" ]] || [[ "$("$GO_DIR/bin/go" env GOVERSION 2>/dev/null)" != "go$GO_VERSION" ]]; then
+    info "Installiere Go $GO_VERSION …"
+    GO_TAR="go${GO_VERSION}.linux-${ARCH}.tar.gz"
+    curl -fsSL -o "$WORK/$GO_TAR" "https://go.dev/dl/$GO_TAR" || die "Download von Go $GO_VERSION fehlgeschlagen."
+    GO_SHA="$(curl -fsSL "https://go.dev/dl/?mode=json&include=all" | tr -d ' \n' \
+      | grep -o "\"filename\":\"$GO_TAR\",\"os\":\"[a-z]*\",\"arch\":\"[a-z0-9]*\",\"version\":\"[^\"]*\",\"sha256\":\"[0-9a-f]*\"" \
+      | sed 's/.*"sha256":"\([0-9a-f]*\)"/\1/' | head -n1 || true)"
+    if [[ -n "$GO_SHA" ]]; then
+      echo "$GO_SHA  $WORK/$GO_TAR" | sha256sum -c --status || die "Prüfsumme von $GO_TAR stimmt nicht."
+    else
+      warn "Prüfsumme für Go konnte nicht geladen werden – Download wird ungeprüft verwendet."
+    fi
+    rm -rf "$GO_DIR" && install -d "$(dirname "$GO_DIR")"
+    tar -C "$(dirname "$GO_DIR")" -xzf "$WORK/$GO_TAR"
+  fi
+  info "Go $("$GO_DIR/bin/go" env GOVERSION) ok"
+
+  WINGS_VERSION="$(sed -n 's/^var Version = "\(.*\)"$/\1/p' "$WINGS_SRC/system/const.go")"
+  if git -C "$WINGS_SRC" rev-parse --short HEAD >/dev/null 2>&1; then
+    WINGS_VERSION="$WINGS_VERSION+$(git -C "$WINGS_SRC" rev-parse --short HEAD)"
+  fi
+  info "Baue Hydra Wings $WINGS_VERSION …"
+  rsync -a --delete "$WINGS_SRC/" "$WORK/wings/"
+  (cd "$WORK/wings" && CGO_ENABLED=0 GOTOOLCHAIN=local GOPATH=/opt/hydra/gopath GOCACHE=/opt/hydra/gocache \
+    "$GO_DIR/bin/go" build -trimpath \
+      -ldflags="-s -w -X github.com/pterodactyl/wings/system.Version=$WINGS_VERSION" \
+      -o "$WORK/hydra-wings" .) || die "Wings konnte nicht gebaut werden."
+fi
+
+chmod 755 "$WORK/hydra-wings"
+"$WORK/hydra-wings" version >/dev/null 2>&1 || die "Die neue hydra-wings-Binary startet nicht."
+WAS_RUNNING=0
+systemctl is-active --quiet "$SERVICE" && WAS_RUNNING=1
+install -m 755 "$WORK/hydra-wings" "$BIN"
+info "$("$BIN" version | head -n1) nach $BIN installiert"
+
+# ------------------------------------------------------------------ systemd
+
+install -d -m 755 "$CONF_DIR"
+cat > "/etc/systemd/system/$SERVICE.service" <<EOF
+[Unit]
+Description=Hydra Wings Daemon
+After=docker.service
+Requires=docker.service
+PartOf=docker.service
+
+[Service]
+User=root
+WorkingDirectory=$CONF_DIR
+LimitNOFILE=4096
+PIDFile=/var/run/wings/daemon.pid
+ExecStart=$BIN --config $WINGS_CONFIG
+Restart=on-failure
+StartLimitInterval=180
+StartLimitBurst=30
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable "$SERVICE" >/dev/null 2>&1
+info "Dienst $SERVICE eingerichtet"
+
+# ------------------------------------------------------------------ SSL
+
+if (( SSL )) && [[ ! -d "/etc/letsencrypt/live/$FQDN" ]]; then
+  step "SSL-Zertifikat für $FQDN"
+  apt-get install -y -qq certbot >/dev/null
+  # Läuft auf dem Server schon ein Webserver auf Port 80 (z. B. Caddy vom Panel), wird er für die
+  # Ausstellung und jede Erneuerung kurz angehalten.
+  HOOKS=()
+  for web in caddy nginx apache2; do
+    if systemctl is-active --quiet "$web"; then
+      HOOKS=(--pre-hook "systemctl stop $web" --post-hook "systemctl start $web")
+      info "$web belegt Port 80 – wird während der Zertifikatsausstellung kurz angehalten"
+      break
+    fi
+  done
+  certbot certonly --standalone --non-interactive --agree-tos -m "$EMAIL" -d "$FQDN" \
+    "${HOOKS[@]}" --deploy-hook "systemctl restart $SERVICE" \
+    || die "Zertifikat konnte nicht ausgestellt werden (DNS-Eintrag und Port 80 prüfen)."
+  info "Zertifikat unter /etc/letsencrypt/live/$FQDN/ – erneuert sich automatisch"
+fi
+
+# ------------------------------------------------------------------ Mit dem Panel verbinden
+
+if [[ -n "$PANEL_URL" && -n "$TOKEN" && -n "$NODE_ID" ]]; then
+  step "Mit dem Panel verbinden"
+  CONFIGURE_ARGS=(configure --panel-url "$PANEL_URL" --token "$TOKEN" --node "$NODE_ID" --config-path "$WINGS_CONFIG" --override)
+  (( ALLOW_INSECURE )) && CONFIGURE_ARGS+=(--allow-insecure)
+  "$BIN" "${CONFIGURE_ARGS[@]}" || die "Konfiguration vom Panel konnte nicht geladen werden."
+  info "Konfiguration nach $WINGS_CONFIG geschrieben"
+fi
+
+if command -v ufw >/dev/null && ufw status | grep -q "Status: active"; then
+  ufw allow 8080/tcp >/dev/null && ufw allow 2022/tcp >/dev/null
+  (( SSL )) && ufw allow 80/tcp >/dev/null
+  info "Firewall (ufw): Ports 8080 (API) und 2022 (SFTP) freigegeben – Spielserver-Ports bitte selbst freigeben"
+fi
+
+if [[ -f "$WINGS_CONFIG" ]]; then
+  systemctl restart "$SERVICE"
+  sleep 3
+  if systemctl is-active --quiet "$SERVICE"; then
+    info "$SERVICE läuft"
+  else
+    warn "$SERVICE startet nicht – Log: journalctl -u $SERVICE -n 50"
+  fi
+elif (( WAS_RUNNING )); then
+  systemctl restart "$SERVICE"
+fi
+
+cat > "$NODE_CONF" <<EOF
+# Hydra Wings – vom Installer gespeicherte Einstellungen (für Updates)
+HYDRA_FQDN=$(printf '%q' "$FQDN")
+HYDRA_EMAIL=$(printf '%q' "$EMAIL")
+HYDRA_SOURCE=$(printf '%q' "$SOURCE")
+HYDRA_REF=$(printf '%q' "$REF")
+HYDRA_BINARY_URL=$(printf '%q' "$BINARY_URL")
+HYDRA_SSL=$SSL
+EOF
+chmod 600 "$NODE_CONF"
+
+[[ "$SCRIPT_PATH" == /usr/local/bin/hydra-node ]] || install -m 755 "$SCRIPT_PATH" /usr/local/bin/hydra-node
+rm -rf "$WORK"
+
+step "Fertig"
+if [[ -f "$WINGS_CONFIG" ]]; then
+  info "Hydra Wings ist eingerichtet und mit dem Panel verbunden."
+else
+  cat <<EOF
+    Hydra Wings ist installiert, aber noch nicht mit dem Panel verbunden:
+
+    1. Im Panel unter Admin > Nodes einen Node anlegen
+       (FQDN: ${FQDN:-<IP-Adresse>}, $( (( SSL )) && echo "Use SSL Connection" || echo "Use HTTP Connection"), Daemon Port 8080, SFTP 2022)
+    2. Beim Node unter "Configuration" auf "Generate Token" klicken
+    3. Auf diesem Server ausführen:
+         sudo hydra-wings configure --panel-url <panel-url> --token <token> --node <id>
+         sudo systemctl restart $SERVICE
+EOF
+fi
+cat <<EOF
+
+    Nützliche Befehle:
+      hydra-node update                  Wings neu bauen und neu starten
+      hydra-node status                  Zustand von Docker und Wings
+      journalctl -u $SERVICE -f          Wings-Log
+      hydra-wings diagnostics            Diagnosebericht
+EOF

@@ -92,7 +92,9 @@ return [
 
     'cdn' => [
         'cache_time' => 60,
-        'url' => 'https://cdn.pterodactyl.io/releases/latest.json',
+        // Hydra: no update check against the Pterodactyl CDN. Point HYDRA_VERSION_URL at a JSON
+        // file in the same format ({"panel": "1.0.0", "wings": "1.0.0"}) to enable it again.
+        'url' => env('HYDRA_VERSION_URL'),
     ],
 
     /*
@@ -183,11 +185,12 @@ return [
     | Telemetry Settings
     |--------------------------------------------------------------------------
     |
-    | This section controls the telemetry sent by Pterodactyl.
+    | This section controls the telemetry sent to the Pterodactyl project. Hydra
+    | disables it by default.
     */
 
     'telemetry' => [
-        'enabled' => env('PTERODACTYL_TELEMETRY_ENABLED', true),
+        'enabled' => env('PTERODACTYL_TELEMETRY_ENABLED', false),
     ],
 
     'features' => [

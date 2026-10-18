@@ -61,7 +61,7 @@ class SoftwareVersionService
      */
     public function isLatestPanel(): bool
     {
-        if (config('app.version') === 'canary') {
+        if (config('app.version') === 'canary' || !$this->hasVersionData()) {
             return true;
         }
 
@@ -73,11 +73,19 @@ class SoftwareVersionService
      */
     public function isLatestDaemon(string $version): bool
     {
-        if ($version === 'develop') {
+        if ($version === 'develop' || !$this->hasVersionData()) {
             return true;
         }
 
         return version_compare($version, $this->getDaemon()) >= 0;
+    }
+
+    /**
+     * Whether an update server is configured and returned usable data.
+     */
+    public function hasVersionData(): bool
+    {
+        return !empty(self::$result);
     }
 
     /**
@@ -86,6 +94,10 @@ class SoftwareVersionService
     protected function cacheVersionData(): array
     {
         return $this->cache->remember(self::VERSION_CACHE_KEY, CarbonImmutable::now()->addMinutes(config('pterodactyl.cdn.cache_time', 60)), function () {
+            if (empty(config('pterodactyl.cdn.url'))) {
+                return [];
+            }
+
             try {
                 $response = $this->client->request('GET', config('pterodactyl.cdn.url'));
 

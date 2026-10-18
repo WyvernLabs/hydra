@@ -353,7 +353,7 @@ if (( SSL )) && [[ ! -d "/etc/letsencrypt/live/$FQDN" ]]; then
     fi
   done
   certbot certonly --standalone --non-interactive --agree-tos -m "$EMAIL" -d "$FQDN" \
-    "${HOOKS[@]}" --deploy-hook "systemctl restart $SERVICE" \
+    "${HOOKS[@]}" --deploy-hook "systemctl try-restart $SERVICE" \
     || die "Zertifikat konnte nicht ausgestellt werden (DNS-Eintrag und Port 80 prüfen)."
   info "Zertifikat unter /etc/letsencrypt/live/$FQDN/ – erneuert sich automatisch"
 fi

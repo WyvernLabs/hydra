@@ -1,7 +1,7 @@
 const colors = require('tailwindcss/colors');
 
 // Hydra: every gray and accent shade is backed by a CSS custom property holding
-// an "r g b" triplet (see resources/scripts/assets/tailwind.css). The accent color
+// an "r g b" triplet (see public/hydra/tokens.css). The accent color
 // can therefore be changed at runtime from the admin area without rebuilding assets.
 //
 // Colors are defined as functions instead of "<alpha-value>" strings because

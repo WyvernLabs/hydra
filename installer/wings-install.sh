@@ -74,6 +74,12 @@ confirm() { # confirm "Frage" -> 0 = ja
   [[ -z "$answer" || "$answer" =~ ^[JjYy] ]]
 }
 
+# curl mit IPv4-Fallback: Manche Hoster-Netze bekommen von Google (dl.google.com, Ziel von go.dev/dl)
+# über IPv6 nur 404 geliefert, über IPv4 klappt der Download.
+fetch() {
+  curl -fsSL "$@" 2>/dev/null || curl -4 -fsSL "$@"
+}
+
 usage() {
   cat <<EOF
 Hydra Wings – Installer
@@ -270,8 +276,8 @@ else
   if [[ ! -x "$GO_DIR/bin/go" ]] || [[ "$("$GO_DIR/bin/go" env GOVERSION 2>/dev/null)" != "go$GO_VERSION" ]]; then
     info "Installiere Go $GO_VERSION …"
     GO_TAR="go${GO_VERSION}.linux-${ARCH}.tar.gz"
-    curl -fsSL -o "$WORK/$GO_TAR" "https://go.dev/dl/$GO_TAR" || die "Download von Go $GO_VERSION fehlgeschlagen."
-    GO_SHA="$(curl -fsSL "https://go.dev/dl/?mode=json&include=all" | tr -d ' \n' \
+    fetch -o "$WORK/$GO_TAR" "https://go.dev/dl/$GO_TAR" || die "Download von Go $GO_VERSION fehlgeschlagen."
+    GO_SHA="$(fetch "https://go.dev/dl/?mode=json&include=all" | tr -d ' \n' \
       | grep -o "\"filename\":\"$GO_TAR\",\"os\":\"[a-z]*\",\"arch\":\"[a-z0-9]*\",\"version\":\"[^\"]*\",\"sha256\":\"[0-9a-f]*\"" \
       | sed 's/.*"sha256":"\([0-9a-f]*\)"/\1/' | head -n1 || true)"
     if [[ -n "$GO_SHA" ]]; then

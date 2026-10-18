@@ -1,16 +1,16 @@
 @extends('layouts.admin')
 
 @section('title')
-    Server — {{ $server->name }}: Manage
+    {{ __('admin/servers.page_title_tab', ['name' => $server->name, 'tab' => __('admin/servers.tabs.manage')]) }}
 @endsection
 
 @section('content-header')
-    <h1>{{ $server->name }}<small>Additional actions to control this server.</small></h1>
+    <h1>{{ $server->name }}<small>{{ __('admin/servers.manage.subtitle') }}</small></h1>
     <ol class="breadcrumb">
-        <li><a href="{{ route('admin.index') }}">Admin</a></li>
-        <li><a href="{{ route('admin.servers') }}">Servers</a></li>
+        <li><a href="{{ route('admin.index') }}">{{ __('admin/common.admin') }}</a></li>
+        <li><a href="{{ route('admin.servers') }}">{{ __('admin/servers.title') }}</a></li>
         <li><a href="{{ route('admin.servers.view', $server->id) }}">{{ $server->name }}</a></li>
-        <li class="active">Manage</li>
+        <li class="active">{{ __('admin/servers.tabs.manage') }}</li>
     </ol>
 @endsection
 
@@ -20,22 +20,22 @@
         <div class="col-sm-4">
             <div class="box box-danger">
                 <div class="box-header with-border">
-                    <h3 class="box-title">Reinstall Server</h3>
+                    <h3 class="box-title">{{ __('admin/servers.manage.reinstall') }}</h3>
                 </div>
                 <div class="box-body">
-                    <p>This will reinstall the server with the assigned service scripts. <strong>Danger!</strong> This could overwrite server data.</p>
+                    <p>{!! __('admin/servers.manage.reinstall_text') !!}</p>
                 </div>
                 <div class="box-footer">
                     @if(! $server->canBeReinstalled())
-                        <button class="btn btn-danger disabled">Reinstall Server</button>
-                        <p style="padding-top: 1rem;">This server is set to skip its install script. Disable "Skip Egg Install Script" on the startup page to reinstall it.</p>
+                        <button class="btn btn-danger disabled">{{ __('admin/servers.manage.reinstall') }}</button>
+                        <p style="padding-top: 1rem;">{{ __('admin/servers.manage.reinstall_skip') }}</p>
                     @elseif($server->isInstalled())
                         <form action="{{ route('admin.servers.view.manage.reinstall', $server->id) }}" method="POST">
                             {!! csrf_field() !!}
-                            <button type="submit" class="btn btn-danger">Reinstall Server</button>
+                            <button type="submit" class="btn btn-danger">{{ __('admin/servers.manage.reinstall') }}</button>
                         </form>
                     @else
-                        <button class="btn btn-danger disabled">Server Must Install Properly to Reinstall</button>
+                        <button class="btn btn-danger disabled">{{ __('admin/servers.manage.reinstall_needs_install') }}</button>
                     @endif
                 </div>
             </div>
@@ -43,15 +43,15 @@
         <div class="col-sm-4">
             <div class="box box-primary">
                 <div class="box-header with-border">
-                    <h3 class="box-title">Install Status</h3>
+                    <h3 class="box-title">{{ __('admin/servers.manage.install_status') }}</h3>
                 </div>
                 <div class="box-body">
-                    <p>If you need to change the install status from uninstalled to installed, or vice versa, you may do so with the button below.</p>
+                    <p>{{ __('admin/servers.manage.install_status_text') }}</p>
                 </div>
                 <div class="box-footer">
                     <form action="{{ route('admin.servers.view.manage.toggle', $server->id) }}" method="POST">
                         {!! csrf_field() !!}
-                        <button type="submit" class="btn btn-primary">Toggle Install Status</button>
+                        <button type="submit" class="btn btn-primary">{{ __('admin/servers.manage.toggle_install') }}</button>
                     </form>
                 </div>
             </div>
@@ -61,16 +61,16 @@
             <div class="col-sm-4">
                 <div class="box box-warning">
                     <div class="box-header with-border">
-                        <h3 class="box-title">Suspend Server</h3>
+                        <h3 class="box-title">{{ __('admin/servers.manage.suspend') }}</h3>
                     </div>
                     <div class="box-body">
-                        <p>This will suspend the server, stop any running processes, and immediately block the user from being able to access their files or otherwise manage the server through the panel or API.</p>
+                        <p>{{ __('admin/servers.manage.suspend_text') }}</p>
                     </div>
                     <div class="box-footer">
                         <form action="{{ route('admin.servers.view.manage.suspension', $server->id) }}" method="POST">
                             {!! csrf_field() !!}
                             <input type="hidden" name="action" value="suspend" />
-                            <button type="submit" class="btn btn-warning @if(! is_null($server->transfer)) disabled @endif">Suspend Server</button>
+                            <button type="submit" class="btn btn-warning @if(! is_null($server->transfer)) disabled @endif">{{ __('admin/servers.manage.suspend') }}</button>
                         </form>
                     </div>
                 </div>
@@ -79,16 +79,16 @@
             <div class="col-sm-4">
                 <div class="box box-success">
                     <div class="box-header with-border">
-                        <h3 class="box-title">Unsuspend Server</h3>
+                        <h3 class="box-title">{{ __('admin/servers.manage.unsuspend') }}</h3>
                     </div>
                     <div class="box-body">
-                        <p>This will unsuspend the server and restore normal user access.</p>
+                        <p>{{ __('admin/servers.manage.unsuspend_text') }}</p>
                     </div>
                     <div class="box-footer">
                         <form action="{{ route('admin.servers.view.manage.suspension', $server->id) }}" method="POST">
                             {!! csrf_field() !!}
                             <input type="hidden" name="action" value="unsuspend" />
-                            <button type="submit" class="btn btn-success">Unsuspend Server</button>
+                            <button type="submit" class="btn btn-success">{{ __('admin/servers.manage.unsuspend') }}</button>
                         </form>
                     </div>
                 </div>
@@ -99,21 +99,20 @@
             <div class="col-sm-4">
                 <div class="box box-success">
                     <div class="box-header with-border">
-                        <h3 class="box-title">Transfer Server</h3>
+                        <h3 class="box-title">{{ __('admin/servers.manage.transfer') }}</h3>
                     </div>
                     <div class="box-body">
                         <p>
-                            Transfer this server to another node connected to this panel.
-                            <strong>Warning!</strong> This feature has not been fully tested and may have bugs.
+                            {!! __('admin/servers.manage.transfer_text') !!}
                         </p>
                     </div>
 
                     <div class="box-footer">
                         @if($canTransfer)
-                            <button class="btn btn-success" data-toggle="modal" data-target="#transferServerModal">Transfer Server</button>
+                            <button class="btn btn-success" data-toggle="modal" data-target="#transferServerModal">{{ __('admin/servers.manage.transfer') }}</button>
                         @else
-                            <button class="btn btn-success disabled">Transfer Server</button>
-                            <p style="padding-top: 1rem;">Transferring a server requires more than one node to be configured on your panel.</p>
+                            <button class="btn btn-success disabled">{{ __('admin/servers.manage.transfer') }}</button>
+                            <p style="padding-top: 1rem;">{{ __('admin/servers.manage.transfer_needs_nodes') }}</p>
                         @endif
                     </div>
                 </div>
@@ -122,17 +121,16 @@
             <div class="col-sm-4">
                 <div class="box box-success">
                     <div class="box-header with-border">
-                        <h3 class="box-title">Transfer Server</h3>
+                        <h3 class="box-title">{{ __('admin/servers.manage.transfer') }}</h3>
                     </div>
                     <div class="box-body">
                         <p>
-                            This server is currently being transferred to another node.
-                            Transfer was initiated at <strong>{{ $server->transfer->created_at }}</strong>
+                            {!! __('admin/servers.manage.transferring', ['date' => e($server->transfer->created_at)]) !!}
                         </p>
                     </div>
 
                     <div class="box-footer">
-                        <button class="btn btn-success disabled">Transfer Server</button>
+                        <button class="btn btn-success disabled">{{ __('admin/servers.manage.transfer') }}</button>
                     </div>
                 </div>
             </div>
@@ -144,14 +142,14 @@
             <div class="modal-content">
                 <form action="{{ route('admin.servers.view.manage.transfer', $server->id) }}" method="POST">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title">Transfer Server</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="{{ __('admin/common.actions.cancel') }}"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">{{ __('admin/servers.manage.transfer') }}</h4>
                     </div>
 
                     <div class="modal-body">
                         <div class="row">
                             <div class="form-group col-md-12">
-                                <label for="pNodeId">Node</label>
+                                <label for="pNodeId">{{ __('admin/servers.node') }}</label>
                                 <select name="node_id" id="pNodeId" class="form-control">
                                     @foreach($locations as $location)
                                         <optgroup label="{{ $location->long }} ({{ $location->short }})">
@@ -167,27 +165,27 @@
                                         </optgroup>
                                     @endforeach
                                 </select>
-                                <p class="small text-muted no-margin">The node which this server will be transferred to.</p>
+                                <p class="small text-muted no-margin">{{ __('admin/servers.manage.transfer_node_help') }}</p>
                             </div>
 
                             <div class="form-group col-md-12">
-                                <label for="pAllocation">Default Allocation</label>
+                                <label for="pAllocation">{{ __('admin/servers.fields.default_allocation') }}</label>
                                 <select name="allocation_id" id="pAllocation" class="form-control"></select>
-                                <p class="small text-muted no-margin">The main allocation that will be assigned to this server.</p>
+                                <p class="small text-muted no-margin">{{ __('admin/servers.fields.default_allocation_help') }}</p>
                             </div>
 
                             <div class="form-group col-md-12">
-                                <label for="pAllocationAdditional">Additional Allocation(s)</label>
+                                <label for="pAllocationAdditional">{{ __('admin/servers.fields.additional_allocations') }}</label>
                                 <select name="allocation_additional[]" id="pAllocationAdditional" class="form-control" multiple></select>
-                                <p class="small text-muted no-margin">Additional allocations to assign to this server on creation.</p>
+                                <p class="small text-muted no-margin">{{ __('admin/servers.fields.additional_allocations_help') }}</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="modal-footer">
                         {!! csrf_field() !!}
-                        <button type="button" class="btn btn-default btn-sm pull-left" data-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-success btn-sm">Confirm</button>
+                        <button type="button" class="btn btn-default btn-sm pull-left" data-dismiss="modal">{{ __('admin/common.actions.cancel') }}</button>
+                        <button type="submit" class="btn btn-success btn-sm">{{ __('admin/servers.manage.confirm') }}</button>
                     </div>
                 </form>
             </div>

@@ -1,16 +1,16 @@
 @extends('layouts.admin')
 
 @section('title')
-    Server — {{ $server->name }}: Databases
+    {{ __('admin/servers.page_title_tab', ['name' => $server->name, 'tab' => __('admin/servers.tabs.databases')]) }}
 @endsection
 
 @section('content-header')
-    <h1>{{ $server->name }}<small>Manage server databases.</small></h1>
+    <h1>{{ $server->name }}<small>{{ __('admin/servers.databases.subtitle') }}</small></h1>
     <ol class="breadcrumb">
-        <li><a href="{{ route('admin.index') }}">Admin</a></li>
-        <li><a href="{{ route('admin.servers') }}">Servers</a></li>
+        <li><a href="{{ route('admin.index') }}">{{ __('admin/common.admin') }}</a></li>
+        <li><a href="{{ route('admin.servers') }}">{{ __('admin/servers.title') }}</a></li>
         <li><a href="{{ route('admin.servers.view', $server->id) }}">{{ $server->name }}</a></li>
-        <li class="active">Databases</li>
+        <li class="active">{{ __('admin/servers.tabs.databases') }}</li>
     </ol>
 @endsection
 
@@ -19,20 +19,20 @@
 <div class="row">
     <div class="col-sm-7">
         <div class="alert alert-info">
-            Database passwords can be viewed when <a href="/server/{{ $server->uuidShort }}/databases">visiting this server</a> on the front-end.
+            {!! __('admin/servers.databases.passwords_notice', ['url' => '/server/' . $server->uuidShort . '/databases']) !!}
         </div>
         <div class="box box-primary">
             <div class="box-header with-border">
-                <h3 class="box-title">Active Databases</h3>
+                <h3 class="box-title">{{ __('admin/servers.databases.active') }}</h3>
             </div>
             <div class="box-body table-responsible no-padding">
                 <table class="table table-hover">
                     <tr>
-                        <th>Database</th>
-                        <th>Username</th>
-                        <th>Connections From</th>
-                        <th>Host</th>
-                        <th>Max Connections</th>
+                        <th>{{ __('admin/servers.databases.database') }}</th>
+                        <th>{{ __('admin/servers.databases.username') }}</th>
+                        <th>{{ __('admin/servers.databases.connections_from') }}</th>
+                        <th>{{ __('admin/servers.databases.host') }}</th>
+                        <th>{{ __('admin/servers.databases.max_connections') }}</th>
                         <th></th>
                     </tr>
                     @foreach($server->databases as $database)
@@ -44,7 +44,7 @@
                             @if($database->max_connections != null)
                                 <td>{{ $database->max_connections }}</td>
                             @else
-                                <td>Unlimited</td>
+                                <td>{{ __('admin/common.unlimited') }}</td>
                             @endif
                             <td class="text-center">
                                 <button data-action="reset-password" data-id="{{ $database->id }}" class="btn btn-xs btn-primary"><i class="fa fa-refresh"></i></button>
@@ -59,41 +59,41 @@
     <div class="col-sm-5">
         <div class="box box-success">
             <div class="box-header with-border">
-                <h3 class="box-title">Create New Database</h3>
+                <h3 class="box-title">{{ __('admin/servers.databases.create') }}</h3>
             </div>
             <form action="{{ route('admin.servers.view.database', $server->id) }}" method="POST">
                 <div class="box-body">
                     <div class="form-group">
-                        <label for="pDatabaseHostId" class="control-label">Database Host</label>
+                        <label for="pDatabaseHostId" class="control-label">{{ __('admin/servers.databases.database_host') }}</label>
                         <select id="pDatabaseHostId" name="database_host_id" class="form-control">
                             @foreach($hosts as $host)
                                 <option value="{{ $host->id }}">{{ $host->name }}</option>
                             @endforeach
                         </select>
-                        <p class="text-muted small">Select the host database server that this database should be created on.</p>
+                        <p class="text-muted small">{{ __('admin/servers.databases.database_host_help') }}</p>
                     </div>
                     <div class="form-group">
-                        <label for="pDatabaseName" class="control-label">Database</label>
+                        <label for="pDatabaseName" class="control-label">{{ __('admin/servers.databases.database') }}</label>
                         <div class="input-group">
                             <span class="input-group-addon">s{{ $server->id }}_</span>
                             <input id="pDatabaseName" type="text" name="database" class="form-control" placeholder="database" />
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="pRemote" class="control-label">Connections</label>
+                        <label for="pRemote" class="control-label">{{ __('admin/servers.databases.connections') }}</label>
                         <input id="pRemote" type="text" name="remote" class="form-control" value="%" />
-                        <p class="text-muted small">This should reflect the IP address that connections are allowed from. Uses standard MySQL notation. If unsure leave as <code>%</code>.</p>
+                        <p class="text-muted small">{!! __('admin/servers.databases.connections_help') !!}</p>
                     </div>
                     <div class="form-group">
-                        <label for="pmax_connections" class="control-label">Concurrent Connections</label>
+                        <label for="pmax_connections" class="control-label">{{ __('admin/servers.databases.concurrent') }}</label>
                         <input id="pmax_connections" type="text" name="max_connections" class="form-control"/>
-                        <p class="text-muted small">This should reflect the max number of concurrent connections from this user to the database. Leave empty for unlimited.</p>
+                        <p class="text-muted small">{{ __('admin/servers.databases.concurrent_help') }}</p>
                     </div>
                 </div>
                 <div class="box-footer">
                     {!! csrf_field() !!}
-                    <p class="text-muted small no-margin">A username and password for this database will be randomly generated after form submission.</p>
-                    <input type="submit" class="btn btn-sm btn-success pull-right" value="Create Database" />
+                    <p class="text-muted small no-margin">{{ __('admin/servers.databases.credentials_notice') }}</p>
+                    <input type="submit" class="btn btn-sm btn-success pull-right" value="{{ __('admin/servers.databases.create_button') }}" />
                 </div>
             </form>
         </div>
@@ -111,9 +111,10 @@
         swal({
             title: '',
             type: 'warning',
-            text: 'Are you sure that you want to delete this database? There is no going back, all data will immediately be removed.',
+            text: @json(__('admin/servers.databases.confirm_delete')),
             showCancelButton: true,
-            confirmButtonText: 'Delete',
+            confirmButtonText: @json(__('admin/common.actions.delete')),
+            cancelButtonText: @json(__('admin/common.actions.cancel')),
             confirmButtonColor: '#d9534f',
             closeOnConfirm: false,
             showLoaderOnConfirm: true,
@@ -129,8 +130,8 @@
                 console.error(jqXHR);
                 swal({
                     type: 'error',
-                    title: 'Whoops!',
-                    text: (typeof jqXHR.responseJSON.error !== 'undefined') ? jqXHR.responseJSON.error : 'An error occurred while processing this request.'
+                    title: @json(__('admin/common.whoops')),
+                    text: (typeof jqXHR.responseJSON.error !== 'undefined') ? jqXHR.responseJSON.error : @json(__('admin/servers.databases.request_error'))
                 });
             });
         });
@@ -148,17 +149,17 @@
             swal({
                 type: 'success',
                 title: '',
-                text: 'The password for this database has been reset.',
+                text: @json(__('admin/servers.databases.password_reset')),
             });
         }).fail(function(jqXHR, textStatus, errorThrown) {
             console.error(jqXHR);
-            var error = 'An error occurred while trying to process this request.';
+            var error = @json(__('admin/servers.databases.request_error'));
             if (typeof jqXHR.responseJSON !== 'undefined' && typeof jqXHR.responseJSON.error !== 'undefined') {
                 error = jqXHR.responseJSON.error;
             }
             swal({
                 type: 'error',
-                title: 'Whoops!',
+                title: @json(__('admin/common.whoops')),
                 text: error
             });
         }).always(function () {

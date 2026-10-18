@@ -8,6 +8,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Validation\Rules\In;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Builder;
 use Pterodactyl\Contracts\Models\Identifiable;
 use Pterodactyl\Models\Traits\HasAccessTokens;
@@ -86,6 +87,7 @@ class User extends Model implements
     AuthenticatableContract,
     AuthorizableContract,
     CanResetPasswordContract,
+    HasLocalePreference,
     Identifiable
 {
     use Authenticatable;
@@ -295,5 +297,13 @@ class User extends Model implements
                 $builder->where('servers.owner_id', $this->id)->orWhere('subusers.user_id', $this->id);
             })
             ->groupBy('servers.id');
+    }
+
+    /**
+     * Hydra: notifications (emails) are sent in the language of the user.
+     */
+    public function preferredLocale(): string
+    {
+        return $this->language ?: config('app.locale', 'en');
     }
 }

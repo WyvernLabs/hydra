@@ -39,7 +39,7 @@ class AppearanceController extends Controller
             }
         }
 
-        $this->alert->success('The appearance of the panel has been updated.')->flash();
+        $this->alert->success(trans('admin/settings.appearance.updated'))->flash();
 
         return redirect()->route('admin.settings.appearance');
     }

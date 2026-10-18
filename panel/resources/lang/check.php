@@ -91,6 +91,32 @@ foreach ($files as $file) {
     }
 }
 
+// 3. Every key used by Blade templates and PHP code (__('…'), trans('…'), @lang('…')) exists in English.
+$phpRoots = [dirname(__DIR__) . '/views', dirname(__DIR__, 2) . '/app'];
+foreach ($phpRoots as $root) {
+    $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS));
+    foreach ($files as $file) {
+        if ($file->getExtension() !== 'php') {
+            continue;
+        }
+        $source = file_get_contents($file->getPathname());
+        // Keys that are concatenated at runtime ('admin/api.resources.' . $x) end with a dot and are skipped.
+        preg_match_all("/(?:__|trans|@lang)\\(\\s*'([a-z][\\w\\/-]*\\.[\\w.-]*\\w)'/", $source, $m);
+        foreach (array_unique($m[1]) as $key) {
+            // "admin/servers.tabs.about" → namespace "admin/servers", path "tabs.about"
+            [$namespace, $path] = explode('.', $key, 2);
+            if (!isset($english[$namespace])) {
+                continue; // Vendor or framework namespaces (validation attributes etc.) are not ours.
+            }
+            $isGroup = (bool) array_filter($english[$namespace], fn ($k) => str_starts_with($k, "$path."));
+            if (!in_array($path, $english[$namespace], true) && !$isGroup) {
+                $relative = substr($file->getPathname(), strlen(dirname(__DIR__, 2)) + 1);
+                $errors[] = "[php] $relative uses unknown key $key";
+            }
+        }
+    }
+}
+
 if ($errors) {
     echo implode(PHP_EOL, $errors) . PHP_EOL;
     exit(1);

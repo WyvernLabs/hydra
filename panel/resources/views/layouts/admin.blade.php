@@ -123,6 +123,23 @@
             <script src="/js/keyboard.polyfill.js" type="application/javascript"></script>
             <script>keyboardeventKeyPolyfill.polyfill();</script>
 
+            <script>
+                // Hydra: texts for the admin scripts in public/themes/pterodactyl/js/admin.
+                window.HydraLang = {
+                    required: @json(__('admin/servers.fields.required')),
+                    selectUser: @json(__('admin/servers.fields.select_user')),
+                    selectNest: @json(__('admin/servers.fields.select_nest')),
+                    selectEgg: @json(__('admin/servers.fields.select_egg')),
+                    selectNode: @json(__('admin/servers.fields.select_node')),
+                    selectDefaultAllocation: @json(__('admin/servers.fields.select_default_allocation')),
+                    selectAdditionalAllocations: @json(__('admin/servers.fields.select_additional_allocations')),
+                    accessInStartup: @json(__('admin/servers.fields.access_in_startup')),
+                    validationRules: @json(__('admin/servers.fields.validation_rules')),
+                };
+                window.hydraLang = function (key, fallback) {
+                    return (window.HydraLang && window.HydraLang[key]) || fallback;
+                };
+            </script>
             {!! Theme::js('vendor/jquery/jquery.min.js?t={cache-version}') !!}
             {!! Theme::js('vendor/sweetalert/sweetalert.min.js?t={cache-version}') !!}
             {!! Theme::js('vendor/bootstrap/bootstrap.min.js?t={cache-version}') !!}

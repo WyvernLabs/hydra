@@ -31,7 +31,7 @@ return [
     'max_connections' => 'Max Connections',
     'manage' => 'Manage',
     'created' => 'Successfully created a new database host on the system.',
-    'updated' => 'Database host has been updated successfully.',
+    'updated' => 'Database host was updated successfully.',
     'deleted' => 'The requested database host has been deleted from the system.',
     'connection_error' => 'There was an error while trying to connect to the host or while executing a query: ":error"',
 ];

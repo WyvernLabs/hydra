@@ -19,11 +19,11 @@
 // SOFTWARE.
 $(document).ready(function() {
     $('#pNestId').select2({
-        placeholder: 'Select a Nest',
+        placeholder: hydraLang('selectNest', 'Select a Nest'),
     }).change();
 
     $('#pEggId').select2({
-        placeholder: 'Select a Nest Egg',
+        placeholder: hydraLang('selectEgg', 'Select a Nest Egg'),
     });
 
     $('#pPackId').select2({
@@ -31,15 +31,15 @@ $(document).ready(function() {
     });
 
     $('#pNodeId').select2({
-        placeholder: 'Select a Node',
+        placeholder: hydraLang('selectNode', 'Select a Node'),
     }).change();
 
     $('#pAllocation').select2({
-        placeholder: 'Select a Default Allocation',
+        placeholder: hydraLang('selectDefaultAllocation', 'Select a Default Allocation'),
     });
 
     $('#pAllocationAdditional').select2({
-        placeholder: 'Select Additional Allocations',
+        placeholder: hydraLang('selectAdditionalAllocations', 'Select Additional Allocations'),
     });
 });
 
@@ -59,7 +59,7 @@ $('#pNodeId').on('change', function () {
         if (v.id == currentNode) {
             $('#pAllocation').html('').select2({
                 data: v.allocations,
-                placeholder: 'Select a Default Allocation',
+                placeholder: hydraLang('selectDefaultAllocation', 'Select a Default Allocation'),
             });
 
             updateAdditionalAllocations();
@@ -120,14 +120,14 @@ $('#pEggId').on('change', function (event) {
     $.each(_.get(objectChain, 'variables', []), function (i, item) {
         variableIds[item.env_variable] = 'var_ref_' + item.id;
 
-        let isRequired = (item.required === 1) ? '<span class="label label-danger">Required</span> ' : '';
+        let isRequired = (item.required === 1) ? '<span class="label label-danger">' + escapeHtml(hydraLang('required', 'Required')) + '</span> ' : '';
         let dataAppend = ' \
             <div class="form-group col-sm-6"> \
                 <label for="var_ref_' + escapeHtml(item.id) + '" class="control-label">' + isRequired + escapeHtml(item.name) + '</label> \
                 <input type="text" id="var_ref_' + escapeHtml(item.id) + '" autocomplete="off" name="environment[' + escapeHtml(item.env_variable) + ']" class="form-control" value="' + escapeHtml(item.default_value) + '" /> \
                 <p class="text-muted small">' + escapeHtml(item.description) + '<br /> \
-                <strong>Access in Startup:</strong> <code>{{' + escapeHtml(item.env_variable) + '}}</code><br /> \
-                <strong>Validation Rules:</strong> <code>' + escapeHtml(item.rules) + '</code></small></p> \
+                <strong>' + escapeHtml(hydraLang('accessInStartup', 'Access in Startup:')) + '</strong> <code>{{' + escapeHtml(item.env_variable) + '}}</code><br /> \
+                <strong>' + escapeHtml(hydraLang('validationRules', 'Validation Rules:')) + '</strong> <code>' + escapeHtml(item.rules) + '</code></small></p> \
             </div> \
         ';
         $('#appendVariablesTo').append(dataAppend);
@@ -160,7 +160,7 @@ function updateAdditionalAllocations() {
 
             $('#pAllocationAdditional').html('').select2({
                 data: allocations,
-                placeholder: 'Select Additional Allocations',
+                placeholder: hydraLang('selectAdditionalAllocations', 'Select Additional Allocations'),
             });
         }
     });
@@ -200,7 +200,6 @@ function initUserIdSelect(data) {
             if (data.loading) return escapeHtml(data.text);
 
             return '<div class="user-block"> \
-                <img class="img-circle img-bordered-xs" src="https://www.gravatar.com/avatar/' + escapeHtml(data.md5) + '?s=120" alt="User Image"> \
                 <span class="username"> \
                     <a href="#">' + escapeHtml(data.name_first) + ' ' + escapeHtml(data.name_last) +'</a> \
                 </span> \
@@ -210,7 +209,6 @@ function initUserIdSelect(data) {
         templateSelection: function (data) {
             return '<div> \
                 <span> \
-                    <img class="img-rounded img-bordered-xs" src="https://www.gravatar.com/avatar/' + escapeHtml(data.md5) + '?s=120" style="height:28px;margin-top:-4px;" alt="User Image"> \
                 </span> \
                 <span style="padding-left:5px;"> \
                     ' + escapeHtml(data.name_first) + ' ' + escapeHtml(data.name_last) + ' (<strong>' + escapeHtml(data.email) + '</strong>) \

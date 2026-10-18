@@ -13,6 +13,21 @@ import AccountApiContainer from '@/components/dashboard/AccountApiContainer';
 import AccountSSHContainer from '@/components/dashboard/ssh/AccountSSHContainer';
 import ActivityLogContainer from '@/components/dashboard/activity/ActivityLogContainer';
 import ServerActivityLogContainer from '@/components/server/ServerActivityLogContainer';
+import {
+    ArchiveIcon,
+    CalendarIcon,
+    ClockIcon,
+    CodeIcon,
+    CogIcon,
+    DatabaseIcon,
+    FolderIcon,
+    GlobeAltIcon,
+    KeyIcon,
+    PlayIcon,
+    TerminalIcon,
+    UserCircleIcon,
+    UsersIcon,
+} from '@heroicons/react/outline';
 
 // Each of the router files is already code split out appropriately — so
 // all of the items above will only be loaded in when that router is loaded.
@@ -29,6 +44,8 @@ interface RouteDefinition {
     name: string | undefined;
     component: React.ComponentType;
     exact?: boolean;
+    // Icon shown next to the name in the Hydra sidebar.
+    icon?: React.ComponentType<{ className?: string }>;
 }
 
 interface ServerRouteDefinition extends RouteDefinition {
@@ -47,22 +64,26 @@ export default {
         {
             path: '/',
             name: 'Account',
+            icon: UserCircleIcon,
             component: AccountOverviewContainer,
             exact: true,
         },
         {
             path: '/api',
             name: 'API Credentials',
+            icon: CodeIcon,
             component: AccountApiContainer,
         },
         {
             path: '/ssh',
             name: 'SSH Keys',
+            icon: KeyIcon,
             component: AccountSSHContainer,
         },
         {
             path: '/activity',
             name: 'Activity',
+            icon: ClockIcon,
             component: ActivityLogContainer,
         },
     ],
@@ -71,6 +92,7 @@ export default {
             path: '/',
             permission: null,
             name: 'Console',
+            icon: TerminalIcon,
             component: ServerConsole,
             exact: true,
         },
@@ -78,6 +100,7 @@ export default {
             path: '/files',
             permission: 'file.*',
             name: 'Files',
+            icon: FolderIcon,
             component: FileManagerContainer,
         },
         {
@@ -90,12 +113,14 @@ export default {
             path: '/databases',
             permission: 'database.*',
             name: 'Databases',
+            icon: DatabaseIcon,
             component: DatabasesContainer,
         },
         {
             path: '/schedules',
             permission: 'schedule.*',
             name: 'Schedules',
+            icon: CalendarIcon,
             component: ScheduleContainer,
         },
         {
@@ -108,36 +133,42 @@ export default {
             path: '/users',
             permission: 'user.*',
             name: 'Users',
+            icon: UsersIcon,
             component: UsersContainer,
         },
         {
             path: '/backups',
             permission: 'backup.*',
             name: 'Backups',
+            icon: ArchiveIcon,
             component: BackupContainer,
         },
         {
             path: '/network',
             permission: 'allocation.*',
             name: 'Network',
+            icon: GlobeAltIcon,
             component: NetworkContainer,
         },
         {
             path: '/startup',
             permission: 'startup.*',
             name: 'Startup',
+            icon: PlayIcon,
             component: StartupContainer,
         },
         {
             path: '/settings',
             permission: ['settings.*', 'file.sftp'],
             name: 'Settings',
+            icon: CogIcon,
             component: SettingsContainer,
         },
         {
             path: '/activity',
             permission: 'activity.*',
             name: 'Activity',
+            icon: ClockIcon,
             component: ServerActivityLogContainer,
         },
     ],

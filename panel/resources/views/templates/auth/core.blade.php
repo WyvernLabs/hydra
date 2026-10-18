@@ -1,5 +1,5 @@
 @extends('templates/wrapper', [
-    'css' => ['body' => 'bg-neutral-900']
+    'css' => ['body' => 'hydra-body hydra-auth']
 ])
 
 @section('container')

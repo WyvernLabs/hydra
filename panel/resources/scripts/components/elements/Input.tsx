@@ -6,19 +6,11 @@ export interface Props {
     hasError?: boolean;
 }
 
-const light = css<Props>`
-    ${tw`bg-white border-neutral-200 text-neutral-800`};
-    &:focus {
-        ${tw`border-primary-400`}
-    }
-
-    &:disabled {
-        ${tw`bg-neutral-100 border-neutral-200`};
-    }
-`;
+// Hydra only has a dark theme for now, "light" inputs look like regular ones.
+const light = css<Props>``;
 
 const checkboxStyle = css<Props>`
-    ${tw`bg-neutral-500 cursor-pointer appearance-none inline-block align-middle select-none flex-shrink-0 w-4 h-4 text-primary-400 border border-neutral-300 rounded-sm`};
+    ${tw`bg-neutral-700 cursor-pointer appearance-none inline-block align-middle select-none flex-shrink-0 w-4 h-4 text-primary-400 border border-neutral-500 rounded-sm`};
     color-adjust: exact;
     background-origin: border-box;
     transition: all 75ms linear, box-shadow 25ms linear;
@@ -32,7 +24,7 @@ const checkboxStyle = css<Props>`
 
     &:focus {
         ${tw`outline-none border-primary-300`};
-        box-shadow: 0 0 0 1px rgba(9, 103, 210, 0.25);
+        box-shadow: 0 0 0 1px rgb(var(--hydra-accent-500) / 0.25);
     }
 `;
 
@@ -40,8 +32,8 @@ const inputStyle = css<Props>`
     // Reset to normal styling.
     resize: none;
     ${tw`appearance-none outline-none w-full min-w-0`};
-    ${tw`p-3 border-2 rounded text-sm transition-all duration-150`};
-    ${tw`bg-neutral-600 border-neutral-500 hover:border-neutral-400 text-neutral-200 shadow-none focus:ring-0`};
+    ${tw`px-3 py-2.5 border rounded text-sm transition-all duration-150`};
+    ${tw`bg-neutral-700 border-neutral-600 hover:border-neutral-500 text-neutral-100 shadow-none focus:ring-0`};
 
     & + .input-help {
         ${tw`mt-1 text-xs`};
@@ -54,7 +46,7 @@ const inputStyle = css<Props>`
     }
 
     &:not(:disabled):not(:read-only):focus {
-        ${tw`shadow-md border-primary-300 ring-2 ring-primary-400 ring-opacity-50`};
+        ${tw`border-primary-500 ring-2 ring-primary-500 ring-opacity-25`};
         ${(props) => props.hasError && tw`border-red-300 ring-red-200`};
     }
 

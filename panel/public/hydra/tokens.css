@@ -1,0 +1,79 @@
+/*
+ * Hydra design tokens – shared by the client area (React) and the admin area (Blade).
+ *
+ * Colors are stored as "r g b" triplets so they can be used with an alpha value:
+ *     background: rgb(var(--hydra-gray-800) / 0.8);
+ *
+ * The accent scale (--hydra-accent-50 … 900, --hydra-accent-ink) is printed by
+ * BrandingService::cssVariables() into every page and overrides the defaults below.
+ */
+
+:root {
+    --hydra-black: 14 14 14;
+    --hydra-gray-50: 244 244 244;
+    --hydra-gray-100: 236 236 236;
+    --hydra-gray-200: 205 205 205;
+    --hydra-gray-300: 168 168 168;
+    --hydra-gray-400: 141 141 141;
+    --hydra-gray-500: 94 94 94;
+    --hydra-gray-600: 58 58 58;
+    --hydra-gray-700: 38 38 38;
+    --hydra-gray-800: 31 31 31;
+    --hydra-gray-900: 20 20 20;
+
+    /* Default accent (green), replaced at runtime by the configured color. */
+    --hydra-accent-50: 241 249 235;
+    --hydra-accent-100: 227 243 215;
+    --hydra-accent-200: 199 231 175;
+    --hydra-accent-300: 172 218 134;
+    --hydra-accent-400: 144 206 94;
+    --hydra-accent-500: 116 194 54;
+    --hydra-accent-600: 99 165 46;
+    --hydra-accent-700: 81 136 38;
+    --hydra-accent-800: 64 107 30;
+    --hydra-accent-900: 46 78 22;
+    --hydra-accent-ink: 15 26 6;
+
+    /* Semantic surfaces, modelled after the Sylas panel. */
+    --hydra-bg: rgb(var(--hydra-gray-900));
+    --hydra-pattern: url("/hydra/hex-dark.svg");
+    --hydra-panel: rgb(var(--hydra-gray-800));
+    --hydra-panel-2: rgb(var(--hydra-gray-700));
+    --hydra-panel-3: rgb(45 45 45);
+    --hydra-border: rgb(46 46 46);
+    --hydra-border-strong: rgb(var(--hydra-gray-600));
+    --hydra-text: rgb(var(--hydra-gray-100));
+    --hydra-text-2: rgb(var(--hydra-gray-200));
+    --hydra-muted: rgb(var(--hydra-gray-400));
+    --hydra-accent: rgb(var(--hydra-accent-500));
+    --hydra-accent-hover: rgb(var(--hydra-accent-400));
+    --hydra-accent-soft: rgb(var(--hydra-accent-500) / 0.14);
+    --hydra-on-accent: rgb(var(--hydra-accent-ink));
+    --hydra-danger: #e5534b;
+    --hydra-danger-soft: rgb(229 83 75 / 0.14);
+    --hydra-warning: #e3b341;
+    --hydra-warning-soft: rgb(227 179 65 / 0.14);
+    --hydra-success: #3fb950;
+    --hydra-info: #58a6ff;
+    --hydra-overlay: rgb(6 6 6 / 0.72);
+    --hydra-shadow: 0 12px 32px rgb(0 0 0 / 0.38);
+
+    --hydra-radius: 14px;
+    --hydra-radius-sm: 9px;
+    --hydra-sidebar-width: 248px;
+    --hydra-gap: 16px;
+    --hydra-font: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+    --hydra-font-mono: "Cascadia Mono", "Fira Code", Consolas, "Liberation Mono", Menlo, monospace;
+
+    color-scheme: dark;
+    scrollbar-width: thin;
+    scrollbar-color: var(--hydra-panel-3) transparent;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--hydra-panel-3); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--hydra-border-strong); }
+::-webkit-scrollbar-corner { background: transparent; }
+
+::selection { background: rgb(var(--hydra-accent-500) / 0.35); }

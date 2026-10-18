@@ -7,6 +7,11 @@ export interface SiteSettings {
         enabled: boolean;
         siteKey: string;
     };
+    branding: {
+        accent: string;
+        logo: string;
+        favicon: string;
+    };
 }
 
 export interface SettingsStore {

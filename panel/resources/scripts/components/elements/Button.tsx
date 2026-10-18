@@ -11,22 +11,23 @@ interface Props {
 }
 
 const ButtonStyle = styled.button<Omit<Props, 'isLoading'>>`
-    ${tw`relative inline-block rounded p-2 uppercase tracking-wide text-sm transition-all duration-150 border`};
+    ${tw`relative inline-block rounded p-2 font-semibold text-sm transition-all duration-150 border`};
 
     ${(props) =>
         ((!props.isSecondary && !props.color) || props.color === 'primary') &&
         css<Props>`
-            ${(props) => !props.isSecondary && tw`bg-primary-500 border-primary-600 border text-primary-50`};
+            ${(props) => !props.isSecondary && tw`bg-primary-500 border-primary-500 border`};
+            ${(props) => !props.isSecondary && 'color: rgb(var(--hydra-accent-ink));'};
 
             &:hover:not(:disabled) {
-                ${tw`bg-primary-600 border-primary-700`};
+                ${tw`bg-primary-400 border-primary-400`};
             }
         `};
 
     ${(props) =>
         props.color === 'grey' &&
         css`
-            ${tw`border-neutral-600 bg-neutral-500 text-neutral-50`};
+            ${tw`border-neutral-600 bg-neutral-700 text-neutral-100`};
 
             &:hover:not(:disabled) {
                 ${tw`bg-neutral-600 border-neutral-700`};

@@ -13,5 +13,10 @@ Route::get('/locales/locale.json', Base\LocaleController::class)
     ->withoutMiddleware(['auth', RequireTwoFactorAuthentication::class])
     ->where('namespace', '.*');
 
+Route::get('/branding/{type}', Base\BrandingController::class)
+    ->withoutMiddleware(['auth', RequireTwoFactorAuthentication::class])
+    ->where('type', 'logo|favicon')
+    ->name('branding');
+
 Route::get('/{react}', [Base\IndexController::class, 'index'])
     ->where('react', '^(?!(\/)?(api|auth|admin|daemon)).+');

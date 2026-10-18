@@ -1,25 +1,25 @@
 import TransferListener from '@/components/server/TransferListener';
 import React, { useEffect, useState } from 'react';
-import { NavLink, Route, Switch, useRouteMatch } from 'react-router-dom';
-import NavigationBar from '@/components/NavigationBar';
+import { Route, Switch, useRouteMatch } from 'react-router-dom';
 import TransitionRouter from '@/TransitionRouter';
 import WebsocketHandler from '@/components/server/WebsocketHandler';
 import { ServerContext } from '@/state/server';
-import { CSSTransition } from 'react-transition-group';
 import Can from '@/components/elements/Can';
 import Spinner from '@/components/elements/Spinner';
 import { NotFound, ServerError } from '@/components/elements/ScreenBlock';
 import { httpErrorToHuman } from '@/api/http';
 import { useStoreState } from 'easy-peasy';
-import SubNavigation from '@/components/elements/SubNavigation';
 import InstallListener from '@/components/server/InstallListener';
 import ErrorBoundary from '@/components/elements/ErrorBoundary';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+import { ExternalLinkIcon } from '@heroicons/react/outline';
 import { useLocation } from 'react-router';
 import ConflictStateRenderer from '@/components/server/ConflictStateRenderer';
 import PermissionRoute from '@/components/elements/PermissionRoute';
 import routes from '@/routers/routes';
+import HydraLayout from '@/components/hydra/HydraLayout';
+import { SidebarLink, SidebarSection } from '@/components/hydra/Sidebar';
+import { useWorkspaceSection } from '@/components/hydra/sections';
+import ServerSidebarHeader from '@/components/hydra/ServerSidebarHeader';
 
 export default () => {
     const match = useRouteMatch<{ id: string }>();
@@ -32,6 +32,7 @@ export default () => {
     const uuid = ServerContext.useStoreState((state) => state.server.data?.uuid);
     const inConflictState = ServerContext.useStoreState((state) => state.server.inConflictState);
     const serverId = ServerContext.useStoreState((state) => state.server.data?.internalId);
+    const workspace = useWorkspaceSection();
     const getServer = ServerContext.useStoreActions((actions) => actions.server.getServer);
     const clearServerState = ServerContext.useStoreActions((actions) => actions.clearServerState);
 
@@ -40,6 +41,47 @@ export default () => {
             return url ? match.url : match.path;
         }
         return `${(url ? match.url : match.path).replace(/\/*$/, '')}/${value.replace(/^\/+/, '')}`;
+    };
+
+    const serverSection: SidebarSection = {
+        key: 'server',
+        title: 'Server',
+        header: uuid ? <ServerSidebarHeader /> : undefined,
+        items: !uuid
+            ? []
+            : [
+                  ...routes.server
+                      .filter((route) => !!route.name)
+                      .map(({ path, name, icon, exact, permission }) => {
+                          const link = (
+                              <SidebarLink
+                                  key={path}
+                                  item={{ key: path, name: name!, icon, exact, to: to(path, true) }}
+                              />
+                          );
+
+                          return permission ? (
+                              <Can key={path} action={permission} matchAny>
+                                  {link}
+                              </Can>
+                          ) : (
+                              link
+                          );
+                      }),
+                  ...(rootAdmin
+                      ? [
+                            <SidebarLink
+                                key={'admin'}
+                                item={{
+                                    key: 'admin',
+                                    name: 'Manage as Admin',
+                                    icon: ExternalLinkIcon,
+                                    href: `/admin/servers/view/${serverId}`,
+                                }}
+                            />,
+                        ]
+                      : []),
+              ],
     };
 
     useEffect(
@@ -63,8 +105,7 @@ export default () => {
     }, [match.params.id]);
 
     return (
-        <React.Fragment key={'server-router'}>
-            <NavigationBar />
+        <HydraLayout key={'server-router'} sections={[workspace, serverSection]}>
             {!uuid || !id ? (
                 error ? (
                     <ServerError message={error} />
@@ -73,33 +114,6 @@ export default () => {
                 )
             ) : (
                 <>
-                    <CSSTransition timeout={150} classNames={'fade'} appear in>
-                        <SubNavigation>
-                            <div>
-                                {routes.server
-                                    .filter((route) => !!route.name)
-                                    .map((route) =>
-                                        route.permission ? (
-                                            <Can key={route.path} action={route.permission} matchAny>
-                                                <NavLink to={to(route.path, true)} exact={route.exact}>
-                                                    {route.name}
-                                                </NavLink>
-                                            </Can>
-                                        ) : (
-                                            <NavLink key={route.path} to={to(route.path, true)} exact={route.exact}>
-                                                {route.name}
-                                            </NavLink>
-                                        )
-                                    )}
-                                {rootAdmin && (
-                                    // eslint-disable-next-line react/jsx-no-target-blank
-                                    <a href={`/admin/servers/view/${serverId}`} target={'_blank'}>
-                                        <FontAwesomeIcon icon={faExternalLinkAlt} />
-                                    </a>
-                                )}
-                            </div>
-                        </SubNavigation>
-                    </CSSTransition>
                     <InstallListener />
                     <TransferListener />
                     <WebsocketHandler />
@@ -123,6 +137,6 @@ export default () => {
                     )}
                 </>
             )}
-        </React.Fragment>
+        </HydraLayout>
     );
 };

@@ -1,0 +1,309 @@
+/*
+ * Hydra client area layout – floating sidebar in the style of the Sylas panel.
+ * Design tokens (colors, radius, sizes) live in public/hydra/tokens.css and are
+ * shared with the admin area.
+ */
+
+body.hydra-body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--hydra-bg) var(--hydra-pattern) center top / 760px repeat fixed;
+    color: var(--hydra-text);
+    font-family: var(--hydra-font);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+}
+
+a { color: rgb(var(--hydra-accent-400)); }
+
+/* ---------------------------------------------------------------- Shell */
+
+.hydra-shell {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--hydra-gap);
+    min-height: 100vh;
+    padding: var(--hydra-gap);
+}
+
+.hydra-main {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ---------------------------------------------------------------- Sidebar */
+
+.hydra-sidebar {
+    position: sticky;
+    top: var(--hydra-gap);
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    width: var(--hydra-sidebar-width);
+    height: calc(100vh - var(--hydra-gap) * 2);
+    background: var(--hydra-panel);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius);
+    box-shadow: var(--hydra-shadow);
+    overflow: hidden;
+    z-index: 30;
+}
+
+.hydra-sidebar-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    height: 84px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--hydra-border);
+}
+
+.hydra-sidebar-logo img {
+    max-width: 100%;
+    max-height: 56px;
+    object-fit: contain;
+}
+
+.hydra-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 12px;
+}
+
+.hydra-nav:hover { scrollbar-color: var(--hydra-border-strong) transparent; }
+
+.hydra-nav-section + .hydra-nav-section { margin-top: 22px; }
+
+.hydra-nav-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 4px 8px;
+    color: var(--hydra-muted);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+}
+
+.hydra-nav-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--hydra-border-strong);
+}
+
+.hydra-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--hydra-radius-sm);
+    background: transparent;
+    color: var(--hydra-text-2);
+    font: inherit;
+    font-size: 14px;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+}
+
+.hydra-nav-item:hover {
+    background: var(--hydra-panel-2);
+    color: var(--hydra-text);
+}
+
+.hydra-nav-item.active {
+    color: rgb(var(--hydra-accent-400));
+    font-weight: 600;
+}
+
+.hydra-nav-item.active .hydra-nav-icon { color: rgb(var(--hydra-accent-500)); }
+
+.hydra-nav-icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--hydra-muted);
+    stroke-width: 1.8;
+}
+
+.hydra-nav-item:hover .hydra-nav-icon { color: inherit; }
+
+.hydra-sidebar-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex: none;
+    height: 66px;
+    padding: 0 12px;
+    border-top: 1px solid var(--hydra-border);
+}
+
+.hydra-icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: var(--hydra-radius-sm);
+    background: transparent;
+    color: var(--hydra-text-2);
+    cursor: pointer;
+    transition: background .15s, color .15s;
+}
+
+.hydra-icon-btn:hover { background: var(--hydra-panel-2); color: var(--hydra-text); }
+.hydra-icon-btn .hydra-nav-icon { color: inherit; }
+
+.hydra-avatar {
+    display: block;
+    width: 22px;
+    height: 22px;
+}
+
+.hydra-avatar svg { width: 100%; height: 100%; }
+
+/* Current server above the server navigation */
+
+.hydra-server-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 8px;
+    padding: 10px 12px;
+    background: var(--hydra-panel-2);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius-sm);
+}
+
+.hydra-server-card-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.hydra-server-card-text strong {
+    overflow: hidden;
+    color: var(--hydra-text);
+    font-size: 13.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hydra-server-card-text small { color: var(--hydra-muted); font-size: 12px; }
+
+.hydra-status-dot {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--hydra-danger);
+    box-shadow: 0 0 0 3px var(--hydra-danger-soft);
+}
+
+.hydra-status-dot--running { background: var(--hydra-accent); box-shadow: 0 0 0 3px var(--hydra-accent-soft); }
+.hydra-status-dot--starting,
+.hydra-status-dot--stopping { background: var(--hydra-warning); box-shadow: 0 0 0 3px var(--hydra-warning-soft); }
+
+/* ---------------------------------------------------------------- Cards */
+
+.hydra-card {
+    background: var(--hydra-panel);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius);
+    box-shadow: var(--hydra-shadow);
+}
+
+.hydra-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--hydra-border);
+    color: var(--hydra-text);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.hydra-card-body { padding: 16px; }
+
+.hydra-footer {
+    margin: 24px 0 8px;
+    color: var(--hydra-muted);
+    font-size: 12px;
+    text-align: center;
+}
+
+.hydra-footer a { color: inherit; text-decoration: none; }
+.hydra-footer a:hover { color: var(--hydra-text-2); }
+
+/* ---------------------------------------------------------------- Login */
+
+.hydra-auth-logo {
+    display: block;
+    max-width: 260px;
+    max-height: 80px;
+    margin: 0 auto 24px;
+    object-fit: contain;
+}
+
+/* ---------------------------------------------------------------- Mobile */
+
+.hydra-topbar,
+.hydra-backdrop { display: none; }
+
+@media (max-width: 1023px) {
+    .hydra-shell {
+        display: block;
+        padding: 0 var(--hydra-gap) var(--hydra-gap);
+    }
+
+    .hydra-topbar {
+        position: sticky;
+        top: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 60px;
+        margin: 0 calc(var(--hydra-gap) * -1) var(--hydra-gap);
+        padding: 0 var(--hydra-gap);
+        background: var(--hydra-panel);
+        border-bottom: 1px solid var(--hydra-border);
+        z-index: 20;
+    }
+
+    .hydra-topbar-logo {
+        max-height: 36px;
+        max-width: 180px;
+        object-fit: contain;
+    }
+
+    .hydra-sidebar {
+        position: fixed;
+        top: var(--hydra-gap);
+        left: var(--hydra-gap);
+        bottom: var(--hydra-gap);
+        height: auto;
+        transform: translateX(calc(-100% - var(--hydra-gap) * 2));
+        transition: transform .2s ease;
+        z-index: 50;
+    }
+
+    .hydra-sidebar--open { transform: none; }
+
+    .hydra-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: var(--hydra-overlay);
+        z-index: 40;
+    }
+}

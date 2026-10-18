@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import ContentContainer from '@/components/elements/ContentContainer';
 import { CSSTransition } from 'react-transition-group';
 import tw from 'twin.macro';
-import { useStoreState } from '@/state/hooks';
+import Footer from '@/components/hydra/Footer';
 import FlashMessageRender from '@/components/FlashMessageRender';
 
 export interface PageContentBlockProps {
@@ -12,8 +12,6 @@ export interface PageContentBlockProps {
 }
 
 const PageContentBlock: React.FC<PageContentBlockProps> = ({ title, showFlashKey, className, children }) => {
-    const name = useStoreState((state) => state.settings.data!.name);
-
     useEffect(() => {
         if (title) {
             document.title = title;
@@ -28,9 +26,7 @@ const PageContentBlock: React.FC<PageContentBlockProps> = ({ title, showFlashKey
                     {children}
                 </ContentContainer>
                 <ContentContainer>
-                    <p className={'hydra-footer'}>
-                        {name} &copy; {new Date().getFullYear()} &middot; Powered by Hydra
-                    </p>
+                    <Footer />
                 </ContentContainer>
             </>
         </CSSTransition>

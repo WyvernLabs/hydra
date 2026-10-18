@@ -437,7 +437,8 @@ SQL
   set_env HASHIDS_SALT "$(random_string 20)"
   set_env MAIL_FROM_ADDRESS "no-reply@${DOMAIN}"
   set_env MAIL_EHLO_DOMAIN "$DOMAIN"
-  "$PHP_BIN" artisan key:generate --force --no-interaction >/dev/null
+  # Selbst erzeugt statt "artisan key:generate": Ohne Schlüssel bricht der Start der Service-Provider ab.
+  set_env APP_KEY "base64:$(head -c 32 /dev/urandom | base64)"
   info ".env erstellt (APP_KEY gesetzt – bitte zusammen mit der Datenbank sichern!)"
   NEW_INSTALL=1
 else

@@ -1,0 +1,9 @@
+# Alles mit LF einchecken und auschecken – Panel und Wings laufen auf Linux.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+*.gif binary
+*.woff binary
+*.woff2 binary
+*.ttf binary

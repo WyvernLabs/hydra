@@ -1,21 +1,21 @@
 @php
     $route = Route::currentRouteName();
     $navigation = [
-        'Basic Administration' => [
-            ['admin.index', 'Overview', 'home', $route === 'admin.index'],
-            ['admin.settings', 'Settings', 'cog', starts_with($route, 'admin.settings')],
-            ['admin.api.index', 'Application API', 'code', starts_with($route, 'admin.api')],
+        __('admin/common.nav.basic') => [
+            ['admin.index', __('admin/common.nav.overview'), 'home', $route === 'admin.index'],
+            ['admin.settings', __('admin/common.nav.settings'), 'cog', starts_with($route, 'admin.settings')],
+            ['admin.api.index', __('admin/common.nav.api'), 'code', starts_with($route, 'admin.api')],
         ],
-        'Management' => [
-            ['admin.databases', 'Databases', 'database', starts_with($route, 'admin.databases')],
-            ['admin.locations', 'Locations', 'location-marker', starts_with($route, 'admin.locations')],
-            ['admin.nodes', 'Nodes', 'chip', starts_with($route, 'admin.nodes')],
-            ['admin.servers', 'Servers', 'server', starts_with($route, 'admin.servers')],
-            ['admin.users', 'Users', 'users', starts_with($route, 'admin.users')],
+        __('admin/common.nav.management') => [
+            ['admin.databases', __('admin/common.nav.databases'), 'database', starts_with($route, 'admin.databases')],
+            ['admin.locations', __('admin/common.nav.locations'), 'location-marker', starts_with($route, 'admin.locations')],
+            ['admin.nodes', __('admin/common.nav.nodes'), 'chip', starts_with($route, 'admin.nodes')],
+            ['admin.servers', __('admin/common.nav.servers'), 'server', starts_with($route, 'admin.servers')],
+            ['admin.users', __('admin/common.nav.users'), 'users', starts_with($route, 'admin.users')],
         ],
-        'Service Management' => [
-            ['admin.mounts', 'Mounts', 'link', starts_with($route, 'admin.mounts')],
-            ['admin.nests', 'Nests', 'collection', starts_with($route, 'admin.nests')],
+        __('admin/common.nav.service') => [
+            ['admin.mounts', __('admin/common.nav.mounts'), 'link', starts_with($route, 'admin.mounts')],
+            ['admin.nests', __('admin/common.nav.nests'), 'collection', starts_with($route, 'admin.nests')],
         ],
     ];
 @endphp
@@ -51,7 +51,7 @@
             <header class="hydra-topbar">
                 <button type="button" class="hydra-icon-btn" id="hydraMenuToggle">
                     <x-hydra.icon name="menu" />
-                    <span class="sr-only">Menu</span>
+                    <span class="sr-only">{{ __('admin/common.nav.menu') }}</span>
                 </button>
                 <img src="{{ $branding->logoUrl() }}" alt="{{ config('app.name', 'Hydra') }}" class="hydra-topbar-logo">
             </header>
@@ -77,10 +77,10 @@
                     <a href="{{ route('account') }}" class="hydra-icon-btn" data-toggle="tooltip" data-placement="top" title="{{ Auth::user()->name_first }} {{ Auth::user()->name_last }}">
                         <x-hydra.icon name="user-circle" />
                     </a>
-                    <a href="{{ route('index') }}" class="hydra-icon-btn" data-toggle="tooltip" data-placement="top" title="Exit Admin Control">
+                    <a href="{{ route('index') }}" class="hydra-icon-btn" data-toggle="tooltip" data-placement="top" title="{{ __('admin/common.nav.exit') }}">
                         <x-hydra.icon name="view-grid" />
                     </a>
-                    <a href="{{ route('auth.logout') }}" class="hydra-icon-btn" id="logoutButton" data-toggle="tooltip" data-placement="top" title="Logout">
+                    <a href="{{ route('auth.logout') }}" class="hydra-icon-btn" id="logoutButton" data-toggle="tooltip" data-placement="top" title="{{ __('admin/common.nav.logout') }}">
                         <x-hydra.icon name="logout" />
                     </a>
                 </div>
@@ -94,7 +94,7 @@
                         <div class="col-xs-12">
                             @if (count($errors) > 0)
                                 <div class="alert alert-danger">
-                                    There was an error validating the data provided.<br><br>
+                                    {{ __('admin/common.validation_error') }}<br><br>
                                     <ul>
                                         @foreach ($errors->all() as $error)
                                             <li>{{ $error }}</li>
@@ -114,7 +114,7 @@
                     @yield('content')
                 </section>
                 <footer class="hydra-footer">
-                    {{ config('app.name', 'Hydra') }} &copy; {{ date('Y') }} &middot; Powered by Hydra {{ $appVersion }}
+                    {{ __('admin/common.footer', ['name' => config('app.name', 'Hydra'), 'year' => date('Y'), 'version' => $appVersion]) }}
                     &middot; {{ round(microtime(true) - LARAVEL_START, 3) }}s
                 </footer>
             </main>
@@ -140,12 +140,13 @@
 
                         var that = this;
                         swal({
-                            title: 'Do you want to log out?',
+                            title: @json(__('admin/common.logout_confirm')),
                             type: 'warning',
                             showCancelButton: true,
                             confirmButtonColor: '#d9534f',
                             cancelButtonColor: '#d33',
-                            confirmButtonText: 'Log out'
+                            confirmButtonText: @json(__('admin/common.nav.logout')),
+                            cancelButtonText: @json(__('admin/common.actions.cancel'))
                         }, function () {
                              $.ajax({
                                 type: 'POST',

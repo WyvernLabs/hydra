@@ -1,14 +1,14 @@
 @extends('layouts.admin')
 
 @section('title')
-    List Users
+    {{ __('admin/users.list_title') }}
 @endsection
 
 @section('content-header')
-    <h1>Users<small>All registered users on the system.</small></h1>
+    <h1>{{ __('admin/users.title') }}<small>{{ __('admin/users.subtitle') }}</small></h1>
     <ol class="breadcrumb">
-        <li><a href="{{ route('admin.index') }}">Admin</a></li>
-        <li class="active">Users</li>
+        <li><a href="{{ route('admin.index') }}">{{ __('admin/common.admin') }}</a></li>
+        <li class="active">{{ __('admin/users.title') }}</li>
     </ol>
 @endsection
 
@@ -17,14 +17,14 @@
     <div class="col-xs-12">
         <div class="box box-primary">
             <div class="box-header with-border">
-                <h3 class="box-title">User List</h3>
+                <h3 class="box-title">{{ __('admin/users.list') }}</h3>
                 <div class="box-tools search01">
                     <form action="{{ route('admin.users') }}" method="GET">
                         <div class="input-group input-group-sm">
-                            <input type="text" name="filter[email]" class="form-control pull-right" value="{{ request()->input('filter.email') }}" placeholder="Search">
+                            <input type="text" name="filter[email]" class="form-control pull-right" value="{{ request()->input('filter.email') }}" placeholder="{{ __('admin/users.search') }}">
                             <div class="input-group-btn">
                                 <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
-                                <a href="{{ route('admin.users.new') }}"><button type="button" class="btn btn-sm btn-primary" style="border-radius: 0 3px 3px 0;margin-left:-1px;">Create New</button></a>
+                                <a href="{{ route('admin.users.new') }}"><button type="button" class="btn btn-sm btn-primary" style="border-radius: 0 3px 3px 0;margin-left:-1px;">{{ __('admin/common.actions.create_new') }}</button></a>
                             </div>
                         </div>
                     </form>
@@ -34,14 +34,13 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Email</th>
-                            <th>Client Name</th>
-                            <th>Username</th>
-                            <th class="text-center">2FA</th>
-                            <th class="text-center"><span data-toggle="tooltip" data-placement="top" title="Servers that this user is marked as the owner of.">Servers Owned</span></th>
-                            <th class="text-center"><span data-toggle="tooltip" data-placement="top" title="Servers that this user can access because they are marked as a subuser.">Can Access</span></th>
-                            <th></th>
+                            <th>{{ __('admin/users.id') }}</th>
+                            <th>{{ __('admin/users.email') }}</th>
+                            <th>{{ __('admin/users.client_name') }}</th>
+                            <th>{{ __('admin/users.username') }}</th>
+                            <th class="text-center">{{ __('admin/users.two_factor') }}</th>
+                            <th class="text-center"><span data-toggle="tooltip" data-placement="top" title="{{ __('admin/users.servers_owned_help') }}">{{ __('admin/users.servers_owned') }}</span></th>
+                            <th class="text-center"><span data-toggle="tooltip" data-placement="top" title="{{ __('admin/users.can_access_help') }}">{{ __('admin/users.can_access') }}</span></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -62,7 +61,6 @@
                                     <a href="{{ route('admin.servers', ['filter[owner_id]' => $user->id]) }}">{{ $user->servers_count }}</a>
                                 </td>
                                 <td class="text-center">{{ $user->subuser_of_count }}</td>
-                                <td class="text-center"><img src="https://www.gravatar.com/avatar/{{ md5(strtolower($user->email)) }}?s=100" style="height:20px;" class="img-circle" /></td>
                             </tr>
                         @endforeach
                     </tbody>

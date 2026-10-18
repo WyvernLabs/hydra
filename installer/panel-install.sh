@@ -370,6 +370,7 @@ rsync -a --delete \
   "$PANEL_SRC/" "$INSTALL_DIR/"
 # storage/ beim ersten Mal komplett anlegen, später nur fehlende Ordner ergänzen.
 rsync -a --ignore-existing "$PANEL_SRC/storage/" "$INSTALL_DIR/storage/"
+install -d "$INSTALL_DIR/storage/framework/cache/data" "$INSTALL_DIR/storage/framework/sessions"   "$INSTALL_DIR/storage/framework/views" "$INSTALL_DIR/storage/logs" "$INSTALL_DIR/bootstrap/cache"
 info "Dateien nach $INSTALL_DIR kopiert"
 
 cd "$INSTALL_DIR"

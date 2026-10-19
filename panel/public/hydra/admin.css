@@ -181,6 +181,25 @@
     border-radius: var(--hydra-radius) 0 0 var(--hydra-radius);
 }
 
+/* Colored info boxes (e.g. "At-a-Glance" of a node) stay dark; only the icon and
+   the bar show the state, so text and icons remain readable. */
+.hydra-admin .info-box[class*="bg-"] {
+    background: var(--hydra-panel) !important;
+    color: var(--hydra-text) !important;
+}
+
+.hydra-admin .info-box[class*="bg-"] { --info-color: rgb(var(--hydra-accent-500)); --info-ink: var(--hydra-on-accent); }
+.hydra-admin .info-box.bg-yellow, .hydra-admin .info-box.bg-orange { --info-color: var(--hydra-warning); --info-ink: #1b1405; }
+.hydra-admin .info-box.bg-red { --info-color: var(--hydra-danger); --info-ink: #fff; }
+
+.hydra-admin .info-box[class*="bg-"] .info-box-icon {
+    background: var(--info-color) !important;
+    color: var(--info-ink) !important;
+}
+
+.hydra-admin .info-box[class*="bg-"] .progress { height: 4px; margin: 6px 0 0; background: var(--hydra-panel-3); border-radius: 999px; }
+.hydra-admin .info-box[class*="bg-"] .progress-bar { background: var(--info-color); border-radius: 999px; }
+
 .hydra-admin .info-box-text { color: var(--hydra-muted); font-size: 12px; letter-spacing: .05em; }
 .hydra-admin .info-box-number { color: var(--hydra-text); }
 .hydra-admin .small-box h3, .hydra-admin .small-box p { color: var(--hydra-text); }

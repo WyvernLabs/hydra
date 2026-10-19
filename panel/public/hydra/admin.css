@@ -861,6 +861,160 @@
     word-break: break-word;
 }
 
+/* ---------------------------------------------------------------- Node usage (Hydra) */
+
+.hydra-usage { position: relative; margin-bottom: var(--hydra-gap); }
+
+.hydra-usage-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: var(--hydra-gap);
+}
+
+.hydra-usage.is-offline .hydra-usage-grid,
+.hydra-usage.is-offline .hydra-usage-facts { opacity: .35; }
+
+.hydra-usage-offline {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border: 1px solid rgb(229 83 75 / 0.35);
+    border-radius: var(--hydra-radius-sm);
+    background: var(--hydra-danger-soft);
+    color: var(--hydra-danger);
+}
+
+.hydra-usage-card {
+    --usage-color: rgb(var(--hydra-accent-500));
+    display: flex;
+    flex-direction: column;
+    padding: 14px 16px 16px;
+    background: var(--hydra-panel);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius);
+    box-shadow: var(--hydra-shadow);
+}
+
+.hydra-usage-card[data-level="warning"] { --usage-color: var(--hydra-warning); }
+.hydra-usage-card[data-level="danger"] { --usage-color: var(--hydra-danger); }
+
+.hydra-usage-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--hydra-border);
+}
+
+.hydra-usage-icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--usage-color);
+    color: var(--hydra-on-accent);
+    transition: background .3s;
+}
+
+.hydra-usage-card[data-level="warning"] .hydra-usage-icon,
+.hydra-usage-card[data-level="danger"] .hydra-usage-icon { color: #fff; }
+
+.hydra-usage-title { flex: 1; color: var(--hydra-text); font-weight: 600; }
+.hydra-usage-limit { color: var(--hydra-muted); font-size: 11px; text-align: right; }
+
+.hydra-usage-ring {
+    position: relative;
+    width: 116px;
+    height: 116px;
+    margin: 18px auto 14px;
+}
+
+.hydra-usage-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.hydra-usage-ring circle { fill: none; stroke-width: 9; }
+.hydra-usage-ring-track { stroke: var(--hydra-panel-3); }
+
+.hydra-usage-ring-value {
+    stroke: var(--usage-color);
+    stroke-linecap: round;
+    stroke-dasharray: 0 999;
+    transition: stroke-dasharray .6s ease, stroke .3s;
+}
+
+.hydra-usage-ring-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.hydra-usage-ring-label strong { color: var(--hydra-text); font-size: 20px; line-height: 1.1; }
+.hydra-usage-ring-label small { color: var(--hydra-muted); font-size: 11px; }
+
+.hydra-usage-value { margin-top: auto; color: var(--hydra-text); font-size: 15px; font-weight: 700; }
+.hydra-usage-value small { margin-left: 4px; font-weight: 400; }
+.hydra-usage-sub { margin-top: 2px; font-size: 11px; }
+
+.hydra-usage-graph {
+    position: relative;
+    height: 116px;
+    margin: 18px 0 14px;
+    border-bottom: 1px solid var(--hydra-border);
+}
+
+.hydra-usage-graph svg { width: 100%; height: 100%; overflow: visible; }
+
+.hydra-usage-graph-line {
+    fill: none;
+    stroke: var(--usage-color);
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
+
+.hydra-usage-graph-area { fill: var(--usage-color); opacity: .14; }
+
+.hydra-usage-graph-max {
+    position: absolute;
+    top: -2px;
+    right: 0;
+    color: var(--hydra-muted);
+    font-size: 10px;
+}
+
+.hydra-usage-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: var(--hydra-gap);
+    margin-top: var(--hydra-gap);
+}
+
+.hydra-usage-facts > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--hydra-panel);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius-sm);
+}
+
+.hydra-usage-facts span { color: var(--hydra-muted); font-size: 12px; }
+.hydra-usage-facts strong { color: var(--hydra-text); font-size: 13px; text-align: right; }
+
+/* Small bars in the node list. */
+.hydra-mini-usage { display: grid; gap: 4px; min-width: 150px; font-size: 10px; }
+.hydra-mini-usage > div { display: grid; grid-template-columns: 34px 1fr 32px; align-items: center; gap: 6px; }
+.hydra-mini-usage span { color: var(--hydra-muted); }
+.hydra-mini-usage em { color: var(--hydra-text-2); font-style: normal; text-align: right; }
+.hydra-mini-bar { height: 5px; overflow: hidden; border-radius: 999px; background: var(--hydra-panel-3); }
+.hydra-mini-bar > i { display: block; height: 100%; width: 0; border-radius: inherit; background: rgb(var(--hydra-accent-500)); transition: width .6s ease; }
+.hydra-mini-bar > i[data-level="warning"] { background: var(--hydra-warning); }
+.hydra-mini-bar > i[data-level="danger"] { background: var(--hydra-danger); }
+
 /* ---------------------------------------------------------------- Responsive */
 
 @media (max-width: 767px) {

@@ -205,6 +205,7 @@ Route::group(['prefix' => 'nodes'], function () {
     Route::get('/', [Admin\Nodes\NodeController::class, 'index'])->name('admin.nodes')->middleware('admin.can:nodes.view');
     Route::get('/new', [Admin\NodesController::class, 'create'])->name('admin.nodes.new')->middleware('admin.can:nodes.create');
     Route::get('/view/{node:id}', [Admin\Nodes\NodeViewController::class, 'index'])->name('admin.nodes.view')->middleware('admin.can:nodes.view');
+    Route::get('/view/{node:id}/usage', Admin\Nodes\NodeUsageController::class)->name('admin.nodes.view.usage')->middleware('admin.can:nodes.view');
     Route::get('/view/{node:id}/settings', [Admin\Nodes\NodeViewController::class, 'settings'])->name('admin.nodes.view.settings')->middleware('admin.can:nodes.update');
     Route::get('/view/{node:id}/configuration', [Admin\Nodes\NodeViewController::class, 'configuration'])->name('admin.nodes.view.configuration')->middleware('admin.can:nodes.configuration');
     Route::get('/view/{node:id}/allocation', [Admin\Nodes\NodeViewController::class, 'allocations'])->name('admin.nodes.view.allocation')->middleware('admin.can:nodes.allocations');

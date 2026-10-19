@@ -91,6 +91,8 @@ class Node extends Model implements Identifiable
         'disk_overallocate', 'upload_size', 'daemonBase',
         'daemonSFTP', 'daemonListen',
         'description', 'maintenance_mode',
+        // Hydra: speed of the network connection in Mbit/s.
+        'hydra_bandwidth',
     ];
 
     public static array $validationRules = [
@@ -110,6 +112,7 @@ class Node extends Model implements Identifiable
         'daemonListen' => 'required|numeric|between:1,65535',
         'maintenance_mode' => 'boolean',
         'upload_size' => 'int|min:1',
+        'hydra_bandwidth' => 'sometimes|integer|min:1|max:1000000',
     ];
 
     /**
@@ -124,6 +127,7 @@ class Node extends Model implements Identifiable
         'daemonSFTP' => 2022,
         'daemonListen' => 8080,
         'maintenance_mode' => false,
+        'hydra_bandwidth' => 1000,
     ];
 
     /**

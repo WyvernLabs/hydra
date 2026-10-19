@@ -30,6 +30,23 @@ class DaemonConfigurationRepository extends DaemonRepository
     }
 
     /**
+     * Hydra: live resource usage of the node, with the last minute of CPU and
+     * network samples.
+     *
+     * @throws DaemonConnectionException
+     */
+    public function getUsage(): array
+    {
+        try {
+            $response = $this->getHttpClient()->get('/api/system/usage', ['timeout' => 5]);
+        } catch (TransferException $exception) {
+            throw new DaemonConnectionException($exception);
+        }
+
+        return json_decode($response->getBody()->__toString(), true) ?? [];
+    }
+
+    /**
      * Updates the configuration information for a daemon. Updates the information for
      * this instance using a passed-in model. This allows us to change plenty of information
      * in the model, and still use the old, pre-update model to actually make the HTTP request.

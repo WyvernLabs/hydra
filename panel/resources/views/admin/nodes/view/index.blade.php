@@ -34,6 +34,11 @@
     </div>
 </div>
 <div class="row">
+    <div class="col-xs-12">
+        @include('admin.nodes.partials.usage', ['node' => $node])
+    </div>
+</div>
+<div class="row">
     <div class="col-sm-8">
         <div class="row">
             <div class="col-xs-12">
@@ -150,6 +155,7 @@
 
 @section('footer-scripts')
     @parent
+    @include('admin.nodes.partials.usage-script')
     <script>
     function escapeHtml(str) {
         var div = document.createElement('div');

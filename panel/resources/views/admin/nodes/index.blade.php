@@ -44,17 +44,25 @@
                             <th>{{ __('admin/nodes.location') }}</th>
                             <th>{{ __('admin/nodes.memory') }}</th>
                             <th>{{ __('admin/nodes.disk') }}</th>
+                            <th>{{ __('admin/nodes.usage.live') }}</th>
                             <th class="text-center">{{ __('admin/nodes.servers') }}</th>
                             <th class="text-center">{{ __('admin/nodes.ssl') }}</th>
                             <th class="text-center">{{ __('admin/nodes.public') }}</th>
                         </tr>
                         @foreach ($nodes as $node)
                             <tr>
-                                <td class="text-center text-muted left-icon" data-action="ping" data-secret="{{ $node->getDecryptedKey() }}" data-location="{{ $node->scheme }}://{{ $node->fqdn }}:{{ $node->daemonListen }}/api/system"><i class="fa fa-fw fa-refresh fa-spin"></i></td>
+                                <td class="text-center text-muted left-icon" data-action="ping" data-url="{{ route('admin.nodes.view.usage', $node->id) }}"><i class="fa fa-fw fa-refresh fa-spin"></i></td>
                                 <td>{!! $node->maintenance_mode ? '<span class="label label-warning"><i class="fa fa-wrench"></i></span> ' : '' !!}<a href="{{ route('admin.nodes.view', $node->id) }}">{{ $node->name }}</a></td>
                                 <td>{{ $node->location->short }}</td>
                                 <td>{{ $node->memory }} MiB</td>
                                 <td>{{ $node->disk }} MiB</td>
+                                <td>
+                                    <div class="hydra-mini-usage" data-mini-usage>
+                                        @foreach(['cpu' => 'CPU', 'memory' => 'RAM', 'disk' => 'Disk'] as $key => $label)
+                                            <div><span>{{ $label }}</span><div class="hydra-mini-bar"><i data-bar="{{ $key }}"></i></div><em data-text="{{ $key }}">—</em></div>
+                                        @endforeach
+                                    </div>
+                                </td>
                                 <td class="text-center">{{ $node->servers_count }}</td>
                                 <td class="text-center" style="color:{{ ($node->scheme === 'https') ? '#50af51' : '#d9534f' }}"><i class="fa fa-{{ ($node->scheme === 'https') ? 'lock' : 'unlock' }}"></i></td>
                                 <td class="text-center"><i class="fa fa-{{ ($node->public) ? 'eye' : 'eye-slash' }}"></i></td>
@@ -77,27 +85,32 @@
     @parent
     <script>
     (function pingNodes() {
-        $('td[data-action="ping"]').each(function(i, element) {
-            $.ajax({
-                type: 'GET',
-                url: $(element).data('location'),
-                headers: {
-                    'Authorization': 'Bearer ' + $(element).data('secret'),
-                },
-                timeout: 5000
-            }).done(function (data) {
-                $(element).find('i').tooltip({
-                    title: 'v' + data.version,
-                });
-                $(element).removeClass('text-muted').find('i').removeClass().addClass('fa fa-fw fa-heartbeat faa-pulse animated').css('color', '#50af51');
-            }).fail(function (error) {
-                var errorText = @json(__('admin/nodes.ping_error'));
-                try {
-                    errorText = error.responseJSON.errors[0].detail || errorText;
-                } catch (ex) {}
+        function level(percent) {
+            return percent >= 90 ? 'danger' : percent >= 75 ? 'warning' : 'ok';
+        }
 
-                $(element).removeClass('text-muted').find('i').removeClass().addClass('fa fa-fw fa-heart-o').css('color', '#d9534f');
-                $(element).find('i').tooltip({ title: errorText });
+        function bar(row, key, percent) {
+            percent = Math.max(0, Math.min(100, percent || 0));
+            row.find('[data-bar="' + key + '"]').css('width', percent + '%').attr('data-level', level(percent));
+            row.find('[data-text="' + key + '"]').text(Math.round(percent) + '%');
+        }
+
+        $('td[data-action="ping"]').each(function (i, element) {
+            var icon = $(element).find('i');
+            var row = $(element).closest('tr');
+            $.ajax({ type: 'GET', url: $(element).data('url'), dataType: 'json', timeout: 8000 }).done(function (data) {
+                if (!data.online) {
+                    icon.removeClass().addClass('fa fa-fw fa-heart-o').css('color', '#d9534f');
+                    icon.attr('data-original-title', @json(__('admin/nodes.ping_error'))).tooltip();
+                    return;
+                }
+                $(element).removeClass('text-muted');
+                icon.removeClass().addClass('fa fa-fw fa-heartbeat faa-pulse animated').css('color', '#50af51');
+                bar(row, 'cpu', data.cpu);
+                bar(row, 'memory', data.memory_total ? data.memory_used / data.memory_total * 100 : 0);
+                bar(row, 'disk', data.disk_total ? data.disk_used / data.disk_total * 100 : 0);
+            }).fail(function () {
+                icon.removeClass().addClass('fa fa-fw fa-heart-o').css('color', '#d9534f');
             });
         }).promise().done(function () {
             setTimeout(pingNodes, 10000);

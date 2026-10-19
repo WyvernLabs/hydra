@@ -187,6 +187,14 @@
                         </div>
                         <p class="text-muted"><small>{{ __('admin/nodes.settings.upload_size_help') }}</small></p>
                     </div>
+                    <div class="form-group col-xs-12">
+                        <label for="hydra_bandwidth" class="control-label">{{ __('admin/nodes.usage.bandwidth') }}</label>
+                        <div class="input-group">
+                            <input type="number" min="1" id="hydra_bandwidth" name="hydra_bandwidth" class="form-control" value="{{ old('hydra_bandwidth', $node->hydra_bandwidth) }}"/>
+                            <span class="input-group-addon">Mbit/s</span>
+                        </div>
+                        <p class="text-muted"><small>{{ __('admin/nodes.usage.bandwidth_help') }}</small></p>
+                    </div>
                     <div class="col-xs-12">
                         <div class="row">
                             <div class="form-group col-md-6">

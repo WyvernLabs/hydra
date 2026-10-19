@@ -13,7 +13,7 @@ return [
     'servers' => 'Server',
     'ssl' => 'SSL',
     'public' => 'Öffentlich',
-    'ping_error' => 'Keine Verbindung zum Node! Details stehen in der Browser-Konsole.',
+    'ping_error' => 'Die Node ist nicht erreichbar.',
 
     'tabs' => [
         'about' => 'Übersicht',
@@ -158,5 +158,33 @@ return [
         'server_name' => 'Servername',
         'owner' => 'Besitzer',
         'service' => 'Dienst',
+    ],
+
+    'usage' => [
+        'live' => 'Live-Auslastung',
+        'cpu' => 'CPU-Last',
+        'memory' => 'Arbeitsspeicher',
+        'disk' => 'Festplatte',
+        'outgoing' => 'Ausgehender Traffic',
+        'incoming' => 'Eingehender Traffic',
+        'of_limit' => 'vom Limit',
+        'load' => 'Load (1 / 5 / 15 Min.)',
+        'uptime' => 'Laufzeit',
+        'servers' => 'Server',
+        'swap' => 'Swap',
+        'offline' => 'Die Node ist nicht erreichbar, die Werte sind nicht aktuell.',
+        'bandwidth' => 'Netzwerkanbindung',
+        'bandwidth_help' => 'Geschwindigkeit der Netzwerkanbindung der Node, für die Traffic-Graphen (1000 = 1 Gbit/s).',
+        'js' => [
+            'threads' => 'Threads',
+            'of_line' => 'der Leitung',
+            'peak' => 'Spitze',
+            'since_boot' => 'Seit Start:',
+            'running' => 'laufen',
+            'none' => 'keiner',
+            'days' => 'T',
+            'hours' => 'Std.',
+            'minutes' => 'Min.',
+        ],
     ],
 ];

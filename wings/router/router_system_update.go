@@ -13,6 +13,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/pterodactyl/wings/config"
+	"github.com/pterodactyl/wings/router/middleware"
 	"github.com/pterodactyl/wings/system"
 )
 
@@ -113,4 +115,25 @@ func tailFile(path string, max int64) string {
 		return ""
 	}
 	return string(b)
+}
+
+// Hydra: live resource usage of this node for the admin area of the Panel.
+type nodeUsage struct {
+	system.Usage
+	Servers        int `json:"servers"`
+	ServersRunning int `json:"servers_running"`
+}
+
+func getNodeUsage(c *gin.Context) {
+	out := nodeUsage{Usage: system.GetUsage(config.Get().System.Data)}
+
+	servers := middleware.ExtractManager(c).All()
+	out.Servers = len(servers)
+	for _, s := range servers {
+		if s.IsRunning() {
+			out.ServersRunning++
+		}
+	}
+
+	c.JSON(http.StatusOK, out)
 }

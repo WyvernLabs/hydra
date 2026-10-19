@@ -13,7 +13,7 @@ return [
     'servers' => 'Servers',
     'ssl' => 'SSL',
     'public' => 'Public',
-    'ping_error' => 'Error connecting to node! Check browser console for details.',
+    'ping_error' => 'Node is not reachable.',
 
     'tabs' => [
         'about' => 'About',
@@ -158,5 +158,33 @@ return [
         'server_name' => 'Server Name',
         'owner' => 'Owner',
         'service' => 'Service',
+    ],
+
+    'usage' => [
+        'live' => 'Live usage',
+        'cpu' => 'CPU Load',
+        'memory' => 'Memory Load',
+        'disk' => 'Disk Usage',
+        'outgoing' => 'Outgoing Traffic',
+        'incoming' => 'Incoming Traffic',
+        'of_limit' => 'of limit',
+        'load' => 'Load average (1 / 5 / 15 min)',
+        'uptime' => 'Uptime',
+        'servers' => 'Servers',
+        'swap' => 'Swap',
+        'offline' => 'The node is not reachable, the values are not up to date.',
+        'bandwidth' => 'Network Connection',
+        'bandwidth_help' => 'Speed of the node\'s network connection, used for the traffic graphs (1000 = 1 Gbit/s).',
+        'js' => [
+            'threads' => 'threads',
+            'of_line' => 'of the line',
+            'peak' => 'Peak',
+            'since_boot' => 'Since start:',
+            'running' => 'running',
+            'none' => 'none',
+            'days' => 'd',
+            'hours' => 'h',
+            'minutes' => 'min',
+        ],
     ],
 ];

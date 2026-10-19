@@ -104,6 +104,7 @@ func Configure(m *wserver.Manager, client remote.Client) *gin.Engine {
 	protected.POST("/api/update", postUpdateConfiguration)
 	protected.GET("/api/system", getSystemInformation)
 	protected.GET("/api/system/update", getNodeUpdate)
+	protected.GET("/api/system/usage", getNodeUsage)
 	protected.POST("/api/system/update", postNodeUpdate)
 	protected.GET("/api/servers", getAllServers)
 	protected.POST("/api/servers", postCreateServer)

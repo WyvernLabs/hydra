@@ -772,6 +772,43 @@
 
 .hydra-admin-profile-actions { display: flex; gap: 8px; }
 
+/* ---------------------------------------------------------------- Background editor (Hydra) */
+
+.hydra-bg-preview {
+    position: relative;
+    overflow: hidden;
+    height: 150px;
+    margin-bottom: 14px;
+    border: 1px solid var(--hydra-border-strong);
+    border-radius: var(--hydra-radius-sm);
+    background: var(--hydra-bg);
+}
+
+.hydra-bg-preview-image {
+    position: absolute;
+    inset: 0;
+    background: var(--hydra-bg) var(--hydra-pattern) center / 380px repeat;
+    background-size: cover;
+    transform: scale(1.06);
+}
+
+.hydra-bg-preview-image:not([data-has-image]) { background-size: 380px; }
+
+.hydra-bg-preview-dim { position: absolute; inset: 0; background: #000; opacity: 0; }
+
+.hydra-bg-preview-label {
+    position: absolute;
+    left: 10px;
+    bottom: 8px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.55);
+    color: #fff;
+    font-size: 11px;
+}
+
+.hydra-admin input[type="range"] { width: 100%; accent-color: rgb(var(--hydra-accent-500)); }
+
 /* ---------------------------------------------------------------- Responsive */
 
 @media (max-width: 767px) {

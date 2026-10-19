@@ -153,4 +153,22 @@ return [
         'delete_notice' => 'Entfernt den Link und bei Seiten auch deren Inhalt.',
         'delete' => 'Link löschen',
     ],
+
+    'backgrounds' => [
+        'login' => 'Hintergrund Login',
+        'login_help' => 'Hintergrund der Login-Seite und der anderen Seiten für nicht angemeldete Besucher.',
+        'dashboard' => 'Hintergrund Dashboard',
+        'dashboard_help' => 'Hintergrund des Kundenbereichs. Server, deren Egg keinen eigenen Hintergrund hat, verwenden ihn ebenfalls.',
+        'egg' => 'Server-Hintergrund',
+        'egg_help' => 'Hintergrund der Serverseiten (Konsole, Dateien, …) aller Server mit diesem Egg. Ohne eigenen Hintergrund wird der des Dashboards verwendet.',
+        'image' => 'Bild',
+        'image_help' => 'PNG, JPG, GIF oder WebP bis 20 MB. Ohne Bild wird das Hexagon-Muster verwendet, das sich ebenfalls weichzeichnen und abdunkeln lässt.',
+        'blur' => 'Weichzeichnen',
+        'dim' => 'Abdunkeln',
+        'reset' => 'Auf Standard zurücksetzen',
+        'egg_reset' => 'Dashboard-Hintergrund verwenden',
+        'default' => 'Standard (Hexagons)',
+        'custom' => 'Eigenes Bild',
+        'saved' => 'Der Hintergrund wurde gespeichert.',
+    ],
 ];

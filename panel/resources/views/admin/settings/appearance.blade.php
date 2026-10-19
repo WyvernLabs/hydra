@@ -94,9 +94,30 @@
             </div>
         </div>
         <div class="row">
+            @foreach($backgrounds as $slot => $background)
+                <div class="col-md-6">
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">{{ __("admin/settings.backgrounds.$slot") }}</h3>
+                        </div>
+                        <div class="box-body">
+                            <p class="text-muted small">{{ __("admin/settings.backgrounds.{$slot}_help") }}</p>
+                            @include('partials.admin.hydra.background-editor', [
+                                'prefix' => "bg_$slot",
+                                'background' => $background,
+                                'resetName' => 'reset_background',
+                                'resetValue' => $slot,
+                            ])
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+        <div class="row">
             <div class="col-xs-12">
                 <div class="box">
                     <div class="box-footer">
+                        {!! method_field('PATCH') !!}
                         {!! csrf_field() !!}
                         <button type="submit" name="_method" value="PATCH" class="btn btn-sm btn-primary pull-right">{{ __('admin/common.actions.save') }}</button>
                     </div>
@@ -108,6 +129,7 @@
 
 @section('footer-scripts')
     @parent
+    @include('partials.admin.hydra.background-editor-script')
     <script>
         (function () {
             var picker = document.getElementById('hydraAccentPicker');

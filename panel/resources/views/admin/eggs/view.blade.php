@@ -182,10 +182,40 @@
         </div>
     </div>
 </form>
+{{-- Hydra: background of the server pages of this egg. --}}
+<form action="{{ route('admin.nests.egg.background', $egg->id) }}" method="POST" enctype="multipart/form-data">
+    {!! csrf_field() !!}
+    {!! method_field('PATCH') !!}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">{{ __('admin/settings.backgrounds.egg') }}</h3>
+                </div>
+                <div class="box-body">
+                    <p class="text-muted small">{{ __('admin/settings.backgrounds.egg_help') }}</p>
+                    @include('partials.admin.hydra.background-editor', [
+                        'prefix' => 'bg_egg',
+                        'background' => app(\Pterodactyl\Services\Hydra\BackgroundService::class)->forEgg($egg) ?? ['image' => null, 'blur' => 0, 'dim' => 0],
+                        'resetName' => 'reset_background',
+                        'resetValue' => '1',
+                        'resetLabel' => __('admin/settings.backgrounds.egg_reset'),
+                    ])
+                </div>
+                @if(Auth::user()->hasAdminPermission('eggs.update'))
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-sm btn-primary pull-right">{{ __('admin/common.actions.save') }}</button>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</form>
 @endsection
 
 @section('footer-scripts')
     @parent
+    @include('partials.admin.hydra.background-editor-script')
     <script>
     $('#pConfigFrom').select2();
     $('#deleteButton').on('mouseenter', function (event) {

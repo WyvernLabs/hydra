@@ -250,6 +250,7 @@ Route::group(['prefix' => 'nests'], function () {
 
     Route::patch('/view/{nest:id}', [Admin\Nests\NestController::class, 'update'])->middleware('admin.can:nests.update');
     Route::patch('/egg/{egg:id}', [Admin\Nests\EggController::class, 'update'])->middleware('admin.can:eggs.update');
+    Route::patch('/egg/{egg:id}/background', [Admin\Nests\EggBackgroundController::class, 'update'])->name('admin.nests.egg.background')->middleware('admin.can:eggs.update');
     Route::patch('/egg/{egg:id}/scripts', [Admin\Nests\EggScriptController::class, 'update'])->middleware('admin.can:eggs.update');
     Route::patch('/egg/{egg:id}/variables/{variable:id}', [Admin\Nests\EggVariableController::class, 'update'])->name('admin.nests.egg.variables.edit')->middleware('admin.can:eggs.update');
 

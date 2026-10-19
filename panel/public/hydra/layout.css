@@ -16,6 +16,31 @@ body.hydra-body {
 
 a { color: rgb(var(--hydra-accent-400)); }
 
+/* ---------------------------------------------------------------- Custom backgrounds */
+
+/* Set in the admin area for the login page, the dashboard and each egg. */
+.hydra-backdrop-layer {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.hydra-backdrop-layer-image {
+    position: absolute;
+    inset: 0;
+    background: var(--hydra-bg) var(--hydra-pattern) center top / 760px repeat;
+    /* Blurring pulls in transparent pixels at the edges; scaling hides that. */
+    transform: scale(1.06);
+}
+
+.hydra-backdrop-layer-dim {
+    position: absolute;
+    inset: 0;
+    background: #000;
+}
+
 /* ---------------------------------------------------------------- Shell */
 
 .hydra-shell {
@@ -286,7 +311,7 @@ a { color: rgb(var(--hydra-accent-400)); }
     right: -1px;
     bottom: 100%;
     height: calc(var(--hydra-gap) + 1px);
-    background: var(--hydra-bg) var(--hydra-pattern) center top / 760px repeat fixed;
+    background: var(--hydra-page-background, var(--hydra-bg) var(--hydra-pattern) center top / 760px repeat fixed);
 }
 
 .hydra-dashboard-greeting {

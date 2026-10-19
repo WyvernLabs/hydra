@@ -46,4 +46,20 @@ return [
     'profiles' => [
         'upload_limit' => 4,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Backgrounds
+    |--------------------------------------------------------------------------
+    |
+    | Backgrounds of the login page and the dashboard, set in the admin area
+    | under Settings > Appearance ("settings::hydra:backgrounds:*"). "image"
+    | is a file in storage/app/hydra/backgrounds, blur is in pixels and dim
+    | in percent. Without an image the hexagon pattern is used.
+    |
+    */
+    'backgrounds' => [
+        'login' => ['image' => null, 'blur' => 0, 'dim' => 0],
+        'dashboard' => ['image' => null, 'blur' => 0, 'dim' => 0],
+    ],
 ];

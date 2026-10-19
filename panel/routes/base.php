@@ -19,6 +19,12 @@ Route::get('/branding/{type}', Base\BrandingController::class)
     ->name('branding');
 
 // Hydra: profile pictures and banners of users.
+// Hydra: backgrounds of the login page, the dashboard and the server pages.
+Route::get('/backgrounds/{file}', Base\BackgroundController::class)
+    ->withoutMiddleware(['auth', RequireTwoFactorAuthentication::class])
+    ->where('file', '[a-z0-9-]+\.(png|jpg|gif|webp)')
+    ->name('backgrounds');
+
 // Hydra: pages written in the admin area. Public ones work without logging in.
 Route::get('/pages/{slug}', Base\PageController::class)
     ->withoutMiddleware(['auth', RequireTwoFactorAuthentication::class])

@@ -16,6 +16,18 @@ export interface SiteSettings {
     };
     profileUploadLimit: number;
     links: PanelLinkItem[];
+    backgrounds: {
+        login: HydraBackground;
+        dashboard: HydraBackground;
+    };
+}
+
+// Hydra: a background set in the admin area. Without an image the hexagon
+// pattern is used; blur is in pixels, dim in percent.
+export interface HydraBackground {
+    image: string | null;
+    blur: number;
+    dim: number;
 }
 
 // Hydra: a link or page in the "Links" section of the sidebar.

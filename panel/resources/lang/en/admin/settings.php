@@ -153,4 +153,22 @@ return [
         'delete_notice' => 'Removes the link and, for pages, their content.',
         'delete' => 'Delete Link',
     ],
+
+    'backgrounds' => [
+        'login' => 'Login Background',
+        'login_help' => 'Background of the login page and the other pages for visitors who are not logged in.',
+        'dashboard' => 'Dashboard Background',
+        'dashboard_help' => 'Background of the client area. Servers whose egg has no own background use it too.',
+        'egg' => 'Server Background',
+        'egg_help' => 'Background of the server pages (console, files, …) of servers with this egg. Without one, the dashboard background is used.',
+        'image' => 'Image',
+        'image_help' => 'PNG, JPG, GIF or WebP up to 20 MB. Without an image the hexagon pattern is used, which can be blurred and darkened as well.',
+        'blur' => 'Blur',
+        'dim' => 'Darken',
+        'reset' => 'Reset to default',
+        'egg_reset' => 'Use dashboard background',
+        'default' => 'Default (hexagons)',
+        'custom' => 'Own image',
+        'saved' => 'The background has been saved.',
+    ],
 ];

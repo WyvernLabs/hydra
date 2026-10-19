@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int $id
  * @property string $uuid
  * @property int $nest_id
+ * @property array|null $hydra_background
  * @property string $author
  * @property string $name
  * @property string|null $description
@@ -119,6 +120,8 @@ class Egg extends Model implements Identifiable
         'features' => 'array',
         'docker_images' => 'array',
         'file_denylist' => 'array',
+        // Hydra: background of the server pages, see BackgroundService.
+        'hydra_background' => 'array',
     ];
 
     public static array $validationRules = [

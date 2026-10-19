@@ -6,14 +6,18 @@ import ResetPasswordContainer from '@/components/auth/ResetPasswordContainer';
 import LoginCheckpointContainer from '@/components/auth/LoginCheckpointContainer';
 import { NotFound } from '@/components/elements/ScreenBlock';
 import { useHistory, useLocation } from 'react-router';
+import { useStoreState } from '@/state/hooks';
+import HydraBackdrop from '@/components/hydra/HydraBackdrop';
 
 export default () => {
     const history = useHistory();
     const location = useLocation();
     const { path } = useRouteMatch();
+    const background = useStoreState((state) => state.settings.data!.backgrounds?.login);
 
     return (
-        <div className={'pt-8 xl:pt-32'}>
+        <div className={'pt-8 xl:pt-32 hydra-auth-page'}>
+            <HydraBackdrop background={background} />
             <Switch location={location}>
                 <Route path={`${path}/login`} component={LoginContainer} exact />
                 <Route path={`${path}/login/checkpoint`} component={LoginCheckpointContainer} />

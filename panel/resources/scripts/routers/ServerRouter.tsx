@@ -37,6 +37,7 @@ export default () => {
     const uuid = ServerContext.useStoreState((state) => state.server.data?.uuid);
     const inConflictState = ServerContext.useStoreState((state) => state.server.inConflictState);
     const serverId = ServerContext.useStoreState((state) => state.server.data?.internalId);
+    const background = ServerContext.useStoreState((state) => state.server.data?.background);
     const workspace = useWorkspaceSection();
     const { t } = useTranslation();
     const getServer = ServerContext.useStoreActions((actions) => actions.server.getServer);
@@ -111,7 +112,7 @@ export default () => {
     }, [match.params.id]);
 
     return (
-        <HydraLayout key={'server-router'} sections={[workspace, serverSection]}>
+        <HydraLayout key={'server-router'} sections={[workspace, serverSection]} background={background}>
             {!uuid || !id ? (
                 error ? (
                     <ServerError message={error} />

@@ -2,6 +2,7 @@ import http, { FractalResponseData, FractalResponseList } from '@/api/http';
 import { rawDataToServerAllocation, rawDataToServerEggVariable } from '@/api/transformers';
 import { ServerEggVariable, ServerStatus } from '@/api/server/types';
 import { Identifier } from '@/api/definitions';
+import { HydraBackground } from '@/state/settings';
 
 export interface Allocation {
     id: number;
@@ -63,6 +64,8 @@ export interface Server {
     allocations: Allocation[];
     // Hydra: only filled in for users who may open every server.
     owner: { username: string; name: string } | null;
+    // Hydra: background of the egg, null for the dashboard background.
+    background: HydraBackground | null;
 }
 
 export const rawDataToServerObject = ({ attributes: data }: FractalResponseData): Server => ({
@@ -73,6 +76,7 @@ export const rawDataToServerObject = ({ attributes: data }: FractalResponseData)
     uuid: data.uuid,
     name: data.name,
     owner: data.owner || null,
+    background: data.background || null,
     node: data.node,
     isNodeUnderMaintenance: data.is_node_under_maintenance,
     status: data.status,

@@ -34,6 +34,12 @@ class SettingsServiceProvider extends ServiceProvider
         'hydra:branding:logo',
         'hydra:branding:favicon',
         'hydra:profiles:upload_limit',
+        'hydra:backgrounds:login:image',
+        'hydra:backgrounds:login:blur',
+        'hydra:backgrounds:login:dim',
+        'hydra:backgrounds:dashboard:image',
+        'hydra:backgrounds:dashboard:blur',
+        'hydra:backgrounds:dashboard:dim',
     ];
 
     /**

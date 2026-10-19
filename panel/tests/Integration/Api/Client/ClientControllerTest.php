@@ -247,9 +247,13 @@ class ClientControllerTest extends ClientApiIntegrationTestCase
         $response->assertJsonCount(2, 'data');
 
         $response->assertJsonPath('data.0.attributes.server_owner', false);
-        $response->assertJsonPath('data.0.attributes.identifier', $servers[2]->uuidShort);
         $response->assertJsonPath('data.1.attributes.server_owner', false);
-        $response->assertJsonPath('data.1.attributes.identifier', $servers[3]->uuidShort);
+
+        // Hydra: the servers are sorted by the username of their owner, which is shown as well.
+        $expected = collect([$servers[2], $servers[3]])->sortBy(fn ($server) => $server->user->username)->values();
+        $response->assertJsonPath('data.0.attributes.identifier', $expected[0]->uuidShort);
+        $response->assertJsonPath('data.1.attributes.identifier', $expected[1]->uuidShort);
+        $response->assertJsonPath('data.0.attributes.owner.username', $expected[0]->user->username);
     }
 
     /**

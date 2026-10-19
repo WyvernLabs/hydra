@@ -181,7 +181,7 @@ function initUserIdSelect(data) {
 
             data: function (params) {
                 return {
-                    filter: { email: params.term },
+                    filter: { username: params.term },
                     page: params.page,
                 };
             },
@@ -203,7 +203,7 @@ function initUserIdSelect(data) {
                 <span class="username"> \
                     <a href="#">' + escapeHtml(data.name_first) + ' ' + escapeHtml(data.name_last) +'</a> \
                 </span> \
-                <span class="description"><strong>' + escapeHtml(data.email) + '</strong> - ' + escapeHtml(data.username) + '</span> \
+                <span class="description"><strong>' + escapeHtml(data.username) + '</strong> - ' + escapeHtml(data.email) + '</span> \
             </div>';
         },
         templateSelection: function (data) {
@@ -211,7 +211,7 @@ function initUserIdSelect(data) {
                 <span> \
                 </span> \
                 <span style="padding-left:5px;"> \
-                    ' + escapeHtml(data.name_first) + ' ' + escapeHtml(data.name_last) + ' (<strong>' + escapeHtml(data.email) + '</strong>) \
+                    ' + escapeHtml(data.name_first) + ' ' + escapeHtml(data.name_last) + ' (<strong>' + escapeHtml(data.username) + '</strong>) \
                 </span> \
             </div>';
         }

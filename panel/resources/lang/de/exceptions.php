@@ -35,7 +35,8 @@ return [
     'subusers' => [
         'editing_self' => 'Du kannst dein eigenes Unterbenutzer-Konto nicht bearbeiten.',
         'user_is_owner' => 'Der Besitzer des Servers kann nicht als Unterbenutzer hinzugefügt werden.',
-        'subuser_exists' => 'Ein Benutzer mit dieser E-Mail-Adresse ist bereits Unterbenutzer dieses Servers.',
+        'subuser_exists' => 'Dieser Benutzer ist bereits Unterbenutzer dieses Servers.',
+        'user_not_found' => 'Es gibt kein Konto mit dem Benutzernamen „:username“.',
     ],
     'databases' => [
         'delete_has_databases' => 'Ein Datenbank-Host mit aktiven Datenbanken kann nicht gelöscht werden.',

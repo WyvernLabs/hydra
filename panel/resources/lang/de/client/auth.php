@@ -5,11 +5,11 @@ return [
 
     'login' => [
         'title' => 'Anmelden',
-        'username' => 'Benutzername oder E-Mail',
+        'username' => 'Benutzername',
         'password' => 'Passwort',
         'submit' => 'Anmelden',
         'forgot_password' => 'Passwort vergessen?',
-        'username_required' => 'Bitte gib deinen Benutzernamen oder deine E-Mail-Adresse ein.',
+        'username_required' => 'Bitte gib deinen Benutzernamen ein.',
         'password_required' => 'Bitte gib dein Passwort ein.',
     ],
 

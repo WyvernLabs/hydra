@@ -28,7 +28,7 @@ export default ({ subuser }: Props) => {
                 <img css={tw`w-full h-full`} src={`${subuser.image}?s=400`} />
             </div>
             <div css={tw`ml-4 flex-1 overflow-hidden`}>
-                <p css={tw`text-sm truncate`}>{subuser.email}</p>
+                <p css={tw`text-sm truncate`}>{subuser.username}</p>
                 {subuser.allowedPaths.length > 0 && (
                     <p css={tw`text-xs text-neutral-400 truncate`} title={subuser.allowedPaths.join(', ')}>
                         {t('users.folders_limited', { count: subuser.allowedPaths.length })}:{' '}

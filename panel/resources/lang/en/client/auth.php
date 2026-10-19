@@ -5,11 +5,11 @@ return [
 
     'login' => [
         'title' => 'Login to Continue',
-        'username' => 'Username or Email',
+        'username' => 'Username',
         'password' => 'Password',
         'submit' => 'Login',
         'forgot_password' => 'Forgot password?',
-        'username_required' => 'A username or email must be provided.',
+        'username_required' => 'A username must be provided.',
         'password_required' => 'Please enter your account password.',
     ],
 

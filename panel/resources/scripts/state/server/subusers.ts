@@ -33,7 +33,6 @@ export type SubuserPermission =
 export interface Subuser {
     uuid: string;
     username: string;
-    email: string;
     image: string;
     twoFactorEnabled: boolean;
     createdAt: Date;

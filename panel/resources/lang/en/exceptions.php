@@ -35,7 +35,8 @@ return [
     'subusers' => [
         'editing_self' => 'Editing your own subuser account is not permitted.',
         'user_is_owner' => 'You cannot add the server owner as a subuser for this server.',
-        'subuser_exists' => 'A user with that email address is already assigned as a subuser for this server.',
+        'subuser_exists' => 'This user is already assigned as a subuser for this server.',
+        'user_not_found' => 'There is no account with the username ":username".',
     ],
     'databases' => [
         'delete_has_databases' => 'Cannot delete a database host server that has active databases linked to it.',

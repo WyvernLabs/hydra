@@ -125,9 +125,9 @@ return [
             'image' => 'Updated the Docker Image for the server from :old to :new',
         ],
         'subuser' => [
-            'create' => 'Added :email as a subuser',
-            'update' => 'Updated the subuser permissions for :email',
-            'delete' => 'Removed :email as a subuser',
+            'create' => 'Added :username as a subuser',
+            'update' => 'Updated the subuser permissions for :username',
+            'delete' => 'Removed :username as a subuser',
         ],
     ],
 ];

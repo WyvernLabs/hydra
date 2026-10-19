@@ -26,7 +26,7 @@ type Props = {
 };
 
 interface Values {
-    email: string;
+    username: string;
     permissions: string[];
     restrictFolders: boolean;
     allowedPaths: string[];
@@ -78,7 +78,7 @@ const EditSubuserModal = ({ subuser }: Props) => {
         createOrUpdateSubuser(
             uuid,
             {
-                email: values.email,
+                username: values.username,
                 permissions: values.permissions,
                 allowedPaths: values.restrictFolders ? cleanPaths(values.allowedPaths) : [],
             },
@@ -111,17 +111,14 @@ const EditSubuserModal = ({ subuser }: Props) => {
             onSubmit={submit}
             initialValues={
                 {
-                    email: subuser?.email || '',
+                    username: subuser?.username || '',
                     permissions: subuser?.permissions || [],
                     restrictFolders: (subuser?.allowedPaths.length || 0) > 0 || ownPaths.length > 0,
                     allowedPaths: subuser?.allowedPaths.length ? subuser.allowedPaths : ownPaths,
                 } as Values
             }
             validationSchema={object().shape({
-                email: string()
-                    .max(191, t('users.email_max'))
-                    .email(t('users.email_invalid'))
-                    .required(t('users.email_invalid')),
+                username: string().trim().max(191).required(t('users.username_required')),
                 permissions: array().of(string()),
                 restrictFolders: boolean(),
                 allowedPaths: array()
@@ -145,7 +142,7 @@ const EditSubuserModal = ({ subuser }: Props) => {
                 <div css={tw`flex justify-between`}>
                     <h2 css={tw`text-2xl`} ref={ref}>
                         {subuser
-                            ? t(canEditUser ? 'users.modify_title' : 'users.view_title', { email: subuser.email })
+                            ? t(canEditUser ? 'users.modify_title' : 'users.view_title', { username: subuser.username })
                             : t('users.create_title')}
                     </h2>
                     <div>
@@ -162,7 +159,12 @@ const EditSubuserModal = ({ subuser }: Props) => {
                 )}
                 {!subuser && (
                     <div css={tw`mt-6`}>
-                        <Field name={'email'} label={t('users.email')} description={t('users.email_help')} />
+                        <Field
+                            name={'username'}
+                            label={t('users.username')}
+                            description={t('users.username_help')}
+                            autoComplete={'off'}
+                        />
                     </div>
                 )}
                 <FolderAccessBox isEditable={canEditUser} ownPaths={ownPaths} css={tw`mt-6`} />

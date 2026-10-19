@@ -38,7 +38,7 @@ return [
     'fields' => [
         'name_help' => 'Character limits: <code>a-z A-Z 0-9 _ - .</code> and <code>[Space]</code>.',
         'owner' => 'Server Owner',
-        'owner_help' => 'Email address of the Server Owner.',
+        'owner_help' => 'Username of the Server Owner.',
         'description' => 'Server Description',
         'description_help' => 'A brief description of this server.',
         'start_on_completion' => 'Start Server when Installed',
@@ -143,7 +143,7 @@ return [
         'base' => 'Base Information',
         'name_help' => 'Character limits: <code>a-zA-Z0-9_-</code> and <code>[Space]</code>.',
         'external_id_help' => 'Leave empty to not assign an external identifier for this server. The external ID should be unique to this server and not be in use by any other servers.',
-        'owner_help' => 'You can change the owner of this server by changing this field to an email matching another use on this system. If you do this a new daemon security token will be generated automatically.',
+        'owner_help' => 'You can change the owner of this server by searching for the username of another user. If you do this a new daemon security token will be generated automatically.',
         'update' => 'Update Details',
     ],
 

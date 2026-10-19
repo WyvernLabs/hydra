@@ -3,7 +3,7 @@ import { rawDataToServerSubuser } from '@/api/server/users/getServerSubusers';
 import { Subuser } from '@/state/server/subusers';
 
 interface Params {
-    email: string;
+    username: string;
     permissions: string[];
     allowedPaths: string[];
 }
@@ -11,7 +11,7 @@ interface Params {
 export default (uuid: string, params: Params, subuser?: Subuser): Promise<Subuser> => {
     return new Promise((resolve, reject) => {
         http.post(`/api/client/servers/${uuid}/users${subuser ? `/${subuser.uuid}` : ''}`, {
-            email: params.email,
+            username: params.username,
             permissions: params.permissions,
             // eslint-disable-next-line camelcase
             allowed_paths: params.allowedPaths,

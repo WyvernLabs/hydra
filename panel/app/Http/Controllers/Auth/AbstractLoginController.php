@@ -91,11 +91,11 @@ abstract class AbstractLoginController extends Controller
     }
 
     /**
-     * Determine if the user is logging in using an email or username.
+     * Hydra: users only log in with their username, never with their email.
      */
     protected function getField(?string $input = null): string
     {
-        return ($input && str_contains($input, '@')) ? 'email' : 'username';
+        return 'username';
     }
 
     /**

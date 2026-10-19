@@ -66,7 +66,7 @@ class SubuserController extends ClientApiController
     {
         $response = $this->creationService->handle(
             $server,
-            $request->input('email'),
+            $request->input('username'),
             $this->getDefaultPermissions($request)
         );
 
@@ -79,7 +79,7 @@ class SubuserController extends ClientApiController
         Activity::event('server:subuser.create')
             ->subject($response->user)
             ->property([
-                'email' => $request->input('email'),
+                'username' => $response->user->username,
                 'permissions' => $this->getDefaultPermissions($request),
                 'allowed_paths' => $paths ?? [],
             ])
@@ -115,7 +115,7 @@ class SubuserController extends ClientApiController
         $log = Activity::event('server:subuser.update')
             ->subject($subuser->user)
             ->property([
-                'email' => $subuser->user->email,
+                'username' => $subuser->user->username,
                 'old' => $current,
                 'new' => $permissions,
                 'old_paths' => $currentPaths,
@@ -152,7 +152,7 @@ class SubuserController extends ClientApiController
 
         $log = Activity::event('server:subuser.delete')
             ->subject($subuser->user)
-            ->property('email', $subuser->user->email)
+            ->property('username', $subuser->user->username)
             ->property('revoked', true);
 
         $log->transaction(function () use ($server, $subuser) {

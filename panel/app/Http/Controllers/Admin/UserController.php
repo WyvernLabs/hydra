@@ -164,7 +164,8 @@ class UserController extends Controller
      */
     public function json(Request $request): Model|Collection
     {
-        $users = QueryBuilder::for(User::query())->allowedFilters(['email'])->paginate(25);
+        // Hydra: owners are picked by their username.
+        $users = QueryBuilder::for(User::query())->allowedFilters(['username', 'email'])->paginate(25);
 
         // Handle single user requests.
         if ($request->query('user_id')) {

@@ -37,7 +37,7 @@ return [
     'fields' => [
         'name_help' => 'Erlaubte Zeichen: <code>a-z A-Z 0-9 _ - .</code> und <code>[Leerzeichen]</code>.',
         'owner' => 'Besitzer',
-        'owner_help' => 'E-Mail-Adresse des Besitzers.',
+        'owner_help' => 'Benutzername des Besitzers.',
         'description' => 'Beschreibung',
         'description_help' => 'Eine kurze Beschreibung dieses Servers.',
         'start_on_completion' => 'Nach der Installation starten',
@@ -142,7 +142,7 @@ return [
         'base' => 'Grunddaten',
         'name_help' => 'Erlaubte Zeichen: <code>a-zA-Z0-9_-</code> und <code>[Leerzeichen]</code>.',
         'external_id_help' => 'Leer lassen, wenn keine externe ID vergeben werden soll. Die externe ID muss eindeutig sein und darf von keinem anderen Server verwendet werden.',
-        'owner_help' => 'Um den Besitzer zu ändern, gib die E-Mail-Adresse eines anderen Benutzers ein. Dabei wird automatisch ein neuer Sicherheits-Token für den Daemon erzeugt.',
+        'owner_help' => 'Um den Besitzer zu ändern, suche nach dem Benutzernamen eines anderen Benutzers. Dabei wird automatisch ein neuer Sicherheits-Token für den Daemon erzeugt.',
         'update' => 'Details speichern',
     ],
 

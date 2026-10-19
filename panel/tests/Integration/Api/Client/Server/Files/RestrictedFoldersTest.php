@@ -86,20 +86,21 @@ class RestrictedFoldersTest extends ClientApiIntegrationTestCase
     public function testRestrictedSubuserCanOnlyHandOutTheirOwnFolders(): void
     {
         [$user, $server] = $this->restrictedAccount(['/plugins']);
+        User::factory()->create(['username' => 'builder']);
 
         $this->actingAs($user)->postJson($this->link($server, '/users'), [
-            'email' => 'builder@example.com',
+            'username' => 'builder',
             'permissions' => [Permission::ACTION_FILE_READ],
         ])->assertForbidden();
 
         $this->actingAs($user)->postJson($this->link($server, '/users'), [
-            'email' => 'builder@example.com',
+            'username' => 'builder',
             'permissions' => [Permission::ACTION_FILE_READ],
             'allowed_paths' => ['/world'],
         ])->assertForbidden();
 
         $this->actingAs($user)->postJson($this->link($server, '/users'), [
-            'email' => 'builder@example.com',
+            'username' => 'builder',
             'permissions' => [Permission::ACTION_FILE_READ],
             'allowed_paths' => ['plugins/WorldEdit/'],
         ])->assertOk()->assertJsonPath('attributes.allowed_paths', ['/plugins/WorldEdit']);

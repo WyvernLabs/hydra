@@ -4,6 +4,7 @@ import updateAccountEmail from '@/api/account/updateAccountEmail';
 export interface UserData {
     uuid: string;
     username: string;
+    nameFirst: string;
     email: string;
     language: string;
     rootAdmin: boolean;

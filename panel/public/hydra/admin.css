@@ -316,6 +316,9 @@
 }
 .hydra-admin .checkbox-primary input[type="checkbox"]:checked + label::after,
 .hydra-admin .checkbox-success input[type="checkbox"]:checked + label::after { color: var(--hydra-on-accent); }
+/* Hydra: a cross instead of a tick, like every other checkbox of the panel. */
+.hydra-admin .checkbox input[type="checkbox"]:checked + label::after { content: "\f00d"; }
+.hydra-admin .checkbox label::before { border-radius: 4px; }
 .hydra-admin .radio-primary input[type="radio"] + label::after,
 .hydra-admin .radio-success input[type="radio"] + label::after { background: rgb(var(--hydra-accent-500)); }
 .hydra-admin .radio-primary input[type="radio"]:checked + label::before,

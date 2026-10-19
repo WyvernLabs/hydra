@@ -24,6 +24,7 @@ interface ExtendedWindow extends Window {
     PterodactylUser?: {
         uuid: string;
         username: string;
+        name_first: string;
         email: string;
         /* eslint-disable camelcase */
         root_admin: boolean;
@@ -46,6 +47,7 @@ const App = () => {
         store.getActions().user.setUserData({
             uuid: PterodactylUser.uuid,
             username: PterodactylUser.username,
+            nameFirst: PterodactylUser.name_first,
             email: PterodactylUser.email,
             language: PterodactylUser.language,
             rootAdmin: PterodactylUser.root_admin,

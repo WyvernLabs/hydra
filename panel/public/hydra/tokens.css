@@ -67,13 +67,13 @@
 
     color-scheme: dark;
     scrollbar-width: thin;
-    scrollbar-color: var(--hydra-panel-3) transparent;
+    scrollbar-color: rgb(var(--hydra-gray-500) / 0.35) transparent;
 }
 
-::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--hydra-panel-3); border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: var(--hydra-border-strong); }
+::-webkit-scrollbar-thumb { background: rgb(var(--hydra-gray-500) / 0.35); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--hydra-gray-500) / 0.6); }
 ::-webkit-scrollbar-corner { background: transparent; }
 
 ::selection { background: rgb(var(--hydra-accent-500) / 0.35); }

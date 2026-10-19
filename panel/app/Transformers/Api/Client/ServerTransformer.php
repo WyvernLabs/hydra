@@ -38,6 +38,11 @@ class ServerTransformer extends BaseClientTransformer
 
         return [
             'server_owner' => $user->id === $server->owner_id,
+            // Hydra: the owner's name, only for users who may open every server.
+            'owner' => $user->canAccessAllServers() && $server->user ? [
+                'username' => $server->user->username,
+                'name' => $server->user->name,
+            ] : null,
             'identifier' => config('pterodactyl.features.new_server_identifiers')
                 ? $server->identifier
                 : $server->uuidShort,

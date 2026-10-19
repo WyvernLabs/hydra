@@ -2,6 +2,7 @@
 
 namespace Pterodactyl\Http\Controllers\Api\Client;
 
+use Pterodactyl\Models\User;
 use Pterodactyl\Models\Server;
 use Pterodactyl\Models\Permission;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -40,6 +41,11 @@ class ClientController extends ClientApiController
             AllowedFilter::custom('*', new MultiFieldServerFilter()),
         ]);
 
+        // Hydra: the transformer shows the owner to users who may open every server.
+        if ($user->canAccessAllServers()) {
+            $builder->with('user');
+        }
+
         $type = $request->input('type');
         // Either return all the servers the user has access to because they are an admin `?type=admin` or
         // just return all the servers the user has access to because they are the owner or a subuser of the
@@ -54,6 +60,12 @@ class ClientController extends ClientApiController
                 $builder = $type === 'admin-all'
                     ? $builder
                     : $builder->whereNotIn('servers.id', $user->accessibleServers()->pluck('id')->all());
+
+                // Hydra: other people's servers are listed grouped by their owner.
+                if ($type === 'admin') {
+                    $builder->orderBy(User::query()->select('username')->whereColumn('users.id', 'servers.owner_id'))
+                        ->orderBy('servers.name');
+                }
             }
         } elseif ($type === 'owner') {
             $builder = $builder->where('servers.owner_id', $user->id);

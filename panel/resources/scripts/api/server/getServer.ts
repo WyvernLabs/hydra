@@ -61,6 +61,8 @@ export interface Server {
     skipScripts: boolean;
     variables: ServerEggVariable[];
     allocations: Allocation[];
+    // Hydra: only filled in for users who may open every server.
+    owner: { username: string; name: string } | null;
 }
 
 export const rawDataToServerObject = ({ attributes: data }: FractalResponseData): Server => ({
@@ -70,6 +72,7 @@ export const rawDataToServerObject = ({ attributes: data }: FractalResponseData)
     __deprecatedUuidShort: data.__deprecated_uuid_short,
     uuid: data.uuid,
     name: data.name,
+    owner: data.owner || null,
     node: data.node,
     isNodeUnderMaintenance: data.is_node_under_maintenance,
     status: data.status,

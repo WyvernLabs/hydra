@@ -257,6 +257,124 @@ a { color: rgb(var(--hydra-accent-400)); }
 
 /* ---------------------------------------------------------------- Mobile */
 
+/* ---------------------------------------------------------------- Dashboard (client area) */
+
+/* Greeting box at the top of the server list; stays visible while scrolling. */
+.hydra-dashboard-hero {
+    position: sticky;
+    top: var(--hydra-gap);
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    margin-bottom: var(--hydra-gap);
+    padding: 18px 22px;
+    background: var(--hydra-panel);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius);
+    box-shadow: var(--hydra-shadow);
+}
+
+/* Covers the gap above the box, so scrolled content does not peek through. */
+.hydra-dashboard-hero::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    right: -1px;
+    bottom: 100%;
+    height: calc(var(--hydra-gap) + 1px);
+    background: var(--hydra-bg) var(--hydra-pattern) center top / 760px repeat fixed;
+}
+
+.hydra-dashboard-greeting {
+    margin: 0;
+    color: var(--hydra-text);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.hydra-dashboard-subtitle {
+    margin: 2px 0 0;
+    color: var(--hydra-muted);
+    font-size: 13px;
+}
+
+.hydra-dashboard-group + .hydra-dashboard-group { margin-top: 26px; }
+.hydra-dashboard-group > .hydra-nav-title { margin-bottom: 10px; }
+
+/* Two-way switch, e.g. "My servers" / "Others' servers". */
+.hydra-segmented {
+    display: inline-flex;
+    flex: none;
+    padding: 3px;
+    background: var(--hydra-panel-2);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius-sm);
+}
+
+.hydra-segmented button {
+    padding: 7px 14px;
+    border: 0;
+    border-radius: calc(var(--hydra-radius-sm) - 3px);
+    background: transparent;
+    color: var(--hydra-muted);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+}
+
+.hydra-segmented button:hover { color: var(--hydra-text); }
+
+.hydra-segmented button.active {
+    background: rgb(var(--hydra-accent-500));
+    color: var(--hydra-on-accent);
+}
+
+/* ---------------------------------------------------------------- Checkboxes & radios */
+
+/* Accent colored checkboxes with a cross when ticked, in both areas. */
+.hydra-body input[type="checkbox"]:not(.checkbox > input) {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    vertical-align: middle;
+    background-color: var(--hydra-panel-2);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 10px 10px;
+    border: 1px solid var(--hydra-border-strong);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color .1s, border-color .1s;
+}
+
+.hydra-body input[type="checkbox"]:not(.checkbox > input):hover:not(:disabled) { border-color: rgb(var(--hydra-accent-500)); }
+
+.hydra-body input[type="checkbox"]:not(.checkbox > input):checked {
+    background-color: rgb(var(--hydra-accent-500));
+    background-image:
+        linear-gradient(45deg, transparent calc(50% - 1px), var(--hydra-on-accent) calc(50% - 1px), var(--hydra-on-accent) calc(50% + 1px), transparent calc(50% + 1px)),
+        linear-gradient(-45deg, transparent calc(50% - 1px), var(--hydra-on-accent) calc(50% - 1px), var(--hydra-on-accent) calc(50% + 1px), transparent calc(50% + 1px));
+    border-color: rgb(var(--hydra-accent-500));
+}
+
+.hydra-body input[type="checkbox"]:not(.checkbox > input):focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgb(var(--hydra-accent-500) / 0.3);
+}
+
+.hydra-body input[type="checkbox"]:not(.checkbox > input):disabled { opacity: .5; cursor: not-allowed; }
+
+.hydra-body input[type="radio"] { accent-color: rgb(var(--hydra-accent-500)); }
+
 .hydra-topbar,
 .hydra-backdrop,
 .hydra-backdrop[hidden] { display: none; }
@@ -266,6 +384,8 @@ a { color: rgb(var(--hydra-accent-400)); }
         display: block;
         padding: 0 var(--hydra-gap) var(--hydra-gap);
     }
+
+    .hydra-dashboard-hero { top: calc(60px + var(--hydra-gap)); }
 
     .hydra-topbar {
         position: sticky;

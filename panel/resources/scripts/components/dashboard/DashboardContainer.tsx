@@ -7,13 +7,36 @@ import PageContentBlock from '@/components/elements/PageContentBlock';
 import useFlash from '@/plugins/useFlash';
 import { useStoreState } from 'easy-peasy';
 import { usePersistedState } from '@/plugins/usePersistedState';
-import Switch from '@/components/elements/Switch';
 import tw from 'twin.macro';
 import useSWR from 'swr';
 import { PaginatedResult } from '@/api/http';
 import Pagination from '@/components/elements/Pagination';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+
+// Hydra: the greeting depends on the time of day.
+const greetingKey = (): string => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'greeting.morning';
+    if (hour >= 12 && hour < 18) return 'greeting.afternoon';
+    if (hour >= 18 && hour < 23) return 'greeting.evening';
+    return 'greeting.night';
+};
+
+// Hydra: other people's servers arrive sorted by owner and are shown in one
+// group per owner.
+const groupByOwner = (servers: Server[]): { key: string; title: string; servers: Server[] }[] =>
+    servers.reduce((groups, server) => {
+        const key = server.owner?.username || '';
+        const last = groups[groups.length - 1];
+        if (last && last.key === key) {
+            last.servers.push(server);
+        } else {
+            const title = server.owner ? `${server.owner.name} (${server.owner.username})` : '';
+            groups.push({ key, title, servers: [server] });
+        }
+        return groups;
+    }, [] as { key: string; title: string; servers: Server[] }[]);
 
 export default () => {
     const { search } = useLocation();
@@ -23,12 +46,13 @@ export default () => {
     const [page, setPage] = useState(!isNaN(defaultPage) && defaultPage > 0 ? defaultPage : 1);
     const { clearFlashes, clearAndAddHttpError } = useFlash();
     const uuid = useStoreState((state) => state.user.data!.uuid);
+    const name = useStoreState((state) => state.user.data!.nameFirst || state.user.data!.username);
     const rootAdmin = useStoreState((state) => state.user.data!.serverAccess);
     const [showOnlyAdmin, setShowOnlyAdmin] = usePersistedState(`${uuid}:show_all_servers`, false);
+    const showOthers = showOnlyAdmin && rootAdmin;
 
-    const { data: servers, error } = useSWR<PaginatedResult<Server>>(
-        ['/api/client/servers', showOnlyAdmin && rootAdmin, page],
-        () => getServers({ page, type: showOnlyAdmin && rootAdmin ? 'admin' : undefined })
+    const { data: servers, error } = useSWR<PaginatedResult<Server>>(['/api/client/servers', showOthers, page], () =>
+        getServers({ page, type: showOthers ? 'admin' : undefined })
     );
 
     useEffect(() => {
@@ -54,33 +78,68 @@ export default () => {
         if (!error) clearFlashes('dashboard');
     }, [error]);
 
+    const total = servers?.pagination.total;
+
     return (
         <PageContentBlock title={t('title')} showFlashKey={'dashboard'}>
-            {rootAdmin && (
-                <div css={tw`mb-2 flex justify-end items-center`}>
-                    <p css={tw`uppercase text-xs text-neutral-400 mr-2`}>
-                        {showOnlyAdmin ? t('showing_others') : t('showing_yours')}
+            <div className={'hydra-dashboard-hero'}>
+                <div css={tw`min-w-0`}>
+                    <h1 className={'hydra-dashboard-greeting'}>{t(greetingKey(), { name })}</h1>
+                    <p className={'hydra-dashboard-subtitle'}>
+                        {total === undefined
+                            ? ' '
+                            : t(total === 1 ? 'server_count_one' : 'server_count', { count: total })}
                     </p>
-                    <Switch
-                        name={'show_all_servers'}
-                        defaultChecked={showOnlyAdmin}
-                        onChange={() => setShowOnlyAdmin((s) => !s)}
-                    />
                 </div>
-            )}
+                {rootAdmin && (
+                    <div className={'hydra-segmented'} role={'tablist'}>
+                        <button
+                            type={'button'}
+                            role={'tab'}
+                            aria-selected={!showOnlyAdmin}
+                            className={!showOnlyAdmin ? 'active' : undefined}
+                            onClick={() => setShowOnlyAdmin(false)}
+                        >
+                            {t('my_servers')}
+                        </button>
+                        <button
+                            type={'button'}
+                            role={'tab'}
+                            aria-selected={showOnlyAdmin}
+                            className={showOnlyAdmin ? 'active' : undefined}
+                            onClick={() => setShowOnlyAdmin(true)}
+                        >
+                            {t('others_servers')}
+                        </button>
+                    </div>
+                )}
+            </div>
             {!servers ? (
                 <Spinner centered size={'large'} />
             ) : (
                 <Pagination data={servers} onPageSelect={setPage}>
                     {({ items }) =>
-                        items.length > 0 ? (
+                        items.length === 0 ? (
+                            <p css={tw`text-center text-sm text-neutral-400`}>
+                                {showOthers ? t('no_other_servers') : t('no_servers')}
+                            </p>
+                        ) : showOthers ? (
+                            groupByOwner(items).map((group) => (
+                                <div key={group.key} className={'hydra-dashboard-group'}>
+                                    <div className={'hydra-nav-title'}>{group.title || t('unknown_owner')}</div>
+                                    {group.servers.map((server, index) => (
+                                        <ServerRow
+                                            key={server.uuid}
+                                            server={server}
+                                            css={index > 0 ? tw`mt-2` : undefined}
+                                        />
+                                    ))}
+                                </div>
+                            ))
+                        ) : (
                             items.map((server, index) => (
                                 <ServerRow key={server.uuid} server={server} css={index > 0 ? tw`mt-2` : undefined} />
                             ))
-                        ) : (
-                            <p css={tw`text-center text-sm text-neutral-400`}>
-                                {showOnlyAdmin ? t('no_other_servers') : t('no_servers')}
-                            </p>
                         )
                     }
                 </Pagination>

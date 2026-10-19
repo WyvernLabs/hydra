@@ -20,6 +20,8 @@ export interface SidebarItem {
     exact?: boolean;
     // … or a regular link that leaves the React app (e.g. the admin area).
     href?: string;
+    // Opens the link in a new tab (e.g. a Discord invite).
+    external?: boolean;
     onClick?: () => void;
 }
 
@@ -55,7 +57,11 @@ export const SidebarLink = ({ item, onNavigate }: { item: SidebarItem; onNavigat
 
     if (item.href) {
         return (
-            <a href={item.href} className={'hydra-nav-item'}>
+            <a
+                href={item.href}
+                className={'hydra-nav-item'}
+                {...(item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+            >
                 <ItemContent item={item} />
             </a>
         );

@@ -70,6 +70,15 @@ Route::group(['prefix' => 'settings'], function () {
     Route::get('/advanced', [Admin\Settings\AdvancedController::class, 'index'])->name('admin.settings.advanced')->middleware('admin.can:settings.view');
     Route::get('/appearance', [Admin\Settings\AppearanceController::class, 'index'])->name('admin.settings.appearance')->middleware('admin.can:settings.view');
 
+    // Hydra: links and pages in the sidebar of the client area.
+    Route::get('/links', [Admin\Settings\LinkController::class, 'index'])->name('admin.settings.links')->middleware('admin.can:settings.view');
+    Route::get('/links/new', [Admin\Settings\LinkController::class, 'create'])->name('admin.settings.links.new')->middleware('admin.can:settings.update');
+    Route::get('/links/{link:id}', [Admin\Settings\LinkController::class, 'view'])->name('admin.settings.links.view')->middleware('admin.can:settings.view');
+    Route::post('/links/new', [Admin\Settings\LinkController::class, 'store'])->middleware('admin.can:settings.update');
+    Route::post('/links/preview', [Admin\Settings\LinkController::class, 'preview'])->name('admin.settings.links.preview')->middleware('admin.can:settings.view');
+    Route::patch('/links/{link:id}', [Admin\Settings\LinkController::class, 'update'])->middleware('admin.can:settings.update');
+    Route::delete('/links/{link:id}', [Admin\Settings\LinkController::class, 'delete'])->name('admin.settings.links.delete')->middleware('admin.can:settings.update');
+
     Route::post('/mail/test', [Admin\Settings\MailController::class, 'test'])->name('admin.settings.mail.test')->middleware('admin.can:settings.update');
 
     Route::patch('/', [Admin\Settings\IndexController::class, 'update'])->middleware('admin.can:settings.update');

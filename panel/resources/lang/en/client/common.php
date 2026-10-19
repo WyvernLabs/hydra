@@ -41,6 +41,7 @@ return [
         'dashboard' => 'Dashboard',
         'administration' => 'Administration',
         'account' => 'Account',
+        'links' => 'Links',
         'server' => 'Server',
         'manage_as_admin' => 'Manage as Admin',
         'sign_out' => 'Sign Out',

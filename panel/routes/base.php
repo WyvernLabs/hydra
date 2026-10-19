@@ -19,6 +19,12 @@ Route::get('/branding/{type}', Base\BrandingController::class)
     ->name('branding');
 
 // Hydra: profile pictures and banners of users.
+// Hydra: pages written in the admin area. Public ones work without logging in.
+Route::get('/pages/{slug}', Base\PageController::class)
+    ->withoutMiddleware(['auth', RequireTwoFactorAuthentication::class])
+    ->where('slug', '[a-z0-9-]+')
+    ->name('pages');
+
 // "user" is bound to subusers by the client API, so the parameter has another name.
 Route::get('/profiles/{uuid}/{type}', Base\ProfileMediaController::class)
     ->withoutMiddleware(RequireTwoFactorAuthentication::class)

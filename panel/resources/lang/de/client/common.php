@@ -40,6 +40,7 @@ return [
         'dashboard' => 'Dashboard',
         'administration' => 'Administration',
         'account' => 'Konto',
+        'links' => 'Links',
         'server' => 'Server',
         'manage_as_admin' => 'Als Admin verwalten',
         'sign_out' => 'Abmelden',

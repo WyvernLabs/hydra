@@ -7,15 +7,17 @@ import { useLocation } from 'react-router';
 import Spinner from '@/components/elements/Spinner';
 import routes from '@/routers/routes';
 import HydraLayout from '@/components/hydra/HydraLayout';
-import { useAccountSection, useWorkspaceSection } from '@/components/hydra/sections';
+import { useAccountSection, useLinksSection, useWorkspaceSection } from '@/components/hydra/sections';
+import PageContainer from '@/components/dashboard/PageContainer';
 
 export default () => {
     const location = useLocation();
     const workspace = useWorkspaceSection();
     const account = useAccountSection();
+    const links = useLinksSection();
 
     return (
-        <HydraLayout sections={[workspace, account]}>
+        <HydraLayout sections={links ? [workspace, account, links] : [workspace, account]}>
             <TransitionRouter>
                 <React.Suspense fallback={<Spinner centered />}>
                     <Switch location={location}>
@@ -27,6 +29,9 @@ export default () => {
                                 <Component />
                             </Route>
                         ))}
+                        <Route path={'/pages/:slug'} exact>
+                            <PageContainer />
+                        </Route>
                         <Route path={'*'}>
                             <NotFound />
                         </Route>

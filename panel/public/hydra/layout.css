@@ -541,6 +541,109 @@ a { color: rgb(var(--hydra-accent-400)); }
     border-top: 1px solid var(--hydra-border);
 }
 
+/* ---------------------------------------------------------------- Markdown pages (Discord style) */
+
+.hydra-markdown {
+    color: var(--hydra-text-2);
+    font-size: 15px;
+    line-height: 1.6;
+    word-wrap: break-word;
+}
+
+.hydra-markdown > :first-child { margin-top: 0; }
+.hydra-markdown > :last-child { margin-bottom: 0; }
+
+.hydra-markdown h1, .hydra-markdown h2, .hydra-markdown h3,
+.hydra-markdown h4, .hydra-markdown h5, .hydra-markdown h6 {
+    margin: 1.2em 0 .45em;
+    color: var(--hydra-text);
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.hydra-markdown h1 { font-size: 1.75em; }
+.hydra-markdown h2 { font-size: 1.4em; }
+.hydra-markdown h3 { font-size: 1.15em; }
+.hydra-markdown h4, .hydra-markdown h5, .hydra-markdown h6 { font-size: 1em; }
+
+.hydra-markdown p, .hydra-markdown ul, .hydra-markdown ol,
+.hydra-markdown blockquote, .hydra-markdown pre, .hydra-markdown table { margin: 0 0 .9em; }
+
+.hydra-markdown ul, .hydra-markdown ol { padding-left: 1.6em; }
+.hydra-markdown ul { list-style: disc; }
+.hydra-markdown ol { list-style: decimal; }
+.hydra-markdown li + li { margin-top: .2em; }
+
+.hydra-markdown a { color: rgb(var(--hydra-accent-400)); text-decoration: none; }
+.hydra-markdown a:hover { text-decoration: underline; }
+.hydra-markdown strong { color: var(--hydra-text); font-weight: 700; }
+.hydra-markdown u { text-decoration: underline; }
+.hydra-markdown del { opacity: .75; }
+
+.hydra-markdown blockquote {
+    padding: 2px 0 2px 14px;
+    border-left: 4px solid var(--hydra-border-strong);
+    color: var(--hydra-text-2);
+}
+
+.hydra-markdown code {
+    padding: .15em .35em;
+    background: var(--hydra-bg);
+    border: 1px solid var(--hydra-border);
+    border-radius: 4px;
+    font-family: var(--hydra-font-mono);
+    font-size: .88em;
+}
+
+.hydra-markdown pre {
+    overflow-x: auto;
+    padding: 12px 14px;
+    background: var(--hydra-bg);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius-sm);
+}
+
+.hydra-markdown pre code { padding: 0; background: none; border: 0; font-size: .88em; }
+
+.hydra-markdown hr { margin: 1.4em 0; border: 0; border-top: 1px solid var(--hydra-border); }
+
+.hydra-markdown table { border-collapse: collapse; }
+.hydra-markdown th, .hydra-markdown td { padding: 6px 12px; border: 1px solid var(--hydra-border); text-align: left; }
+.hydra-markdown th { background: var(--hydra-panel-2); color: var(--hydra-text); }
+
+.hydra-markdown .md-subtext { color: var(--hydra-muted); font-size: .8em; }
+
+.hydra-markdown .md-spoiler {
+    padding: 0 3px;
+    background: var(--hydra-panel-3);
+    border-radius: 4px;
+    color: transparent;
+    cursor: pointer;
+    transition: color .15s, background .15s;
+}
+
+.hydra-markdown .md-spoiler * { visibility: hidden; }
+.hydra-markdown .md-spoiler.is-revealed { color: inherit; background: rgb(255 255 255 / 0.08); cursor: text; }
+.hydra-markdown .md-spoiler.is-revealed * { visibility: visible; }
+
+.hydra-markdown-preview {
+    margin-top: 14px;
+    padding: 14px 16px;
+    border: 1px dashed var(--hydra-border-strong);
+    border-radius: var(--hydra-radius-sm);
+}
+
+/* Public page (e.g. imprint) for visitors who are not logged in. */
+.hydra-public-page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px var(--hydra-gap);
+}
+
+.hydra-public-page-logo { display: flex; justify-content: center; margin-bottom: 24px; }
+.hydra-public-page-logo img { max-height: 56px; max-width: 240px; }
+.hydra-public-page .hydra-box-body { padding: 20px 22px; }
+
 /* ---------------------------------------------------------------- Checkboxes & radios */
 
 /* Accent colored checkboxes with a cross when ticked, in both areas. */

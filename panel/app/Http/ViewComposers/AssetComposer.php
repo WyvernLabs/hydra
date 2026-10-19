@@ -3,6 +3,8 @@
 namespace Pterodactyl\Http\ViewComposers;
 
 use Illuminate\View\View;
+use Pterodactyl\Models\PanelLink;
+use Illuminate\Database\QueryException;
 use Pterodactyl\Services\Hydra\BrandingService;
 use Pterodactyl\Services\Helpers\AssetHashService;
 use Pterodactyl\Traits\Helpers\AvailableLanguages;
@@ -39,6 +41,20 @@ class AssetComposer
             'branding' => $this->branding->toArray(),
             // Hydra: largest profile picture or banner in megabytes.
             'profileUploadLimit' => ProfileMediaService::uploadLimit(),
+            // Hydra: links and pages for the sidebar and the login page.
+            'links' => $this->links(),
         ]);
+    }
+
+    private function links(): array
+    {
+        try {
+            return PanelLink::query()->visible()->get()
+                ->map(fn (PanelLink $link) => $link->toSidebarArray() + ['public' => $link->public])
+                ->all();
+        } catch (QueryException) {
+            // The table does not exist yet while the panel is being updated.
+            return [];
+        }
     }
 }

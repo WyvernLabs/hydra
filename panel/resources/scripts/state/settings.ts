@@ -15,6 +15,18 @@ export interface SiteSettings {
         favicon: string;
     };
     profileUploadLimit: number;
+    links: PanelLinkItem[];
+}
+
+// Hydra: a link or page in the "Links" section of the sidebar.
+export interface PanelLinkItem {
+    id: number;
+    type: 'page' | 'url';
+    title: string;
+    icon: string;
+    slug: string | null;
+    url: string | null;
+    public: boolean;
 }
 
 export interface SettingsStore {

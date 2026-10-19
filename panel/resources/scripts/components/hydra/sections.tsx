@@ -5,6 +5,7 @@ import SearchContainer from '@/components/dashboard/search/SearchContainer';
 import { SidebarItem, SidebarSection } from '@/components/hydra/Sidebar';
 import routes from '@/routers/routes';
 import { useTranslation } from 'react-i18next';
+import { linkIcon } from '@/components/hydra/LinkIcon';
 
 /**
  * The "Workspace" section is shown on every page of the client area.
@@ -40,5 +41,34 @@ export const useAccountSection = (): SidebarSection => {
                 exact,
                 to: `/account/${path}`.replace('//', '/'),
             })),
+    };
+};
+
+/**
+ * Hydra: the "Links" section with the links and pages set up in the admin
+ * area (e.g. imprint, terms, Discord). Null when there are none.
+ */
+export const useLinksSection = (): SidebarSection | null => {
+    const links = useStoreState((state) => state.settings.data!.links || []);
+    const { t } = useTranslation();
+
+    if (links.length === 0) {
+        return null;
+    }
+
+    return {
+        key: 'links',
+        title: t('nav.links'),
+        items: links.map((link) =>
+            link.type === 'page'
+                ? { key: `link-${link.id}`, name: link.title, icon: linkIcon(link.icon), to: `/pages/${link.slug}` }
+                : {
+                      key: `link-${link.id}`,
+                      name: link.title,
+                      icon: linkIcon(link.icon),
+                      href: link.url!,
+                      external: true,
+                  }
+        ),
     };
 };

@@ -95,6 +95,7 @@ Route::group(['prefix' => 'users'], function () {
     Route::post('/new', [Admin\UserController::class, 'store'])->middleware('admin.can:users.create');
 
     Route::patch('/view/{user:id}', [Admin\UserController::class, 'update'])->middleware('admin.can:users.update');
+    Route::delete('/view/{user:id}/media/{type}', [Admin\UserController::class, 'removeMedia'])->name('admin.users.media.delete')->where('type', 'avatar|banner')->middleware('admin.can:users.update');
     Route::delete('/view/{user:id}', [Admin\UserController::class, 'delete'])->name('admin.users.delete')->middleware('admin.can:users.delete');
 });
 

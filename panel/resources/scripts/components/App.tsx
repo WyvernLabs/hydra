@@ -4,6 +4,7 @@ import { Route, Router, Switch } from 'react-router-dom';
 import { StoreProvider } from 'easy-peasy';
 import { store } from '@/state';
 import { SiteSettings } from '@/state/settings';
+import { rawDataToUserProfile } from '@/state/user';
 import ProgressBar from '@/components/elements/ProgressBar';
 import { NotFound } from '@/components/elements/ScreenBlock';
 import tw from 'twin.macro';
@@ -25,6 +26,7 @@ interface ExtendedWindow extends Window {
         uuid: string;
         username: string;
         name_first: string;
+        name_last: string;
         email: string;
         /* eslint-disable camelcase */
         root_admin: boolean;
@@ -48,6 +50,8 @@ const App = () => {
             uuid: PterodactylUser.uuid,
             username: PterodactylUser.username,
             nameFirst: PterodactylUser.name_first,
+            nameLast: PterodactylUser.name_last,
+            profile: rawDataToUserProfile(PterodactylUser),
             email: PterodactylUser.email,
             language: PterodactylUser.language,
             rootAdmin: PterodactylUser.root_admin,

@@ -33,4 +33,17 @@ return [
         'logo' => null,
         'favicon' => null,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | User Profiles
+    |--------------------------------------------------------------------------
+    |
+    | Upload limit for profile pictures and banners in megabytes. Can be
+    | changed in the admin area under Settings ("settings::hydra:profiles:*").
+    |
+    */
+    'profiles' => [
+        'upload_limit' => 4,
+    ],
 ];

@@ -7,6 +7,7 @@ use Illuminate\Http\Middleware\HandleCors;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Http\Middleware\TrustProxies;
 use Pterodactyl\Http\Middleware\TrimStrings;
+use Pterodactyl\Http\Middleware\TrackLastSeen;
 use Illuminate\Session\Middleware\StartSession;
 use Pterodactyl\Http\Middleware\EncryptCookies;
 use Pterodactyl\Http\Middleware\Api\IsValidJson;
@@ -67,6 +68,7 @@ class Kernel extends HttpKernel
             VerifyCsrfToken::class,
             SubstituteBindings::class,
             LanguageMiddleware::class,
+            TrackLastSeen::class,
         ],
         'api' => [
             EnsureStatefulRequests::class,
@@ -84,6 +86,7 @@ class Kernel extends HttpKernel
             SubstituteClientBindings::class,
             RequireClientApiKey::class,
             LanguageMiddleware::class,
+            TrackLastSeen::class,
         ],
         'daemon' => [
             SubstituteBindings::class,

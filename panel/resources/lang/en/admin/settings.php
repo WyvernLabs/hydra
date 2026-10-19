@@ -22,6 +22,8 @@ return [
         'two_factor_help' => 'If enabled, any account falling into the selected grouping will be required to have 2-Factor authentication enabled to use the Panel.',
         'language' => 'Default Language',
         'language_help' => 'Used for new accounts and for visitors whose browser language is not available.',
+        'profile_upload_limit' => 'Profile Upload Limit',
+        'profile_upload_limit_help' => 'Largest profile picture or banner users may upload, in megabytes (1–100).',
         'updated' => 'Panel settings have been updated successfully and the queue worker was restarted to apply these changes.',
     ],
 

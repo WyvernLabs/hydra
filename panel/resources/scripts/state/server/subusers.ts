@@ -33,7 +33,9 @@ export type SubuserPermission =
 export interface Subuser {
     uuid: string;
     username: string;
-    image: string;
+    image: string | null;
+    // Hydra: null when the user hides their online status.
+    online: boolean | null;
     twoFactorEnabled: boolean;
     createdAt: Date;
     permissions: SubuserPermission[];

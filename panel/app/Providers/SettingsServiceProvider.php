@@ -33,6 +33,7 @@ class SettingsServiceProvider extends ServiceProvider
         'hydra:branding:accent',
         'hydra:branding:logo',
         'hydra:branding:favicon',
+        'hydra:profiles:upload_limit',
     ];
 
     /**

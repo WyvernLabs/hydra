@@ -63,6 +63,16 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="form-group col-md-4">
+                                <label class="control-label">{{ __('admin/settings.general.profile_upload_limit') }}</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" name="hydra:profiles:upload_limit" min="1" max="100" value="{{ old('hydra:profiles:upload_limit', \Pterodactyl\Services\Users\ProfileMediaService::uploadLimit()) }}" />
+                                    <span class="input-group-addon">MB</span>
+                                </div>
+                                <p class="text-muted"><small>{{ __('admin/settings.general.profile_upload_limit_help') }}</small></p>
+                            </div>
+                        </div>
                     </div>
                     <div class="box-footer">
                         {!! csrf_field() !!}

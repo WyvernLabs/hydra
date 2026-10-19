@@ -719,6 +719,59 @@
 
 .hydra-role-list .checkbox { margin: 0 0 6px; }
 
+/* ---------------------------------------------------------------- User profiles (Hydra) */
+
+.hydra-user-cell { display: flex; align-items: center; gap: 10px; }
+
+.hydra-user-avatar {
+    position: relative;
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--hydra-panel-3);
+    color: var(--hydra-text-2);
+    font-weight: 700;
+    vertical-align: middle;
+}
+
+.hydra-user-avatar > img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.hydra-admin .hydra-user-avatar .hydra-online-dot { border-color: var(--hydra-panel); }
+
+.hydra-admin-profile { overflow: hidden; padding: 0; }
+.hydra-admin-profile-banner { height: 90px; }
+
+.hydra-admin-profile-body {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 0 20px 18px !important;
+}
+
+.hydra-admin-profile-body > .hydra-user-avatar {
+    margin-top: -36px;
+    box-shadow: 0 0 0 4px var(--hydra-panel);
+}
+
+.hydra-admin-profile-info { display: flex; flex: 1; flex-direction: column; gap: 2px; min-width: 200px; }
+.hydra-admin-profile-info strong { font-size: 16px; color: var(--hydra-text); }
+
+.hydra-admin-profile-bio {
+    margin: 8px 0 0;
+    padding-left: 10px;
+    border-left: 3px solid;
+    white-space: pre-line;
+}
+
+.hydra-admin-profile-actions { display: flex; gap: 8px; }
+
 /* ---------------------------------------------------------------- Responsive */
 
 @media (max-width: 767px) {

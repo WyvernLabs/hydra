@@ -45,10 +45,10 @@
                     <thead>
                         <tr>
                             <th>{{ __('admin/users.id') }}</th>
-                            <th>{{ __('admin/users.email') }}</th>
+                            <th>{{ __('admin/users.user') }}</th>
                             <th>{{ __('admin/users.client_name') }}</th>
-                            <th>{{ __('admin/users.username') }}</th>
                             <th>{{ __('admin/roles.title') }}</th>
+                            <th>{{ __('admin/users.last_seen') }}</th>
                             <th class="text-center">{{ __('admin/users.two_factor') }}</th>
                             <th class="text-center"><span data-toggle="tooltip" data-placement="top" title="{{ __('admin/users.servers_owned_help') }}">{{ __('admin/users.servers_owned') }}</span></th>
                             <th class="text-center"><span data-toggle="tooltip" data-placement="top" title="{{ __('admin/users.can_access_help') }}">{{ __('admin/users.can_access') }}</span></th>
@@ -58,10 +58,18 @@
                         @foreach ($users as $user)
                             <tr class="align-middle">
                                 <td><code>{{ $user->id }}</code></td>
-                                <td><a href="{{ route('admin.users.view', $user->id) }}">{{ $user->email }}</a></td>
+                                <td>
+                                    <div class="hydra-user-cell">
+                                        @include('partials.hydra.user-avatar', ['user' => $user, 'size' => 34])
+                                        <div>
+                                            <a href="{{ route('admin.users.view', $user->id) }}"><strong>{{ $user->username }}</strong></a>
+                                            <div class="text-muted small">{{ $user->email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
                                 <td>{{ $user->name_last }}, {{ $user->name_first }}</td>
-                                <td>{{ $user->username }}</td>
                                 <td>@include('partials.hydra.role-badges', ['user' => $user])</td>
+                                <td>@include('partials.hydra.last-seen', ['user' => $user])</td>
                                 <td class="text-center">
                                     @if($user->use_totp)
                                         <i class="fa fa-lock text-green"></i>

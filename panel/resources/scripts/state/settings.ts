@@ -14,6 +14,7 @@ export interface SiteSettings {
         logo: string;
         favicon: string;
     };
+    profileUploadLimit: number;
 }
 
 export interface SettingsStore {

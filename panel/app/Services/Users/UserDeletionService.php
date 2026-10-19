@@ -22,6 +22,9 @@ class UserDeletionService
             throw new DisplayException(trans('admin/user.exceptions.user_has_servers'));
         }
 
+        // Hydra: profile pictures and banners go with the account.
+        ProfileMediaService::removeFiles($user);
+
         return $user->delete();
     }
 }

@@ -19,6 +19,7 @@ use Pterodactyl\Http\Controllers\Controller;
 use Illuminate\Contracts\Translation\Translator;
 use Pterodactyl\Services\Users\UserUpdateService;
 use Pterodactyl\Traits\Helpers\AvailableLanguages;
+use Pterodactyl\Services\Users\ProfileMediaService;
 use Pterodactyl\Services\Users\UserCreationService;
 use Pterodactyl\Services\Users\UserDeletionService;
 use Pterodactyl\Http\Requests\Admin\UserFormRequest;
@@ -155,6 +156,24 @@ class UserController extends Controller
         $this->syncRoles($request, $user);
 
         $this->alert->success(trans('admin/user.notices.account_updated'))->flash();
+
+        return redirect()->route('admin.users.view', $user->id);
+    }
+
+    /**
+     * Hydra: removes a user's profile picture or banner, e.g. if it is not
+     * appropriate.
+     *
+     * @throws DisplayException
+     */
+    public function removeMedia(Request $request, User $user, string $type, ProfileMediaService $media): RedirectResponse
+    {
+        if (!$request->user()->outranks($user)) {
+            throw new DisplayException(__('admin/roles.exceptions.user_outranks'));
+        }
+
+        $media->remove($user, $type);
+        $this->alert->success(__('admin/users.media_removed'))->flash();
 
         return redirect()->route('admin.users.view', $user->id);
     }

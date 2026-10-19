@@ -33,6 +33,9 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function () 
         ->name('api:client.account.update-email');
     Route::put('/password', [Client\AccountController::class, 'updatePassword'])->name('api:client.account.update-password');
     Route::put('/language', [Client\AccountController::class, 'updateLanguage'])->name('api:client.account.update-language');
+    // Hydra: profile and deleting the own account.
+    Route::post('/profile', [Client\ProfileController::class, 'update'])->name('api:client.account.profile');
+    Route::delete('/', [Client\ProfileController::class, 'delete'])->middleware('throttle:5,1')->name('api:client.account.delete');
 
     Route::get('/activity', Client\ActivityLogController::class)->name('api:client.account.activity');
 

@@ -15,6 +15,7 @@ use Illuminate\Auth\Passwords\CanResetPassword;
 use Pterodactyl\Traits\Helpers\AvailableLanguages;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\Access\Authorizable;
+use Pterodactyl\Services\Users\ProfileMediaService;
 use Pterodactyl\Models\Traits\HasRealtimeIdentifier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -43,6 +44,15 @@ use Pterodactyl\Notifications\SendPasswordReset as ResetPasswordNotification;
  * @property string|null $totp_secret
  * @property \Illuminate\Support\Carbon|null $totp_authenticated_at
  * @property bool $gravatar
+ * @property string|null $avatar
+ * @property string|null $banner
+ * @property string $banner_style
+ * @property string|null $banner_color_1
+ * @property string|null $banner_color_2
+ * @property string|null $profile_accent
+ * @property string|null $bio
+ * @property bool $show_online
+ * @property \Illuminate\Support\Carbon|null $last_seen_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Database\Eloquent\Collection|\Pterodactyl\Models\ApiKey[] $apiKeys
@@ -153,12 +163,14 @@ class User extends Model implements
         'use_totp' => 'boolean',
         'gravatar' => 'boolean',
         'totp_authenticated_at' => 'datetime',
+        'show_online' => 'boolean',
+        'last_seen_at' => 'datetime',
     ];
 
     /**
      * The attributes excluded from the model's JSON form.
      */
-    protected $hidden = ['password', 'remember_token', 'totp_secret', 'totp_authenticated_at'];
+    protected $hidden = ['password', 'remember_token', 'totp_secret', 'totp_authenticated_at', 'avatar', 'banner'];
 
     /**
      * Default values for specific fields in the database.
@@ -186,6 +198,12 @@ class User extends Model implements
         'language' => 'string',
         'use_totp' => 'boolean',
         'totp_secret' => 'nullable|string',
+        'banner_style' => 'sometimes|string|in:gradient,image',
+        'banner_color_1' => ['sometimes', 'nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+        'banner_color_2' => ['sometimes', 'nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+        'profile_accent' => ['sometimes', 'nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+        'bio' => 'sometimes|nullable|string|max:240',
+        'show_online' => 'sometimes|boolean',
     ];
 
     /**
@@ -214,6 +232,7 @@ class User extends Model implements
                 'admin_permissions' => $this->adminPermissions(),
                 'server_access' => $this->canAccessAllServers(),
             ])
+            ->merge($this->profile())
             ->toArray();
     }
 
@@ -309,6 +328,52 @@ class User extends Model implements
                 $builder->where('servers.owner_id', $this->id)->orWhere('subusers.user_id', $this->id);
             })
             ->groupBy('servers.id');
+    }
+
+    /**
+     * Hydra: a user counts as online if they were seen within this many seconds.
+     */
+    public const ONLINE_WINDOW = 300;
+
+    /**
+     * Hydra: whether the user was active in the panel within the last minutes.
+     */
+    public function isOnline(): bool
+    {
+        return !is_null($this->last_seen_at) && $this->last_seen_at->gt(now()->subSeconds(self::ONLINE_WINDOW));
+    }
+
+    /**
+     * Hydra: URL of the uploaded profile picture, or null.
+     */
+    public function avatarUrl(): ?string
+    {
+        return ProfileMediaService::url($this, 'avatar');
+    }
+
+    /**
+     * Hydra: URL of the uploaded profile banner, or null.
+     */
+    public function bannerUrl(): ?string
+    {
+        return ProfileMediaService::url($this, 'banner');
+    }
+
+    /**
+     * Hydra: the public part of the profile, as shown on the account page.
+     */
+    public function profile(): array
+    {
+        return [
+            'avatar_url' => $this->avatarUrl(),
+            'banner_url' => $this->bannerUrl(),
+            'banner_style' => $this->banner_style ?? 'gradient',
+            'banner_color_1' => $this->banner_color_1,
+            'banner_color_2' => $this->banner_color_2,
+            'profile_accent' => $this->profile_accent,
+            'bio' => $this->bio,
+            'show_online' => $this->show_online ?? true,
+        ];
     }
 
     /**

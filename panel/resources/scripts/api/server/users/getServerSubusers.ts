@@ -4,7 +4,8 @@ import { Subuser } from '@/state/server/subusers';
 export const rawDataToServerSubuser = (data: FractalResponseData): Subuser => ({
     uuid: data.attributes.uuid,
     username: data.attributes.username,
-    image: data.attributes.image,
+    image: data.attributes.image || null,
+    online: typeof data.attributes.online === 'boolean' ? data.attributes.online : null,
     twoFactorEnabled: data.attributes['2fa_enabled'],
     createdAt: new Date(data.attributes.created_at),
     permissions: data.attributes.permissions || [],

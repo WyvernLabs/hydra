@@ -12,6 +12,12 @@ const _Avatar = ({ variant = 'beam', ...props }: AvatarProps) => (
 
 const _UserAvatar = ({ variant = 'beam', ...props }: Omit<Props, 'name'>) => {
     const uuid = useStoreState((state) => state.user.data?.uuid);
+    const picture = useStoreState((state) => state.user.data?.profile?.avatarUrl);
+
+    // Hydra: the uploaded profile picture, if there is one.
+    if (picture) {
+        return <img src={picture} alt={''} className={'hydra-avatar-img'} />;
+    }
 
     return <BoringAvatar colors={palette} name={uuid || 'system'} variant={variant} {...props} />;
 };

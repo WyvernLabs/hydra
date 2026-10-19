@@ -9,6 +9,8 @@ import PageContentBlock from '@/components/elements/PageContentBlock';
 import tw from 'twin.macro';
 import MessageBox from '@/components/MessageBox';
 import { useLocation } from 'react-router-dom';
+import ProfileEditor from '@/components/dashboard/profile/ProfileEditor';
+import DeleteAccountBox from '@/components/dashboard/profile/DeleteAccountBox';
 
 export default () => {
     const { t } = useTranslation('client/account');
@@ -22,9 +24,12 @@ export default () => {
                 </MessageBox>
             )}
 
-            <div
-                css={[tw`grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10`, state?.twoFactorRedirect ? tw`mt-4` : tw`mt-0`]}
-            >
+            <div css={state?.twoFactorRedirect ? tw`mt-4` : undefined}>
+                <ProfileEditor />
+            </div>
+
+            <h2 className={'hydra-section-title'}>{t('overview.security')}</h2>
+            <div css={tw`grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8`}>
                 <ContentBox title={t('password.title')} showFlashes={'account:password'}>
                     <UpdatePasswordForm />
                 </ContentBox>
@@ -38,6 +43,8 @@ export default () => {
                     <UpdateLanguageForm />
                 </ContentBox>
             </div>
+
+            <DeleteAccountBox />
         </PageContentBlock>
     );
 };

@@ -16,7 +16,33 @@ export interface UserData {
     useTotp: boolean;
     createdAt: Date;
     updatedAt: Date;
+    // Hydra: profile.
+    nameLast: string;
+    profile: UserProfile;
 }
+
+export interface UserProfile {
+    avatarUrl: string | null;
+    bannerUrl: string | null;
+    bannerStyle: 'gradient' | 'image';
+    bannerColor1: string | null;
+    bannerColor2: string | null;
+    profileAccent: string | null;
+    bio: string | null;
+    showOnline: boolean;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const rawDataToUserProfile = (data: any): UserProfile => ({
+    avatarUrl: data.avatar_url || null,
+    bannerUrl: data.banner_url || null,
+    bannerStyle: data.banner_style === 'image' ? 'image' : 'gradient',
+    bannerColor1: data.banner_color_1 || null,
+    bannerColor2: data.banner_color_2 || null,
+    profileAccent: data.profile_accent || null,
+    bio: data.bio || null,
+    showOnline: data.show_online !== false,
+});
 
 export interface UserStore {
     data?: UserData;

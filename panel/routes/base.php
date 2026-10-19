@@ -18,5 +18,12 @@ Route::get('/branding/{type}', Base\BrandingController::class)
     ->where('type', 'logo|favicon')
     ->name('branding');
 
+// Hydra: profile pictures and banners of users.
+// "user" is bound to subusers by the client API, so the parameter has another name.
+Route::get('/profiles/{uuid}/{type}', Base\ProfileMediaController::class)
+    ->withoutMiddleware(RequireTwoFactorAuthentication::class)
+    ->where('type', 'avatar|banner')
+    ->name('profiles.media');
+
 Route::get('/{react}', [Base\IndexController::class, 'index'])
     ->where('react', '^(?!(\/)?(api|auth|admin|daemon)).+');

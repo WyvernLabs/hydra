@@ -8,6 +8,7 @@ import Can from '@/components/elements/Can';
 import { useStoreState } from 'easy-peasy';
 import tw from 'twin.macro';
 import GreyRowBox from '@/components/elements/GreyRowBox';
+import Avatar from '@/components/Avatar';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -22,10 +23,15 @@ export default ({ subuser }: Props) => {
     return (
         <GreyRowBox css={tw`mb-2`}>
             <EditSubuserModal subuser={subuser} visible={visible} onModalDismissed={() => setVisible(false)} />
-            <div
-                css={tw`w-10 h-10 rounded-full bg-neutral-700 border-2 border-neutral-800 overflow-hidden hidden md:block`}
-            >
-                <img css={tw`w-full h-full`} src={`${subuser.image}?s=400`} />
+            <div css={tw`relative w-10 h-10 flex-none hidden md:block`}>
+                <div css={tw`w-10 h-10 rounded-full overflow-hidden`}>
+                    {subuser.image ? (
+                        <img css={tw`w-full h-full object-cover`} src={subuser.image} alt={''} />
+                    ) : (
+                        <Avatar name={subuser.uuid} size={40} />
+                    )}
+                </div>
+                {subuser.online && <span className={'hydra-online-dot hydra-online-dot--small'} />}
             </div>
             <div css={tw`ml-4 flex-1 overflow-hidden`}>
                 <p css={tw`text-sm truncate`}>{subuser.username}</p>

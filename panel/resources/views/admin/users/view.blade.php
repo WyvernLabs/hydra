@@ -14,7 +14,41 @@
 @endsection
 
 @section('content')
+@php
+    $profileAccent = $user->profile_accent ?: $branding->accent();
+    $bannerBackground = $user->banner_style === 'image' && $user->bannerUrl()
+        ? 'center / cover no-repeat url(' . $user->bannerUrl() . ')'
+        : 'linear-gradient(120deg, ' . ($user->banner_color_1 ?: '#1f1f1f') . ', ' . ($user->banner_color_2 ?: $profileAccent) . ')';
+@endphp
 <div class="row">
+    <div class="col-xs-12">
+        <div class="box hydra-admin-profile">
+            <div class="hydra-admin-profile-banner" style="background: {{ $bannerBackground }}"></div>
+            <div class="box-body hydra-admin-profile-body">
+                @include('partials.hydra.user-avatar', ['user' => $user, 'size' => 72])
+                <div class="hydra-admin-profile-info">
+                    <strong>{{ trim($user->name_first . ' ' . $user->name_last) ?: $user->username }}</strong>
+                    <span class="text-muted">&#64;{{ $user->username }} &middot; {{ __('admin/users.last_seen') }}: @include('partials.hydra.last-seen', ['user' => $user])</span>
+                    @if($user->bio)
+                        <p class="hydra-admin-profile-bio" style="border-color: {{ $profileAccent }}">{{ $user->bio }}</p>
+                    @endif
+                </div>
+                @if($canManage && Auth::user()->hasAdminPermission('users.update'))
+                    <div class="hydra-admin-profile-actions">
+                        @foreach(['avatar', 'banner'] as $type)
+                            @if(\Pterodactyl\Services\Users\ProfileMediaService::path($user, $type))
+                                <form action="{{ route('admin.users.media.delete', [$user->id, $type]) }}" method="POST">
+                                    {!! csrf_field() !!}
+                                    {!! method_field('DELETE') !!}
+                                    <button type="submit" class="btn btn-xs btn-default">{{ __("admin/users.remove_$type") }}</button>
+                                </form>
+                            @endif
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
     <form action="{{ route('admin.users.view', $user->id) }}" method="post">
         <div class="col-md-6">
             <div class="box box-primary">

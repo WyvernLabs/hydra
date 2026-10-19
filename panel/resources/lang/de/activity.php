@@ -25,6 +25,7 @@ return [
         'account' => [
             'email-changed' => 'E-Mail-Adresse von :old in :new geändert',
             'password-changed' => 'Passwort geändert',
+            'username-changed' => 'Benutzername von :old in :new geändert',
         ],
         'api-key' => [
             'create' => 'Neuen API-Schlüssel :identifier erstellt',

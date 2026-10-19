@@ -32,6 +32,11 @@ return [
             'invalid_json_provided' => 'The JSON file provided is not in a format that can be recognized.',
         ],
     ],
+    'profile' => [
+        'invalid_image' => 'Only PNG, JPG, GIF and WebP images can be uploaded.',
+        'confirm_delete' => 'Please type DELETE to confirm.',
+        'last_root_admin' => 'You are the last root admin, so your account cannot be deleted.',
+    ],
     'subusers' => [
         'editing_self' => 'Editing your own subuser account is not permitted.',
         'user_is_owner' => 'You cannot add the server owner as a subuser for this server.',

@@ -3,6 +3,7 @@ import { useLocation } from 'react-router';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';
 import Sidebar, { SidebarSection } from '@/components/hydra/Sidebar';
 import { useStoreState } from '@/state/hooks';
+import http from '@/api/http';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -22,6 +23,18 @@ export default ({ sections, children }: Props) => {
     const { t } = useTranslation();
 
     useEffect(() => setOpen(false), [location.pathname]);
+
+    // Hydra: keeps the "online" status in the admin area up to date while the
+    // panel is open, even on pages that do not talk to the API on their own.
+    useEffect(() => {
+        const timer = setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                http.get('/api/client/account').catch(() => undefined);
+            }
+        }, 120 * 1000);
+
+        return () => clearInterval(timer);
+    }, []);
 
     return (
         <div className={'hydra-shell'}>

@@ -22,6 +22,8 @@ return [
         'two_factor_help' => 'Konten der gewählten Gruppe müssen die Zwei-Faktor-Anmeldung aktivieren, um das Panel zu nutzen.',
         'language' => 'Standardsprache',
         'language_help' => 'Gilt für neue Konten und für Besucher, deren Browsersprache nicht verfügbar ist.',
+        'profile_upload_limit' => 'Upload-Limit für Profile',
+        'profile_upload_limit_help' => 'Maximale Größe von Profilbildern und Bannern in Megabyte (1–100).',
         'updated' => 'Die Panel-Einstellungen wurden gespeichert und der Queue-Worker wurde neu gestartet.',
     ],
 

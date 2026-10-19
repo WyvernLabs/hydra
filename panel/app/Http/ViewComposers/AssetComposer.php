@@ -6,6 +6,7 @@ use Illuminate\View\View;
 use Pterodactyl\Services\Hydra\BrandingService;
 use Pterodactyl\Services\Helpers\AssetHashService;
 use Pterodactyl\Traits\Helpers\AvailableLanguages;
+use Pterodactyl\Services\Users\ProfileMediaService;
 
 class AssetComposer
 {
@@ -36,6 +37,8 @@ class AssetComposer
                 'siteKey' => config('recaptcha.website_key') ?? '',
             ],
             'branding' => $this->branding->toArray(),
+            // Hydra: largest profile picture or banner in megabytes.
+            'profileUploadLimit' => ProfileMediaService::uploadLimit(),
         ]);
     }
 }

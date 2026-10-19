@@ -247,11 +247,16 @@
 }
 
 .hydra-admin select.form-control option { background: var(--hydra-panel-2); color: var(--hydra-text); }
-.hydra-admin input[type="file"].form-control { padding: 7px 10px; }
+/* Bootstrap gives inputs a fixed height, which pushes the file button down. */
+.hydra-admin input[type="file"].form-control {
+    height: auto;
+    padding: 5px 6px;
+    line-height: 1.4;
+}
 
 /* The "choose file" button, dark like the rest of the panel. */
 .hydra-admin input[type="file"]::file-selector-button {
-    margin-right: 12px;
+    margin: 0 12px 0 0;
     padding: 4px 12px;
     border: 1px solid var(--hydra-border-strong);
     border-radius: 6px;

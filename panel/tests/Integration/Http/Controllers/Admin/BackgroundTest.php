@@ -18,7 +18,7 @@ class BackgroundTest extends HttpTestCase
 
     private function appearance(array $data = []): array
     {
-        return array_merge(['_method' => 'PATCH', 'accent' => '#74c236'], $data);
+        return array_merge(['_method' => 'PATCH'], $data);
     }
 
     public function testLoginAndDashboardBackgroundsCanBeSetAndReset(): void
@@ -26,7 +26,7 @@ class BackgroundTest extends HttpTestCase
         $admin = User::factory()->admin()->create();
         $service = $this->app->make(BackgroundService::class);
 
-        $this->actingAs($admin)->post('/admin/settings/appearance', $this->appearance([
+        $this->actingAs($admin)->post('/admin/design/backgrounds', $this->appearance([
             'bg_login_image' => UploadedFile::fake()->createWithContent('login.gif', base64_decode(self::GIF)),
             'bg_login_blur' => 8,
             'bg_login_dim' => 40,
@@ -45,7 +45,7 @@ class BackgroundTest extends HttpTestCase
         $this->get($login['image'])->assertOk()->assertHeader('Content-Type', 'image/gif');
 
         $path = BackgroundService::path(basename($login['image']));
-        $this->actingAs($admin)->post('/admin/settings/appearance', $this->appearance(['reset_background' => 'login']))
+        $this->actingAs($admin)->post('/admin/design/backgrounds', $this->appearance(['reset_background' => 'login']))
             ->assertRedirect();
 
         $this->assertSame(['image' => null, 'blur' => 0, 'dim' => 0], $service->forSlot('login'));
@@ -56,7 +56,7 @@ class BackgroundTest extends HttpTestCase
     {
         $admin = User::factory()->admin()->create();
 
-        $this->actingAs($admin)->post('/admin/settings/appearance', $this->appearance([
+        $this->actingAs($admin)->post('/admin/design/backgrounds', $this->appearance([
             'bg_login_blur' => 500,
             'bg_login_image' => UploadedFile::fake()->createWithContent('evil.svg', '<svg xmlns="http://www.w3.org/2000/svg"/>'),
         ]));

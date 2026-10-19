@@ -58,6 +58,7 @@ return [
 
     'areas' => [
         'settings' => 'Einstellungen',
+        'design' => 'Design',
         'api' => 'Application-API',
         'databases' => 'Datenbank-Hosts',
         'locations' => 'Standorte',
@@ -72,8 +73,12 @@ return [
 
     'actions' => [
         'settings' => [
-            'view' => ['title' => 'Ansehen', 'description' => 'Panel-, E-Mail-, Darstellungs- und erweiterte Einstellungen öffnen.'],
+            'view' => ['title' => 'Ansehen', 'description' => 'Panel-, E-Mail- und erweiterte Einstellungen öffnen.'],
             'update' => ['title' => 'Ändern', 'description' => 'Einstellungen speichern und Test-E-Mails senden.'],
+        ],
+        'design' => [
+            'view' => ['title' => 'Ansehen', 'description' => 'Farben, Logo, Hintergründe sowie Links & Seiten öffnen.'],
+            'update' => ['title' => 'Ändern', 'description' => 'Farben, Logo und Hintergründe ändern sowie Links und Seiten bearbeiten.'],
         ],
         'api' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Die eigenen Application-API-Schlüssel sehen.'],

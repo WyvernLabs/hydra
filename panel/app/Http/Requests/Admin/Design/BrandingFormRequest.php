@@ -1,11 +1,10 @@
 <?php
 
-namespace Pterodactyl\Http\Requests\Admin\Settings;
+namespace Pterodactyl\Http\Requests\Admin\Design;
 
-use Pterodactyl\Services\Hydra\BackgroundService;
 use Pterodactyl\Http\Requests\Admin\AdminFormRequest;
 
-class AppearanceSettingsFormRequest extends AdminFormRequest
+class BrandingFormRequest extends AdminFormRequest
 {
     public function rules(): array
     {
@@ -15,8 +14,7 @@ class AppearanceSettingsFormRequest extends AdminFormRequest
             'favicon' => 'nullable|file|max:1024|mimes:png,ico,svg',
             'reset_logo' => 'nullable|boolean',
             'reset_favicon' => 'nullable|boolean',
-            'reset_background' => 'nullable|string|in:login,dashboard',
-        ] + BackgroundService::rules('bg_login') + BackgroundService::rules('bg_dashboard');
+        ];
     }
 
     public function attributes(): array

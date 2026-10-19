@@ -3,6 +3,7 @@
 namespace Pterodactyl\Tests\Integration\Http\Controllers\Admin;
 
 use Pterodactyl\Models\User;
+use Pterodactyl\Models\AdminRole;
 use Pterodactyl\Models\PanelLink;
 use Pterodactyl\Tests\Integration\Http\HttpTestCase;
 
@@ -33,9 +34,9 @@ class PanelLinkTest extends HttpTestCase
     {
         $admin = User::factory()->admin()->create();
 
-        $this->actingAs($admin)->get('/admin/settings/links')->assertOk()->assertSee('Imprint');
+        $this->actingAs($admin)->get('/admin/design/links')->assertOk()->assertSee('Imprint');
 
-        $this->actingAs($admin)->post('/admin/settings/links/new', [
+        $this->actingAs($admin)->post('/admin/design/links/new', [
             'type' => 'page',
             'title' => ['en' => 'Rules', 'de' => 'Regeln'],
             'icon' => 'book-open',
@@ -50,7 +51,7 @@ class PanelLinkTest extends HttpTestCase
         $this->assertSame('Regeln', $page->localizedTitle('de'));
         $this->assertSame('# Rules', $page->localizedContent('en'));
 
-        $this->actingAs($admin)->post('/admin/settings/links/new', [
+        $this->actingAs($admin)->post('/admin/design/links/new', [
             'type' => 'url',
             'title' => ['en' => 'Website'],
             'icon' => 'globe-alt',
@@ -64,7 +65,22 @@ class PanelLinkTest extends HttpTestCase
     {
         $user = User::factory()->create();
 
-        $this->actingAs($user)->get('/admin/settings/links')->assertForbidden();
+        $this->actingAs($user)->get('/admin/design/links')->assertForbidden();
+    }
+
+    public function testDesignIsSeparateFromSettings(): void
+    {
+        $user = User::factory()->create();
+        $role = AdminRole::query()->create(['name' => 'Designer', 'color' => '#b16cf0', 'permissions' => ['design.update']]);
+        $user->adminRoles()->attach($role);
+
+        $this->actingAs($user)->get('/admin/design')->assertOk();
+        $this->actingAs($user)->get('/admin/design/backgrounds')->assertOk();
+        $this->actingAs($user)->get('/admin/design/links')->assertOk();
+        $this->actingAs($user)->get('/admin/settings')->assertForbidden();
+
+        // Old addresses still lead to the right place.
+        $this->actingAs($user)->get('/admin/settings/appearance')->assertRedirect('/admin/design');
     }
 
     public function testPublicPageWorksWithoutLogin(): void

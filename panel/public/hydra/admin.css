@@ -832,6 +832,18 @@
 
 .hydra-admin input[type="range"] { width: 100%; accent-color: rgb(var(--hydra-accent-500)); }
 
+.hydra-bg-thumb {
+    display: inline-block;
+    width: 44px;
+    height: 26px;
+    margin-right: 6px;
+    border: 1px solid var(--hydra-border-strong);
+    border-radius: 4px;
+    background: var(--hydra-bg) var(--hydra-pattern) center / 120px repeat;
+    background-size: cover;
+    vertical-align: middle;
+}
+
 /* ---------------------------------------------------------------- Responsive */
 
 @media (max-width: 767px) {

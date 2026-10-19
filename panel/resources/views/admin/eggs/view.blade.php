@@ -187,19 +187,19 @@
     {!! csrf_field() !!}
     {!! method_field('PATCH') !!}
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-6" id="egg-background">
             <div class="box">
                 <div class="box-header with-border">
-                    <h3 class="box-title">{{ __('admin/settings.backgrounds.egg') }}</h3>
+                    <h3 class="box-title">{{ __('admin/design.backgrounds.egg') }}</h3>
                 </div>
                 <div class="box-body">
-                    <p class="text-muted small">{{ __('admin/settings.backgrounds.egg_help') }}</p>
+                    <p class="text-muted small">{{ __('admin/design.backgrounds.egg_help') }}</p>
                     @include('partials.admin.hydra.background-editor', [
                         'prefix' => 'bg_egg',
                         'background' => app(\Pterodactyl\Services\Hydra\BackgroundService::class)->forEgg($egg) ?? ['image' => null, 'blur' => 0, 'dim' => 0],
                         'resetName' => 'reset_background',
                         'resetValue' => '1',
-                        'resetLabel' => __('admin/settings.backgrounds.egg_reset'),
+                        'resetLabel' => __('admin/design.backgrounds.egg_reset'),
                     ])
                 </div>
                 @if(Auth::user()->hasAdminPermission('eggs.update'))

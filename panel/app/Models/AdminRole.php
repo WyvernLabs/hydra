@@ -30,6 +30,7 @@ class AdminRole extends Model
      */
     public const PERMISSIONS = [
         'settings' => ['view', 'update'],
+        'design' => ['view', 'update'],
         'api' => ['view', 'create', 'delete'],
         'databases' => ['view', 'create', 'update', 'delete'],
         'locations' => ['view', 'create', 'update', 'delete'],

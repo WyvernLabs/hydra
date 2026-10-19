@@ -6,6 +6,7 @@
         __('admin/common.nav.basic') => [
             ['admin.index', __('admin/common.nav.overview'), 'home', $route === 'admin.index', null],
             ['admin.settings', __('admin/common.nav.settings'), 'cog', starts_with($route, 'admin.settings'), 'settings.view'],
+            ['admin.design', __('admin/common.nav.design'), 'color-swatch', starts_with($route, 'admin.design'), 'design.view'],
             ['admin.api.index', __('admin/common.nav.api'), 'code', starts_with($route, 'admin.api'), 'api.view'],
         ],
         __('admin/common.nav.management') => [

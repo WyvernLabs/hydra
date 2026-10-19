@@ -58,6 +58,7 @@ return [
 
     'areas' => [
         'settings' => 'Settings',
+        'design' => 'Design',
         'api' => 'Application API',
         'databases' => 'Database Hosts',
         'locations' => 'Locations',
@@ -72,8 +73,12 @@ return [
 
     'actions' => [
         'settings' => [
-            'view' => ['title' => 'View', 'description' => 'Open the panel, mail, appearance and advanced settings.'],
+            'view' => ['title' => 'View', 'description' => 'Open the panel, mail and advanced settings.'],
             'update' => ['title' => 'Change', 'description' => 'Save settings and send test emails.'],
+        ],
+        'design' => [
+            'view' => ['title' => 'View', 'description' => 'Open colors, logo, backgrounds and links & pages.'],
+            'update' => ['title' => 'Change', 'description' => 'Change colors, logo and backgrounds, and edit links and pages.'],
         ],
         'api' => [
             'view' => ['title' => 'View', 'description' => 'See their own application API keys.'],

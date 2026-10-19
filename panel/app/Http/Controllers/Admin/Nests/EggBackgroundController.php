@@ -37,7 +37,7 @@ class EggBackgroundController extends Controller
             );
         }
 
-        $this->alert->success(__('admin/settings.backgrounds.saved'))->flash();
+        $this->alert->success(__('admin/design.backgrounds.saved'))->flash();
 
         return redirect()->route('admin.nests.egg.view', $egg->id);
     }

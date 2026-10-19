@@ -14,6 +14,7 @@ return [
         'service' => 'Dienste',
         'overview' => 'Übersicht',
         'settings' => 'Einstellungen',
+        'design' => 'Design',
         'api' => 'Application-API',
         'databases' => 'Datenbanken',
         'locations' => 'Standorte',

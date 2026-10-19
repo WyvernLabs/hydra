@@ -1,6 +1,6 @@
 <?php
 
-namespace Pterodactyl\Http\Requests\Admin\Settings;
+namespace Pterodactyl\Http\Requests\Admin\Design;
 
 use Illuminate\Validation\Rule;
 use Pterodactyl\Models\PanelLink;

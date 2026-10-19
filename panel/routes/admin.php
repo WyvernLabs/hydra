@@ -68,24 +68,43 @@ Route::group(['prefix' => 'settings'], function () {
     Route::get('/', [Admin\Settings\IndexController::class, 'index'])->name('admin.settings')->middleware('admin.can:settings.view');
     Route::get('/mail', [Admin\Settings\MailController::class, 'index'])->name('admin.settings.mail')->middleware('admin.can:settings.view');
     Route::get('/advanced', [Admin\Settings\AdvancedController::class, 'index'])->name('admin.settings.advanced')->middleware('admin.can:settings.view');
-    Route::get('/appearance', [Admin\Settings\AppearanceController::class, 'index'])->name('admin.settings.appearance')->middleware('admin.can:settings.view');
 
-    // Hydra: links and pages in the sidebar of the client area.
-    Route::get('/links', [Admin\Settings\LinkController::class, 'index'])->name('admin.settings.links')->middleware('admin.can:settings.view');
-    Route::get('/links/new', [Admin\Settings\LinkController::class, 'create'])->name('admin.settings.links.new')->middleware('admin.can:settings.update');
-    Route::get('/links/{link:id}', [Admin\Settings\LinkController::class, 'view'])->name('admin.settings.links.view')->middleware('admin.can:settings.view');
-    Route::post('/links/new', [Admin\Settings\LinkController::class, 'store'])->middleware('admin.can:settings.update');
-    Route::post('/links/preview', [Admin\Settings\LinkController::class, 'preview'])->name('admin.settings.links.preview')->middleware('admin.can:settings.view');
-    Route::patch('/links/{link:id}', [Admin\Settings\LinkController::class, 'update'])->middleware('admin.can:settings.update');
-    Route::delete('/links/{link:id}', [Admin\Settings\LinkController::class, 'delete'])->name('admin.settings.links.delete')->middleware('admin.can:settings.update');
 
     Route::post('/mail/test', [Admin\Settings\MailController::class, 'test'])->name('admin.settings.mail.test')->middleware('admin.can:settings.update');
 
     Route::patch('/', [Admin\Settings\IndexController::class, 'update'])->middleware('admin.can:settings.update');
     Route::patch('/mail', [Admin\Settings\MailController::class, 'update'])->middleware('admin.can:settings.update');
     Route::patch('/advanced', [Admin\Settings\AdvancedController::class, 'update'])->middleware('admin.can:settings.update');
-    Route::patch('/appearance', [Admin\Settings\AppearanceController::class, 'update'])->middleware('admin.can:settings.update');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Design Routes (Hydra)
+|--------------------------------------------------------------------------
+|
+| Endpoint: /admin/design
+|
+*/
+Route::group(['prefix' => 'design'], function () {
+    Route::get('/', [Admin\Design\BrandingController::class, 'index'])->name('admin.design')->middleware('admin.can:design.view');
+    Route::get('/backgrounds', [Admin\Design\BackgroundController::class, 'index'])->name('admin.design.backgrounds')->middleware('admin.can:design.view');
+    Route::get('/links', [Admin\Design\LinkController::class, 'index'])->name('admin.design.links')->middleware('admin.can:design.view');
+    Route::get('/links/new', [Admin\Design\LinkController::class, 'create'])->name('admin.design.links.new')->middleware('admin.can:design.update');
+    Route::get('/links/{link:id}', [Admin\Design\LinkController::class, 'view'])->name('admin.design.links.view')->middleware('admin.can:design.view');
+
+    Route::post('/links/new', [Admin\Design\LinkController::class, 'store'])->middleware('admin.can:design.update');
+    Route::post('/links/preview', [Admin\Design\LinkController::class, 'preview'])->name('admin.design.links.preview')->middleware('admin.can:design.view');
+
+    Route::patch('/', [Admin\Design\BrandingController::class, 'update'])->middleware('admin.can:design.update');
+    Route::patch('/backgrounds', [Admin\Design\BackgroundController::class, 'update'])->middleware('admin.can:design.update');
+    Route::patch('/links/{link:id}', [Admin\Design\LinkController::class, 'update'])->middleware('admin.can:design.update');
+
+    Route::delete('/links/{link:id}', [Admin\Design\LinkController::class, 'delete'])->name('admin.design.links.delete')->middleware('admin.can:design.update');
+});
+
+// Hydra: the design pages used to live in the settings.
+Route::redirect('/settings/appearance', '/admin/design', 301);
+Route::redirect('/settings/links', '/admin/design/links', 301);
 
 /*
 |--------------------------------------------------------------------------

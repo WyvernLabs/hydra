@@ -248,6 +248,24 @@
 
 .hydra-admin select.form-control option { background: var(--hydra-panel-2); color: var(--hydra-text); }
 .hydra-admin input[type="file"].form-control { padding: 7px 10px; }
+
+/* The "choose file" button, dark like the rest of the panel. */
+.hydra-admin input[type="file"]::file-selector-button {
+    margin-right: 12px;
+    padding: 4px 12px;
+    border: 1px solid var(--hydra-border-strong);
+    border-radius: 6px;
+    background: var(--hydra-bg);
+    color: var(--hydra-text);
+    font: inherit;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+}
+
+.hydra-admin input[type="file"]::file-selector-button:hover {
+    background: var(--hydra-panel-3);
+    border-color: rgb(var(--hydra-accent-500));
+}
 .hydra-admin input[type="color"] {
     width: 44px;
     height: 38px;

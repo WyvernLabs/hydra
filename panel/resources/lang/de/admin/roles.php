@@ -59,6 +59,7 @@ return [
     'areas' => [
         'settings' => 'Einstellungen',
         'design' => 'Design',
+        'updates' => 'Updates',
         'api' => 'Application-API',
         'databases' => 'Datenbank-Hosts',
         'locations' => 'Standorte',
@@ -78,6 +79,10 @@ return [
         'design' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Farben, Logo, Hintergründe sowie Links & Seiten öffnen.'],
             'update' => ['title' => 'Ändern', 'description' => 'Farben, Logo und Hintergründe ändern sowie Links und Seiten bearbeiten.'],
+        ],
+        'updates' => [
+            'view' => ['title' => 'Ansehen', 'description' => 'Die installierten Versionen von Panel und Nodes sehen.'],
+            'run' => ['title' => 'Ausführen', 'description' => 'Nach Updates suchen und Panel sowie Nodes aktualisieren.'],
         ],
         'api' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Die eigenen Application-API-Schlüssel sehen.'],

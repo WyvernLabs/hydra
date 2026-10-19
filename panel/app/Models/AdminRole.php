@@ -31,6 +31,7 @@ class AdminRole extends Model
     public const PERMISSIONS = [
         'settings' => ['view', 'update'],
         'design' => ['view', 'update'],
+        'updates' => ['view', 'run'],
         'api' => ['view', 'create', 'delete'],
         'databases' => ['view', 'create', 'update', 'delete'],
         'locations' => ['view', 'create', 'update', 'delete'],
@@ -49,6 +50,8 @@ class AdminRole extends Model
     public const IMPLIES = [
         'eggs.view' => 'nests.view',
         'roles.assign' => 'users.update',
+        // The update page is a tab of the settings.
+        'updates.view' => 'settings.view',
     ];
 
     protected $table = 'admin_roles';

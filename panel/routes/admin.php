@@ -70,6 +70,14 @@ Route::group(['prefix' => 'settings'], function () {
     Route::get('/advanced', [Admin\Settings\AdvancedController::class, 'index'])->name('admin.settings.advanced')->middleware('admin.can:settings.view');
 
 
+    // Hydra: updates of the panel and the nodes.
+    Route::get('/updates', [Admin\Settings\UpdateController::class, 'index'])->name('admin.settings.updates')->middleware('admin.can:updates.view');
+    Route::get('/updates/status', [Admin\Settings\UpdateController::class, 'status'])->name('admin.settings.updates.status')->middleware('admin.can:updates.view');
+    Route::get('/updates/nodes/{node:id}', [Admin\Settings\UpdateController::class, 'node'])->name('admin.settings.updates.node')->middleware('admin.can:updates.view');
+    Route::post('/updates/check', [Admin\Settings\UpdateController::class, 'check'])->name('admin.settings.updates.check')->middleware('admin.can:updates.run');
+    Route::post('/updates/panel', [Admin\Settings\UpdateController::class, 'updatePanel'])->name('admin.settings.updates.panel')->middleware('admin.can:updates.run');
+    Route::post('/updates/nodes/{node:id}', [Admin\Settings\UpdateController::class, 'updateNode'])->middleware('admin.can:updates.run');
+
     Route::post('/mail/test', [Admin\Settings\MailController::class, 'test'])->name('admin.settings.mail.test')->middleware('admin.can:settings.update');
 
     Route::patch('/', [Admin\Settings\IndexController::class, 'update'])->middleware('admin.can:settings.update');

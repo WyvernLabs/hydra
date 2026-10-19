@@ -398,6 +398,46 @@ EOF
 chmod 600 "$NODE_CONF"
 
 [[ "$SCRIPT_PATH" == /usr/local/bin/hydra-node ]] || install -m 755 "$SCRIPT_PATH" /usr/local/bin/hydra-node
+
+# ------------------------------------------------------------------ Updates aus dem Adminbereich
+#
+# Das Panel bittet Wings über die geschützte Node-API um ein Update. Wings startet
+# dann nur diese Unit, die als root genau "hydra-node update" mit den gespeicherten
+# Einstellungen ausführt. Status und Log liest Wings für das Panel aus.
+install -d -m 755 /usr/local/lib/hydra /var/lib/hydra/updates
+cat > /usr/local/lib/hydra/node-updater <<'EOF'
+#!/usr/bin/env bash
+# Hydra Wings – führt im Adminbereich angeforderte Updates aus (Einstellungen > Updates).
+# Wird vom Installer erzeugt und von hydra-node-update.service als root gestartet.
+set -u
+DIR=/var/lib/hydra/updates
+
+status() { # status <zustand> <zeitfeld>
+  printf '{"state":"%s","%s":"%s"}\n' "$1" "$2" "$(date -Iseconds)" > "$DIR/.status.json.tmp"
+  mv "$DIR/.status.json.tmp" "$DIR/status.json"
+}
+
+status running started_at
+if HYDRA_UPDATER=1 /usr/local/bin/hydra-node update > "$DIR/node.log" 2>&1; then
+  status success finished_at
+else
+  status failed finished_at
+fi
+EOF
+chmod 755 /usr/local/lib/hydra/node-updater
+cat > /etc/systemd/system/hydra-node-update.service <<'EOF'
+[Unit]
+Description=Hydra Wings Updater (Adminbereich > Einstellungen > Updates)
+
+[Service]
+Type=oneshot
+Environment=HOME=/root
+ExecStart=/usr/local/lib/hydra/node-updater
+TimeoutStartSec=3600
+EOF
+systemctl daemon-reload
+info "Updates aus dem Adminbereich ok"
+
 rm -rf "$WORK"
 
 step "Fertig"

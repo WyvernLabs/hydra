@@ -59,6 +59,7 @@ return [
     'areas' => [
         'settings' => 'Settings',
         'design' => 'Design',
+        'updates' => 'Updates',
         'api' => 'Application API',
         'databases' => 'Database Hosts',
         'locations' => 'Locations',
@@ -78,6 +79,10 @@ return [
         'design' => [
             'view' => ['title' => 'View', 'description' => 'Open colors, logo, backgrounds and links & pages.'],
             'update' => ['title' => 'Change', 'description' => 'Change colors, logo and backgrounds, and edit links and pages.'],
+        ],
+        'updates' => [
+            'view' => ['title' => 'View', 'description' => 'See the installed versions of the panel and the nodes.'],
+            'run' => ['title' => 'Run', 'description' => 'Look for updates and update the panel and the nodes.'],
         ],
         'api' => [
             'view' => ['title' => 'View', 'description' => 'See their own application API keys.'],

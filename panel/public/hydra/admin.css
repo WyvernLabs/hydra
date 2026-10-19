@@ -844,6 +844,23 @@
     vertical-align: middle;
 }
 
+/* ---------------------------------------------------------------- Updates (Hydra) */
+
+.hydra-update-log {
+    max-height: 340px;
+    margin: 0;
+    overflow: auto;
+    padding: 10px 12px;
+    background: var(--hydra-bg);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius-sm);
+    color: var(--hydra-text-2);
+    font-family: var(--hydra-font-mono);
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
 /* ---------------------------------------------------------------- Responsive */
 
 @media (max-width: 767px) {

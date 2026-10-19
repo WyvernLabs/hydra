@@ -591,6 +591,105 @@ chmod 600 "$CONF_FILE"
 
 # Das Skript selbst als "hydra-panel" bereitstellen (update/status).
 [[ "$SCRIPT_PATH" == /usr/local/bin/hydra-panel ]] || install -m 755 "$SCRIPT_PATH" /usr/local/bin/hydra-panel
+
+# ------------------------------------------------------------------ Updates aus dem Adminbereich
+#
+# Das Panel (www-data) legt unter storage/app/hydra/updates eine Datei "request"
+# mit "check" oder "update" an. Eine systemd-Pfad-Unit startet daraufhin als root
+# den Updater, der genau "hydra-panel update" ausführt bzw. nach Updates sucht und
+# Status und Log als Dateien zurückschreibt. Der Webserver selbst erhält keine
+# weiteren Rechte und kann nichts anderes auslösen.
+UPDATE_DIR="$INSTALL_DIR/storage/app/hydra/updates"
+install -d -m 775 -o "$WEB_USER" -g "$WEB_USER" "$UPDATE_DIR"
+
+# Installierte Version für die Anzeige im Adminbereich.
+REPO_DIR="$(dirname "$PANEL_SRC")"
+if git -C "$REPO_DIR" rev-parse HEAD >/dev/null 2>&1; then
+  "$PHP_BIN" -r 'echo json_encode(["commit" => $argv[1], "subject" => $argv[2], "date" => $argv[3], "installed_at" => date("c")]);' -- \
+    "$(git -C "$REPO_DIR" log -1 --format=%H)" "$(git -C "$REPO_DIR" log -1 --format=%s)" "$(git -C "$REPO_DIR" log -1 --format=%cI)" \
+    > "$UPDATE_DIR/installed.json"
+else
+  "$PHP_BIN" -r 'echo json_encode(["commit" => null, "installed_at" => date("c")]);' > "$UPDATE_DIR/installed.json"
+fi
+chmod 644 "$UPDATE_DIR/installed.json"
+
+install -d -m 755 /usr/local/lib/hydra
+cat > /usr/local/lib/hydra/panel-updater <<EOF
+#!/usr/bin/env bash
+# Hydra Panel – führt im Adminbereich angeforderte Updates aus (Einstellungen > Updates).
+# Wird vom Installer erzeugt und von hydra-panel-update.service als root gestartet.
+set -u
+DIR=$(printf '%q' "$UPDATE_DIR")
+PHP=$(printf '%q' "$PHP_BIN")
+EOF
+cat >> /usr/local/lib/hydra/panel-updater <<'EOF'
+REQUEST="$DIR/request"
+ACTION="$(tr -cd 'a-z' < "$REQUEST" 2>/dev/null)"
+rm -f "$REQUEST"
+
+json() { # json <datei> <php-array-ausdruck> [argumente …]
+  local file="$1" expr="$2"; shift 2
+  "$PHP" -r "echo json_encode($expr);" -- "$@" > "$DIR/.$file.tmp" && chmod 644 "$DIR/.$file.tmp" && mv "$DIR/.$file.tmp" "$DIR/$file"
+}
+
+check() {
+  # shellcheck disable=SC1091
+  source /etc/hydra/panel.conf
+  local work repo=(); work="$(mktemp -d)"
+  if [[ -d "$HYDRA_SOURCE" ]]; then
+    git -C "$HYDRA_SOURCE" rev-parse HEAD >/dev/null 2>&1 && repo=(-C "$HYDRA_SOURCE")
+  elif git clone -q --depth 1 --branch "${HYDRA_REF:-main}" "$HYDRA_SOURCE" "$work/repo" >/dev/null 2>&1; then
+    repo=(-C "$work/repo")
+  fi
+  if (( ${#repo[@]} )); then
+    json latest.json '["commit" => $argv[1], "subject" => $argv[2], "date" => $argv[3], "checked_at" => date("c")]' \
+      "$(git "${repo[@]}" log -1 --format=%H)" "$(git "${repo[@]}" log -1 --format=%s)" "$(git "${repo[@]}" log -1 --format=%cI)"
+  else
+    json latest.json '["error" => "unreachable", "checked_at" => date("c")]'
+  fi
+  rm -rf "$work"
+}
+
+case "$ACTION" in
+  check)
+    check ;;
+  update)
+    json status.json '["state" => "running", "started_at" => date("c")]'
+    if HYDRA_UPDATER=1 /usr/local/bin/hydra-panel update > "$DIR/panel.log" 2>&1; then STATE=success; else STATE=failed; fi
+    chmod 644 "$DIR/panel.log"
+    json status.json '["state" => $argv[1], "finished_at" => date("c")]' "$STATE"
+    check ;;
+esac
+EOF
+chmod 755 /usr/local/lib/hydra/panel-updater
+
+cat > /etc/systemd/system/hydra-panel-update.service <<'EOF'
+[Unit]
+Description=Hydra Panel Updater (Adminbereich > Einstellungen > Updates)
+
+[Service]
+Type=oneshot
+Environment=HOME=/root
+ExecStart=/usr/local/lib/hydra/panel-updater
+TimeoutStartSec=3600
+EOF
+cat > /etc/systemd/system/hydra-panel-update.path <<EOF
+[Unit]
+Description=Hydra Panel Updater – wartet auf Anfragen aus dem Adminbereich
+
+[Path]
+PathExists=$UPDATE_DIR/request
+Unit=hydra-panel-update.service
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable hydra-panel-update.path >/dev/null 2>&1
+# Während eines Updates aus dem Adminbereich läuft der Updater gerade selbst – nicht neu starten.
+[[ -n "${HYDRA_UPDATER:-}" ]] || systemctl restart hydra-panel-update.path
+info "Updates aus dem Adminbereich ok"
+
 rm -rf "$WORK"
 
 step "Fertig"

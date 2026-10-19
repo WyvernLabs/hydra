@@ -224,7 +224,7 @@ class DaemonFileRepository extends DaemonRepository
      *
      * @throws DaemonConnectionException
      */
-    public function decompressFile(?string $root, string $file): ResponseInterface
+    public function decompressFile(?string $root, string $file, bool $contained = false): ResponseInterface
     {
         Assert::isInstanceOf($this->server, Server::class);
 
@@ -235,6 +235,9 @@ class DaemonFileRepository extends DaemonRepository
                     'json' => [
                         'root' => $root ?? '/',
                         'file' => $file,
+                        // Hydra: keep every entry inside the target folder and skip links,
+                        // used for subusers that may only work in certain folders.
+                        'contained' => $contained,
                     ],
                     // Wait for up to 15 minutes for the decompress to be completed when calling this endpoint
                     // since it will likely take quite awhile for large directories.

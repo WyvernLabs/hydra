@@ -49,7 +49,7 @@ const SearchWatcher = () => {
 export default ({ ...props }: Props) => {
     const ref = useRef<HTMLInputElement>(null);
     const { t } = useTranslation('client/dashboard');
-    const isAdmin = useStoreState((state) => state.user.data!.rootAdmin);
+    const isAdmin = useStoreState((state) => state.user.data!.serverAccess);
     const [servers, setServers] = useState<Server[]>([]);
     const { clearAndAddHttpError, clearFlashes } = useStoreActions(
         (actions: Actions<ApplicationStore>) => actions.flashes

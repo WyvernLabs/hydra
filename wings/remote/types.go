@@ -89,6 +89,9 @@ type SftpAuthResponse struct {
 	Server      string   `json:"server"`
 	User        string   `json:"user"`
 	Permissions []string `json:"permissions"`
+	// AllowedPaths (Hydra) are the folders the user is limited to, empty for
+	// the whole server.
+	AllowedPaths []string `json:"allowed_paths"`
 }
 
 type OutputLineMatcher struct {

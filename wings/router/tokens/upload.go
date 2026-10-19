@@ -11,6 +11,9 @@ type UploadPayload struct {
 	ServerUuid string `json:"server_uuid"`
 	UserUuid   string `json:"user_uuid"`
 	UniqueId   string `json:"unique_id"`
+	// AllowedPaths (Hydra) limits uploads to these folders, empty for the
+	// whole server.
+	AllowedPaths []string `json:"allowed_paths"`
 }
 
 // Returns the JWT payload.

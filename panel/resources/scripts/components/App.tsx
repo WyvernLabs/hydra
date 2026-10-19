@@ -27,6 +27,9 @@ interface ExtendedWindow extends Window {
         email: string;
         /* eslint-disable camelcase */
         root_admin: boolean;
+        admin_access: boolean;
+        admin_permissions: string[];
+        server_access: boolean;
         use_totp: boolean;
         language: string;
         updated_at: string;
@@ -46,6 +49,9 @@ const App = () => {
             email: PterodactylUser.email,
             language: PterodactylUser.language,
             rootAdmin: PterodactylUser.root_admin,
+            adminAccess: PterodactylUser.admin_access,
+            adminPermissions: PterodactylUser.admin_permissions || [],
+            serverAccess: PterodactylUser.server_access,
             useTotp: PterodactylUser.use_totp,
             createdAt: new Date(PterodactylUser.created_at),
             updatedAt: new Date(PterodactylUser.updated_at),

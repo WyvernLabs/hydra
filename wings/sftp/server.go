@@ -469,6 +469,8 @@ func (c *SFTPServer) makeCredentialsRequest(conn ssh.ConnMetadata, t remote.Sftp
 			"uuid":        resp.Server,
 			"user":        resp.User,
 			"permissions": strings.Join(resp.Permissions, ","),
+			// Hydra: folders are joined by a NUL byte, which no path can contain.
+			"allowed_paths": strings.Join(resp.AllowedPaths, "\x00"),
 		},
 	}
 

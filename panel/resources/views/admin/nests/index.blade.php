@@ -26,8 +26,8 @@
             <div class="box-header with-border">
                 <h3 class="box-title">{{ __('admin/nests.list') }}</h3>
                 <div class="box-tools">
-                    <a href="#" class="btn btn-sm btn-success" data-toggle="modal" data-target="#importServiceOptionModal" role="button"><i class="fa fa-upload"></i> {{ __('admin/nests.import_egg') }}</a>
-                    <a href="{{ route('admin.nests.new') }}" class="btn btn-primary btn-sm">{{ __('admin/common.actions.create_new') }}</a>
+                    @if(Auth::user()->hasAdminPermission('eggs.import'))<a href="#" class="btn btn-sm btn-success" data-toggle="modal" data-target="#importServiceOptionModal" role="button"><i class="fa fa-upload"></i> {{ __('admin/nests.import_egg') }}</a>@endif
+                    @if(Auth::user()->hasAdminPermission('nests.create'))<a href="{{ route('admin.nests.new') }}" class="btn btn-primary btn-sm">{{ __('admin/common.actions.create_new') }}</a>@endif
                 </div>
             </div>
             <div class="box-body table-responsive no-padding">

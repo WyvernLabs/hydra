@@ -65,23 +65,7 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">{{ __('admin/users.permissions') }}</h3>
-                </div>
-                <div class="box-body">
-                    <div class="form-group col-md-12">
-                        <label for="root_admin" class="control-label">{{ __('admin/users.administrator') }}</label>
-                        <div>
-                            <select name="root_admin" class="form-control">
-                                <option value="0">@lang('strings.no')</option>
-                                <option value="1">@lang('strings.yes')</option>
-                            </select>
-                            <p class="text-muted"><small>{{ __('admin/users.administrator_help') }}</small></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @include('admin.users.partials.roles', ['user' => null])
         </div>
         <div class="col-md-6">
             <div class="box">

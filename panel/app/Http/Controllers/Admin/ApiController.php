@@ -30,7 +30,11 @@ class ApiController extends Controller
     public function index(Request $request): View
     {
         return view('admin.api.index', [
-            'keys' => ApiKey::query()->where('key_type', ApiKey::TYPE_APPLICATION)->get(),
+            // Hydra: root admins see every key, everybody else only their own.
+            'keys' => ApiKey::query()
+                ->where('key_type', ApiKey::TYPE_APPLICATION)
+                ->when(!$request->user()->root_admin, fn ($query) => $query->where('user_id', $request->user()->id))
+                ->get(),
         ]);
     }
 
@@ -39,13 +43,15 @@ class ApiController extends Controller
      *
      * @throws \ReflectionException
      */
-    public function create(): View
+    public function create(Request $request): View
     {
         $resources = AdminAcl::getResourceList();
         sort($resources);
 
         return view('admin.api.new', [
             'resources' => $resources,
+            // Hydra: the most each resource may get, bound by the user's own permissions.
+            'limits' => collect($resources)->mapWithKeys(fn ($resource) => [$resource => AdminAcl::maxFor($request->user(), $resource)])->all(),
             'permissions' => [
                 'r' => AdminAcl::READ,
                 'rw' => AdminAcl::READ | AdminAcl::WRITE,
@@ -64,7 +70,9 @@ class ApiController extends Controller
         $this->keyCreationService->setKeyType(ApiKey::TYPE_APPLICATION)->handle([
             'memo' => $request->input('memo'),
             'user_id' => $request->user()->id,
-        ], $request->getKeyPermissions());
+        ], collect($request->getKeyPermissions())->map(function ($value, $column) use ($request) {
+            return (int) $value & AdminAcl::maxFor($request->user(), substr($column, strlen(AdminAcl::COLUMN_IDENTIFIER)));
+        })->all());
 
         $this->alert->success(trans('admin/api.created_notice'))->flash();
 
@@ -79,6 +87,7 @@ class ApiController extends Controller
         ApiKey::query()
             ->where('key_type', ApiKey::TYPE_APPLICATION)
             ->where('identifier', $identifier)
+            ->when(!$request->user()->root_admin, fn ($query) => $query->where('user_id', $request->user()->id))
             ->delete();
 
         return response('', 204);

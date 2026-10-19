@@ -8,7 +8,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Validation\Rules\In;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Builder;
 use Pterodactyl\Contracts\Models\Identifiable;
 use Pterodactyl\Models\Traits\HasAccessTokens;
@@ -19,6 +18,8 @@ use Illuminate\Foundation\Auth\Access\Authorizable;
 use Pterodactyl\Models\Traits\HasRealtimeIdentifier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Contracts\Translation\HasLocalePreference;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
@@ -55,6 +56,7 @@ use Pterodactyl\Notifications\SendPasswordReset as ResetPasswordNotification;
  * @property int|null $servers_count
  * @property \Illuminate\Database\Eloquent\Collection|\Pterodactyl\Models\UserSSHKey[] $sshKeys
  * @property int|null $ssh_keys_count
+ * @property \Illuminate\Database\Eloquent\Collection|\Pterodactyl\Models\AdminRole[] $adminRoles
  * @property \Illuminate\Database\Eloquent\Collection|\Pterodactyl\Models\ApiKey[] $tokens
  * @property int|null $tokens_count
  *
@@ -114,6 +116,11 @@ class User extends Model implements
      * Level of servers to display when using access() on a user.
      */
     protected string $accessLevel = 'all';
+
+    /**
+     * Hydra: admin permissions of this user, resolved once per request.
+     */
+    protected ?array $resolvedAdminPermissions = null;
 
     /**
      * The table associated with the model.
@@ -200,8 +207,13 @@ class User extends Model implements
      */
     public function toVueObject(): array
     {
-        return Collection::make($this->toArray())->except(['id', 'external_id'])
-            ->merge(['identifier' => $this->identifier])
+        return Collection::make($this->toArray())->except(['id', 'external_id', 'admin_roles'])
+            ->merge([
+                'identifier' => $this->identifier,
+                'admin_access' => $this->isAdmin(),
+                'admin_permissions' => $this->adminPermissions(),
+                'server_access' => $this->canAccessAllServers(),
+            ])
             ->toArray();
     }
 
@@ -297,6 +309,96 @@ class User extends Model implements
                 $builder->where('servers.owner_id', $this->id)->orWhere('subusers.user_id', $this->id);
             })
             ->groupBy('servers.id');
+    }
+
+    /**
+     * Hydra: roles of the admin area held by this user.
+     *
+     * @return BelongsToMany<AdminRole, $this>
+     */
+    public function adminRoles(): BelongsToMany
+    {
+        return $this->belongsToMany(AdminRole::class, 'admin_role_user')->orderBy('sort')->orderBy('name');
+    }
+
+    /**
+     * Hydra: every admin permission this user has through their roles. Root
+     * admins have all of them.
+     *
+     * @return string[]
+     */
+    public function adminPermissions(): array
+    {
+        if ($this->root_admin) {
+            return AdminRole::allPermissions();
+        }
+
+        if (is_null($this->resolvedAdminPermissions)) {
+            $this->resolvedAdminPermissions = !$this->exists ? [] : AdminRole::normalizePermissions(
+                $this->adminRoles->pluck('permissions')->flatten()->unique()->all()
+            );
+        }
+
+        return $this->resolvedAdminPermissions;
+    }
+
+    /**
+     * Hydra: whether this user may open the admin area at all.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->root_admin || count($this->adminPermissions()) > 0;
+    }
+
+    /**
+     * Hydra: whether this user has the given admin permission, e.g. "servers.view".
+     */
+    public function hasAdminPermission(string $permission): bool
+    {
+        return $this->root_admin || in_array($permission, $this->adminPermissions(), true);
+    }
+
+    /**
+     * Hydra: whether this user may open every server in the client area with
+     * full rights, like a root admin.
+     */
+    public function canAccessAllServers(): bool
+    {
+        return $this->hasAdminPermission('servers.access');
+    }
+
+    /**
+     * Hydra: whether this user may grant all the given admin permissions, which
+     * is only the case when they hold every one of them.
+     */
+    public function canGrantAdminPermissions(array $permissions): bool
+    {
+        return $this->root_admin || count(array_diff($permissions, $this->adminPermissions())) === 0;
+    }
+
+    /**
+     * Hydra: whether this user may manage the other user's account in the admin
+     * area. Nobody but root admins may touch a root admin, and nobody may touch
+     * an account with admin permissions they do not hold themselves.
+     */
+    public function outranks(User $other): bool
+    {
+        if ($this->root_admin) {
+            return true;
+        }
+
+        return !$other->root_admin && $this->canGrantAdminPermissions($other->adminPermissions());
+    }
+
+    /**
+     * Hydra: forget the cached admin permissions, e.g. after the roles changed.
+     */
+    public function flushAdminPermissions(): self
+    {
+        $this->resolvedAdminPermissions = null;
+        $this->unsetRelation('adminRoles');
+
+        return $this;
     }
 
     /**

@@ -16,6 +16,8 @@ class UpdateSubuserRequest extends SubuserRequest
         return [
             'permissions' => 'required|array',
             'permissions.*' => 'string',
+            'allowed_paths' => 'sometimes|nullable|array|max:50',
+            'allowed_paths.*' => 'string|max:255',
         ];
     }
 }

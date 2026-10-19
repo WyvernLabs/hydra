@@ -27,6 +27,7 @@ use Illuminate\Auth\Middleware\AuthenticateWithBasicAuth;
 use Pterodactyl\Http\Middleware\Api\AuthenticateIPAccess;
 use Illuminate\Foundation\Http\Middleware\ValidatePostSize;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Pterodactyl\Http\Middleware\Admin\RequireAdminPermission;
 use Pterodactyl\Http\Middleware\Api\Daemon\DaemonAuthenticate;
 use Pterodactyl\Http\Middleware\Api\Client\RequireClientApiKey;
 use Pterodactyl\Http\Middleware\RequireTwoFactorAuthentication;
@@ -104,5 +105,6 @@ class Kernel extends HttpKernel
         'bindings' => SubstituteBindings::class,
         'recaptcha' => VerifyReCaptcha::class,
         'node.maintenance' => MaintenanceMiddleware::class,
+        'admin.can' => RequireAdminPermission::class,
     ];
 }

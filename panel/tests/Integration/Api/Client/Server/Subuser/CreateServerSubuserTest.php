@@ -41,8 +41,10 @@ class CreateServerSubuserTest extends ClientApiIntegrationTestCase
             Permission::ACTION_WEBSOCKET_CONNECT,
         ]);
 
+        $response->assertJsonPath('attributes.allowed_paths', []);
+
         $expected = $response->json('attributes');
-        unset($expected['permissions']);
+        unset($expected['permissions'], $expected['allowed_paths']);
 
         $this->assertJsonTransformedWith($expected, $subuser);
     }

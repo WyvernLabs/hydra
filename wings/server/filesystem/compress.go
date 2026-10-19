@@ -165,6 +165,17 @@ func (fs *Filesystem) SpaceAvailableForDecompression(ctx context.Context, dir st
 // zip-slip attack being attempted by validating that the final path is within
 // the server data directory.
 func (fs *Filesystem) DecompressFile(ctx context.Context, dir string, file string) error {
+	return fs.decompressFile(ctx, dir, file, false)
+}
+
+// DecompressFileContained (Hydra) works like DecompressFile, but leaves out
+// every entry that would end up outside of dir as well as links. It is used
+// for subusers who may only work in certain folders.
+func (fs *Filesystem) DecompressFileContained(ctx context.Context, dir string, file string) error {
+	return fs.decompressFile(ctx, dir, file, true)
+}
+
+func (fs *Filesystem) decompressFile(ctx context.Context, dir string, file string, contained bool) error {
 	f, err := fs.unixFS.Open(filepath.Join(dir, file))
 	if err != nil {
 		return err
@@ -185,6 +196,7 @@ func (fs *Filesystem) DecompressFile(ctx context.Context, dir string, file strin
 		Directory: dir,
 		Format:    format,
 		Reader:    input,
+		Contained: contained,
 	})
 }
 
@@ -218,6 +230,8 @@ type extractStreamOptions struct {
 	Reader io.Reader
 	// KeepDenylist extracts files the denylist would otherwise skip.
 	KeepDenylist bool
+	// Contained (Hydra) skips entries outside of Directory and links.
+	Contained bool
 }
 
 func (fs *Filesystem) extractStream(ctx context.Context, opts extractStreamOptions) error {
@@ -233,6 +247,9 @@ func (fs *Filesystem) extractStream(ctx context.Context, opts extractStreamOptio
 
 		// Strip the compression suffix
 		p := filepath.Join(opts.Directory, strings.TrimSuffix(opts.FileName, opts.Format.Extension()))
+		if opts.Contained && !isWithin(opts.Directory, p) {
+			return nil
+		}
 
 		// Make sure it's not ignored
 		if err := fs.IsIgnored(p); err != nil {
@@ -256,6 +273,9 @@ func (fs *Filesystem) extractStream(ctx context.Context, opts extractStreamOptio
 	// Decompress and extract archive
 	return ex.Extract(ctx, opts.Reader, func(ctx context.Context, f archives.FileInfo) error {
 		p := filepath.Join(opts.Directory, f.NameInArchive)
+		if opts.Contained && (!isWithin(opts.Directory, p) || f.Mode()&iofs.ModeSymlink != 0) {
+			return nil
+		}
 		// If it is ignored, just don't do anything with the entry and skip over it.
 		if !opts.KeepDenylist {
 			if err := fs.IsIgnored(p); err != nil {

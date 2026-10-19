@@ -647,6 +647,75 @@
     border-radius: var(--hydra-radius-sm);
 }
 
+/* ---------------------------------------------------------------- Admin roles (Hydra) */
+
+.hydra-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin: 1px 2px 1px 0;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.6;
+    letter-spacing: .02em;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.hydra-role-badge--root {
+    background: var(--hydra-warning-soft);
+    color: var(--hydra-warning);
+}
+
+.hydra-role-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+.hydra-permission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--hydra-gap);
+}
+
+.hydra-permission-group {
+    padding: 12px 14px;
+    background: var(--hydra-panel-2);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius-sm);
+}
+
+.hydra-permission-group-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--hydra-text);
+}
+
+.hydra-permission-group .hydra-permission {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    margin: 0;
+    padding: 5px 0;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.hydra-permission input { margin-top: 3px; }
+.hydra-permission small { display: block; color: var(--hydra-muted); }
+.hydra-permission.is-locked { opacity: .5; cursor: not-allowed; }
+
+.hydra-role-list .checkbox { margin: 0 0 6px; }
+
 /* ---------------------------------------------------------------- Responsive */
 
 @media (max-width: 767px) {

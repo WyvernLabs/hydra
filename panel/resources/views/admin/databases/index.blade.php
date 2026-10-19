@@ -19,7 +19,7 @@
             <div class="box-header with-border">
                 <h3 class="box-title">{{ __('admin/databases.list') }}</h3>
                 <div class="box-tools">
-                    <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#newHostModal">{{ __('admin/common.actions.create_new') }}</button>
+                    @if(Auth::user()->hasAdminPermission('databases.create'))<button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#newHostModal">{{ __('admin/common.actions.create_new') }}</button>@endif
                 </div>
             </div>
             <div class="box-body table-responsive no-padding">

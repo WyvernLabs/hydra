@@ -85,8 +85,12 @@ class MountController extends Controller
     public function update(MountFormRequest $request, Mount $mount): RedirectResponse
     {
         if ($request->input('action') === 'delete') {
+            $this->requireAdminPermission('mounts.delete');
+
             return $this->delete($mount);
         }
+
+        $this->requireAdminPermission('mounts.update');
 
         $mount->forceFill($request->validated())->save();
 

@@ -38,6 +38,8 @@ export interface Subuser {
     twoFactorEnabled: boolean;
     createdAt: Date;
     permissions: SubuserPermission[];
+    // Hydra: folders the subuser is limited to, empty for the whole server.
+    allowedPaths: string[];
 
     can(permission: SubuserPermission): boolean;
 }

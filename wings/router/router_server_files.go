@@ -456,6 +456,9 @@ func postServerDecompressFiles(c *gin.Context) {
 	var data struct {
 		RootPath string `json:"root"`
 		File     string `json:"file"`
+		// Contained (Hydra) keeps every entry inside RootPath, for subusers
+		// who may only work in certain folders.
+		Contained bool `json:"contained"`
 	}
 	if err := c.BindJSON(&data); err != nil {
 		return
@@ -476,7 +479,11 @@ func postServerDecompressFiles(c *gin.Context) {
 	}
 
 	lg.Info("starting file decompression")
-	if err := s.Filesystem().DecompressFile(context.Background(), data.RootPath, data.File); err != nil {
+	decompress := s.Filesystem().DecompressFile
+	if data.Contained {
+		decompress = s.Filesystem().DecompressFileContained
+	}
+	if err := decompress(context.Background(), data.RootPath, data.File); err != nil {
 		// If the file is busy for some reason just return a nicer error to the user since there is not
 		// much we specifically can do. They'll need to stop the running server process in order to overwrite
 		// a file like this.
@@ -593,6 +600,12 @@ func postServerUploadFiles(c *gin.Context) {
 	}
 
 	directory := c.Query("directory")
+	if !filesystem.NewAllowedPaths(token.AllowedPaths).Allows(directory) {
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"error": "You do not have access to this folder.",
+		})
+		return
+	}
 
 	maxFileSize := config.Get().Api.UploadLimit
 	maxFileSizeBytes := maxFileSize * 1024 * 1024

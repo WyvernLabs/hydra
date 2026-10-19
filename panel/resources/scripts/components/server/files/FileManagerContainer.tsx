@@ -23,6 +23,8 @@ import { FileActionCheckbox } from '@/components/server/files/SelectFileCheckbox
 import { hashToPath } from '@/helpers';
 import style from './style.module.css';
 import { useTranslation } from 'react-i18next';
+import { useAllowedPaths } from '@/plugins/useAllowedPaths';
+import { encodePathSegments } from '@/helpers';
 
 const sortFiles = (files: FileObject[]): FileObject[] => {
     const sortedFiles: FileObject[] = files
@@ -42,6 +44,7 @@ export default () => {
 
     const setSelectedFiles = ServerContext.useStoreActions((actions) => actions.files.setSelectedFiles);
     const selectedFilesLength = ServerContext.useStoreState((state) => state.files.selectedFiles.length);
+    const { allowedPaths, canWrite } = useAllowedPaths(directory);
 
     useEffect(() => {
         clearFlashes('files');
@@ -63,6 +66,22 @@ export default () => {
 
     return (
         <ServerContentBlock title={t('files.title')} showFlashKey={'files'}>
+            {allowedPaths.length > 0 && (
+                <div css={tw`mb-4 pl-4 py-2 border-l-4 border-cyan-400`}>
+                    <p css={tw`text-sm text-neutral-300`}>{t('files.restricted_notice')}</p>
+                    <div css={tw`flex flex-wrap gap-2 mt-2`}>
+                        {allowedPaths.map((path) => (
+                            <NavLink
+                                key={path}
+                                to={`/server/${id}/files#${encodePathSegments(path)}`}
+                                css={tw`text-xs font-mono px-2 py-1 rounded bg-neutral-700 text-neutral-100 hover:bg-neutral-600`}
+                            >
+                                {path}
+                            </NavLink>
+                        ))}
+                    </div>
+                </div>
+            )}
             <ErrorBoundary>
                 <div className={'flex flex-wrap-reverse md:flex-nowrap mb-4'}>
                     <FileManagerBreadcrumbs
@@ -76,7 +95,7 @@ export default () => {
                         }
                     />
                     <Can action={'file.create'}>
-                        <div className={style.manager_actions}>
+                        <div className={style.manager_actions} style={canWrite ? undefined : { display: 'none' }}>
                             <FileManagerStatus />
                             <NewDirectoryButton />
                             <UploadButton />

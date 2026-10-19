@@ -1,23 +1,32 @@
 @php
     $route = Route::currentRouteName();
+    $adminUser = Auth::user();
+    // Hydra: every entry names the permission needed to see it; overview is open to all admins.
     $navigation = [
         __('admin/common.nav.basic') => [
-            ['admin.index', __('admin/common.nav.overview'), 'home', $route === 'admin.index'],
-            ['admin.settings', __('admin/common.nav.settings'), 'cog', starts_with($route, 'admin.settings')],
-            ['admin.api.index', __('admin/common.nav.api'), 'code', starts_with($route, 'admin.api')],
+            ['admin.index', __('admin/common.nav.overview'), 'home', $route === 'admin.index', null],
+            ['admin.settings', __('admin/common.nav.settings'), 'cog', starts_with($route, 'admin.settings'), 'settings.view'],
+            ['admin.api.index', __('admin/common.nav.api'), 'code', starts_with($route, 'admin.api'), 'api.view'],
         ],
         __('admin/common.nav.management') => [
-            ['admin.databases', __('admin/common.nav.databases'), 'database', starts_with($route, 'admin.databases')],
-            ['admin.locations', __('admin/common.nav.locations'), 'location-marker', starts_with($route, 'admin.locations')],
-            ['admin.nodes', __('admin/common.nav.nodes'), 'chip', starts_with($route, 'admin.nodes')],
-            ['admin.servers', __('admin/common.nav.servers'), 'server', starts_with($route, 'admin.servers')],
-            ['admin.users', __('admin/common.nav.users'), 'users', starts_with($route, 'admin.users')],
+            ['admin.databases', __('admin/common.nav.databases'), 'database', starts_with($route, 'admin.databases'), 'databases.view'],
+            ['admin.locations', __('admin/common.nav.locations'), 'location-marker', starts_with($route, 'admin.locations'), 'locations.view'],
+            ['admin.nodes', __('admin/common.nav.nodes'), 'chip', starts_with($route, 'admin.nodes'), 'nodes.view'],
+            ['admin.servers', __('admin/common.nav.servers'), 'server', starts_with($route, 'admin.servers'), 'servers.view'],
+            ['admin.users', __('admin/common.nav.users'), 'users', starts_with($route, 'admin.users'), 'users.view'],
+            ['admin.roles', __('admin/common.nav.roles'), 'shield-check', starts_with($route, 'admin.roles'), 'roles.view'],
         ],
         __('admin/common.nav.service') => [
-            ['admin.mounts', __('admin/common.nav.mounts'), 'link', starts_with($route, 'admin.mounts')],
-            ['admin.nests', __('admin/common.nav.nests'), 'collection', starts_with($route, 'admin.nests')],
+            ['admin.mounts', __('admin/common.nav.mounts'), 'link', starts_with($route, 'admin.mounts'), 'mounts.view'],
+            ['admin.nests', __('admin/common.nav.nests'), 'collection', starts_with($route, 'admin.nests'), 'nests.view'],
         ],
     ];
+    foreach ($navigation as $title => $items) {
+        $navigation[$title] = array_filter($items, fn ($item) => is_null($item[4]) || $adminUser->hasAdminPermission($item[4]));
+        if (empty($navigation[$title])) {
+            unset($navigation[$title]);
+        }
+    }
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="dark">
@@ -150,7 +159,7 @@
             {!! Theme::js('js/admin/functions.js?t={cache-version}') !!}
             <script src="/js/autocomplete.js" type="application/javascript"></script>
 
-            @if(Auth::user()->root_admin)
+            @if(Auth::user()->isAdmin())
                 <script>
                     $('#logoutButton').on('click', function (event) {
                         event.preventDefault();

@@ -7,6 +7,7 @@ use Pterodactyl\Models\User;
 use Pterodactyl\Enum\JwtScope;
 use Pterodactyl\Models\Server;
 use Illuminate\Http\JsonResponse;
+use Pterodactyl\Services\Files\AllowedPaths;
 use Pterodactyl\Services\Nodes\NodeJWTService;
 use Pterodactyl\Http\Controllers\Api\Client\ClientApiController;
 use Pterodactyl\Http\Requests\Api\Client\Servers\Files\UploadFileRequest;
@@ -40,10 +41,18 @@ class FileUploadController extends ClientApiController
      */
     protected function getUploadUrl(Server $server, User $user): string
     {
+        $claims = ['server_uuid' => $server->uuid];
+
+        // Hydra: Wings only accepts uploads into these folders.
+        $paths = AllowedPaths::for($server, $user);
+        if ($paths->isRestricted()) {
+            $claims['allowed_paths'] = $paths->paths();
+        }
+
         $token = $this->jwtService
             ->setExpiresAt(CarbonImmutable::now()->addMinutes(15))
             ->setUser($user)
-            ->setClaims(['server_uuid' => $server->uuid])
+            ->setClaims($claims)
             ->setScopes(JwtScope::FileUpload)
             ->handle($server->node, $user->id . $server->uuid);
 

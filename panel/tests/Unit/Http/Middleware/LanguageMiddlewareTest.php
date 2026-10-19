@@ -28,6 +28,7 @@ class LanguageMiddlewareTest extends MiddlewareTestCase
     public function testLanguageIsSetForGuest()
     {
         $this->request->shouldReceive('user')->withNoArgs()->andReturnNull();
+        $this->request->shouldReceive('getLanguages')->withNoArgs()->andReturn([]);
         $this->appMock->shouldReceive('setLocale')->with('en')->once()->andReturnNull();
 
         $this->getMiddleware()->handle($this->request, $this->getClosureAssertions());

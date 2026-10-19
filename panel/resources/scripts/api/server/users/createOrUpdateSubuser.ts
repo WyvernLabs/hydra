@@ -5,12 +5,16 @@ import { Subuser } from '@/state/server/subusers';
 interface Params {
     email: string;
     permissions: string[];
+    allowedPaths: string[];
 }
 
 export default (uuid: string, params: Params, subuser?: Subuser): Promise<Subuser> => {
     return new Promise((resolve, reject) => {
         http.post(`/api/client/servers/${uuid}/users${subuser ? `/${subuser.uuid}` : ''}`, {
-            ...params,
+            email: params.email,
+            permissions: params.permissions,
+            // eslint-disable-next-line camelcase
+            allowed_paths: params.allowedPaths,
         })
             .then((data) => resolve(rawDataToServerSubuser(data.data)))
             .catch(reject);

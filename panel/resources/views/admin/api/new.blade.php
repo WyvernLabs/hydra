@@ -38,14 +38,14 @@
                                     
                                     <td class="text-center" style="vertical-align: middle;">
                                         <div class="radio radio-primary" style="margin: 0;">
-                                            <input type="radio" id="r_{{ $resource }}" name="r_{{ $resource }}" value="{{ $permissions['r'] }}">
+                                            <input type="radio" id="r_{{ $resource }}" name="r_{{ $resource }}" value="{{ $permissions['r'] }}" @disabled(!($limits[$resource] & $permissions['r']))>
                                             <label for="r_{{ $resource }}">{{ __('admin/api.read') }}</label>
                                         </div>
                                     </td>
                                     
                                     <td class="text-center" style="vertical-align: middle;">
                                         <div class="radio radio-primary" style="margin: 0;">
-                                            <input type="radio" id="rw_{{ $resource }}" name="r_{{ $resource }}" value="{{ $permissions['rw'] }}">
+                                            <input type="radio" id="rw_{{ $resource }}" name="r_{{ $resource }}" value="{{ $permissions['rw'] }}" @disabled($limits[$resource] !== $permissions['rw'])>
                                             <label for="rw_{{ $resource }}">{{ __('admin/api.read_write') }}</label>
                                         </div>
                                     </td>

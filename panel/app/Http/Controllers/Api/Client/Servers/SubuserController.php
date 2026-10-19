@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Pterodactyl\Facades\Activity;
 use Pterodactyl\Models\Permission;
 use Pterodactyl\Jobs\RevokeSftpAccessJob;
+use Pterodactyl\Services\Files\AllowedPaths;
 use Pterodactyl\Repositories\Eloquent\SubuserRepository;
 use Pterodactyl\Services\Subusers\SubuserCreationService;
 use Pterodactyl\Transformers\Api\Client\SubuserTransformer;
@@ -69,9 +70,19 @@ class SubuserController extends ClientApiController
             $this->getDefaultPermissions($request)
         );
 
+        $paths = $this->getAllowedPaths($request);
+        if (!empty($paths)) {
+            $this->repository->update($response->id, ['allowed_paths' => $paths]);
+            $response->refresh();
+        }
+
         Activity::event('server:subuser.create')
             ->subject($response->user)
-            ->property(['email' => $request->input('email'), 'permissions' => $this->getDefaultPermissions($request)])
+            ->property([
+                'email' => $request->input('email'),
+                'permissions' => $this->getDefaultPermissions($request),
+                'allowed_paths' => $paths ?? [],
+            ])
             ->log();
 
         return $this->fractal->item($response)
@@ -96,22 +107,29 @@ class SubuserController extends ClientApiController
         sort($permissions);
         sort($current);
 
+        // Hydra: folders are only changed when the request contains them.
+        $paths = $request->has('allowed_paths') ? ($this->getAllowedPaths($request) ?? []) : null;
+        $currentPaths = AllowedPaths::clean($subuser->allowed_paths ?? []);
+        $pathsChanged = !is_null($paths) && $paths !== $currentPaths;
+
         $log = Activity::event('server:subuser.update')
             ->subject($subuser->user)
             ->property([
                 'email' => $subuser->user->email,
                 'old' => $current,
                 'new' => $permissions,
+                'old_paths' => $currentPaths,
+                'new_paths' => $paths ?? $currentPaths,
                 'revoked' => true,
             ]);
 
         // Only update the database and hit up the Wings instance to invalidate JTI's if the permissions
         // have actually changed for the user.
-        if ($permissions !== $current) {
-            $log->transaction(function () use ($request, $subuser, $server) {
-                $this->repository->update($subuser->id, [
+        if ($permissions !== $current || $pathsChanged) {
+            $log->transaction(function () use ($request, $subuser, $server, $paths, $pathsChanged) {
+                $this->repository->update($subuser->id, array_merge([
                     'permissions' => $this->getDefaultPermissions($request),
-                ]);
+                ], $pathsChanged ? ['allowed_paths' => count($paths) > 0 ? $paths : null] : []));
 
                 RevokeSftpAccessJob::dispatch($subuser->user->uuid, $server);
             });
@@ -165,5 +183,18 @@ class SubuserController extends ClientApiController
         $cleaned = array_intersect($request->input('permissions') ?? [], $allowed);
 
         return array_unique(array_merge($cleaned, [Permission::ACTION_WEBSOCKET_CONNECT]));
+    }
+
+    /**
+     * Hydra: the folders the subuser is limited to, cleaned up, or null when
+     * the request does not mention them. An empty list means the whole server.
+     */
+    protected function getAllowedPaths(Request $request): ?array
+    {
+        if (!$request->has('allowed_paths')) {
+            return null;
+        }
+
+        return AllowedPaths::clean($request->input('allowed_paths') ?? []);
     }
 }

@@ -5,7 +5,7 @@
 @endsection
 
 @section('content-header')
-    <h1>{{ $user->name_first }} {{ $user->name_last}}<small>{{ $user->username }}</small></h1>
+    <h1>{{ $user->name_first }} {{ $user->name_last}}<small>{{ $user->username }}</small> @include('partials.hydra.role-badges', ['user' => $user])</h1>
     <ol class="breadcrumb">
         <li><a href="{{ route('admin.index') }}">{{ __('admin/common.admin') }}</a></li>
         <li><a href="{{ route('admin.users') }}">{{ __('admin/users.title') }}</a></li>
@@ -61,7 +61,11 @@
                 <div class="box-footer">
                     {!! csrf_field() !!}
                     {!! method_field('PATCH') !!}
-                    <input type="submit" value="{{ __('admin/users.update') }}" class="btn btn-primary btn-sm">
+                    @if($canManage && Auth::user()->hasAdminPermission('users.update'))
+                        <input type="submit" value="{{ __('admin/users.update') }}" class="btn btn-primary btn-sm">
+                    @else
+                        <p class="text-muted small no-margin">{{ __('admin/roles.exceptions.user_outranks') }}</p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -83,25 +87,10 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">{{ __('admin/users.permissions') }}</h3>
-                </div>
-                <div class="box-body">
-                    <div class="form-group">
-                        <label for="root_admin" class="control-label">{{ __('admin/users.administrator') }}</label>
-                        <div>
-                            <select name="root_admin" class="form-control">
-                                <option value="0">@lang('strings.no')</option>
-                                <option value="1" {{ $user->root_admin ? 'selected="selected"' : '' }}>@lang('strings.yes')</option>
-                            </select>
-                            <p class="text-muted"><small>{{ __('admin/users.administrator_help') }}</small></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @include('admin.users.partials.roles', ['readonly' => !$canManage])
         </div>
     </form>
+    @if($canManage && Auth::user()->hasAdminPermission('users.delete') && !Auth::user()->is($user))
     <div class="col-xs-12">
         <div class="box box-danger">
             <div class="box-header with-border">
@@ -119,5 +108,6 @@
             </div>
         </div>
     </div>
+    @endif
 </div>
 @endsection

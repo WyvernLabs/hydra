@@ -7,6 +7,11 @@ export interface UserData {
     email: string;
     language: string;
     rootAdmin: boolean;
+    // Hydra: may open the admin area, which admin permissions they hold, and
+    // whether they may open every server like a root admin.
+    adminAccess: boolean;
+    adminPermissions: string[];
+    serverAccess: boolean;
     useTotp: boolean;
     createdAt: Date;
     updatedAt: Date;

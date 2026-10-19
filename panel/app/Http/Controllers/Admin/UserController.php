@@ -6,10 +6,13 @@ use Illuminate\View\View;
 use Illuminate\Http\Request;
 use Pterodactyl\Models\User;
 use Pterodactyl\Models\Model;
+use Pterodactyl\Models\AdminRole;
 use Illuminate\Support\Collection;
 use Illuminate\Http\RedirectResponse;
 use Prologue\Alerts\AlertsMessageBag;
 use Spatie\QueryBuilder\QueryBuilder;
+use Spatie\QueryBuilder\AllowedFilter;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\View\Factory as ViewFactory;
 use Pterodactyl\Exceptions\DisplayException;
 use Pterodactyl\Http\Controllers\Controller;
@@ -20,6 +23,7 @@ use Pterodactyl\Services\Users\UserCreationService;
 use Pterodactyl\Services\Users\UserDeletionService;
 use Pterodactyl\Http\Requests\Admin\UserFormRequest;
 use Pterodactyl\Http\Requests\Admin\NewUserFormRequest;
+use Pterodactyl\Services\Users\AdminRoleAssignmentService;
 use Pterodactyl\Contracts\Repository\UserRepositoryInterface;
 
 class UserController extends Controller
@@ -37,6 +41,7 @@ class UserController extends Controller
         protected UserUpdateService $updateService,
         protected UserRepositoryInterface $repository,
         protected ViewFactory $view,
+        protected AdminRoleAssignmentService $roleService,
     ) {
     }
 
@@ -52,34 +57,47 @@ class UserController extends Controller
                 ->leftJoin('subusers', 'subusers.user_id', '=', 'users.id')
                 ->leftJoin('servers', 'servers.owner_id', '=', 'users.id')
                 ->groupBy('users.id')
+                ->with('adminRoles')
         )
-            ->allowedFilters(['username', 'email', 'uuid'])
+            ->allowedFilters([
+                'username',
+                'email',
+                'uuid',
+                // Hydra: users holding a given admin role.
+                AllowedFilter::callback('role', function (Builder $query, $value) {
+                    $query->whereHas('adminRoles', fn (Builder $roles) => $roles->where('admin_roles.id', (int) $value));
+                }),
+            ])
             ->defaultSort('-root_admin')
             ->allowedSorts(['id', 'uuid'])
             ->paginate(50);
 
-        return view('admin.users.index', ['users' => $users]);
+        return view('admin.users.index', [
+            'users' => $users,
+            'roles' => AdminRole::query()->orderBy('sort')->orderBy('name')->get(),
+        ]);
     }
 
     /**
      * Display new user page.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
         return view('admin.users.new', [
             'languages' => $this->getAvailableLanguages(true),
-        ]);
+        ] + $this->roleViewData($request->user()));
     }
 
     /**
      * Display user view page.
      */
-    public function view(User $user): View
+    public function view(Request $request, User $user): View
     {
         return view('admin.users.view', [
-            'user' => $user,
+            'user' => $user->load('adminRoles'),
             'languages' => $this->getAvailableLanguages(true),
-        ]);
+            'canManage' => $request->user()->outranks($user),
+        ] + $this->roleViewData($request->user()));
     }
 
     /**
@@ -92,6 +110,10 @@ class UserController extends Controller
     {
         if ($request->user()->is($user)) {
             throw new DisplayException(__('admin/user.exceptions.delete_self'));
+        }
+
+        if (!$request->user()->outranks($user)) {
+            throw new DisplayException(__('admin/roles.exceptions.user_outranks'));
         }
 
         $this->deletionService->handle($user);
@@ -107,7 +129,8 @@ class UserController extends Controller
      */
     public function store(NewUserFormRequest $request): RedirectResponse
     {
-        $user = $this->creationService->handle($request->normalize());
+        $user = $this->creationService->handle($this->withoutRootFlag($request, $request->normalize()));
+        $this->syncRoles($request, $user);
         $this->alert->success($this->translator->get('admin/user.notices.account_created'))->flash();
 
         return redirect()->route('admin.users.view', $user->id);
@@ -118,12 +141,18 @@ class UserController extends Controller
      *
      * @throws \Pterodactyl\Exceptions\Model\DataValidationException
      * @throws \Pterodactyl\Exceptions\Repository\RecordNotFoundException
+     * @throws DisplayException
      */
     public function update(UserFormRequest $request, User $user): RedirectResponse
     {
+        if (!$request->user()->outranks($user)) {
+            throw new DisplayException(__('admin/roles.exceptions.user_outranks'));
+        }
+
         $this->updateService
             ->setUserLevel(User::USER_LEVEL_ADMIN)
-            ->handle($user, $request->normalize());
+            ->handle($user, $this->withoutRootFlag($request, $request->normalize()));
+        $this->syncRoles($request, $user);
 
         $this->alert->success(trans('admin/user.notices.account_updated'))->flash();
 
@@ -152,5 +181,43 @@ class UserController extends Controller
 
             return $item;
         });
+    }
+
+    /**
+     * Hydra: all roles and the ones the current user may hand out.
+     */
+    protected function roleViewData(User $actor): array
+    {
+        $roles = AdminRole::query()->orderBy('sort')->orderBy('name')->get();
+
+        return [
+            'roles' => $roles,
+            'assignableRoles' => $roles->filter(fn (AdminRole $role) => $this->roleService->canAssign($actor, $role))
+                ->pluck('id')
+                ->all(),
+        ];
+    }
+
+    /**
+     * Hydra: only root admins may hand out or take away the root admin flag.
+     */
+    protected function withoutRootFlag(Request $request, array $data): array
+    {
+        if (!$request->user()->root_admin) {
+            unset($data['root_admin']);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Hydra: saves the admin roles picked in the form, as far as the current
+     * user may hand them out.
+     */
+    protected function syncRoles(Request $request, User $user): void
+    {
+        if ($request->boolean('roles_submitted') && $request->user()->hasAdminPermission('roles.assign')) {
+            $this->roleService->handle($request->user(), $user, (array) $request->input('roles', []));
+        }
     }
 }

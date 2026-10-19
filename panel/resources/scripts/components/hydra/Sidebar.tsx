@@ -71,7 +71,7 @@ export const SidebarLink = ({ item, onNavigate }: { item: SidebarItem; onNavigat
 export default ({ sections, open, onNavigate }: Props) => {
     const branding = useStoreState((state) => state.settings.data!.branding);
     const name = useStoreState((state) => state.settings.data!.name);
-    const rootAdmin = useStoreState((state) => state.user.data!.rootAdmin);
+    const rootAdmin = useStoreState((state) => state.user.data!.adminAccess);
     const { t } = useTranslation();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 

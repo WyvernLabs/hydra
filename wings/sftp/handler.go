@@ -3,6 +3,7 @@ package sftp
 import (
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -35,6 +36,7 @@ type Handler struct {
 	fs          *filesystem.Filesystem
 	events      *eventHandler
 	permissions []string
+	allowed     filesystem.AllowedPaths // Hydra: folders the user is limited to.
 	logger      *log.Entry
 	ro          bool
 	open        atomic.Int32
@@ -118,6 +120,7 @@ func NewHandler(sc *ssh.ServerConn, srv *server.Server) (*Handler, error) {
 
 	return &Handler{
 		permissions: strings.Split(sc.Permissions.Extensions["permissions"], ","),
+		allowed:     parseAllowedPaths(sc.Permissions.Extensions["allowed_paths"]),
 		server:      srv,
 		fs:          srv.Filesystem(),
 		events:      &events,
@@ -141,7 +144,7 @@ func (h *Handler) Fileread(request *sftp.Request) (io.ReaderAt, error) {
 	// Check first if the user can actually open and view a file. This permission is named
 	// really poorly, but it is checking if they can read. There is an addition permission,
 	// "save-files" which determines if they can write that file.
-	if !h.can(PermissionFileReadContent) {
+	if !h.can(PermissionFileReadContent) || !h.allowed.Allows(request.Filepath) {
 		return nil, sftp.ErrSSHFxPermissionDenied
 	}
 	slot := h.openFile()
@@ -190,7 +193,7 @@ func (h *Handler) Filewrite(request *sftp.Request) (io.WriterAt, error) {
 	// Confirm the user has permission to perform this action BEFORE calling Touch, otherwise
 	// you'll potentially create a file on the system and then fail out because of user
 	// permission checking after the fact.
-	if !h.can(permission) {
+	if !h.can(permission) || !h.allowed.Allows(request.Filepath) {
 		return nil, sftp.ErrSSHFxPermissionDenied
 	}
 	slot := h.openFile()
@@ -246,6 +249,16 @@ func (h *Handler) Filecmd(request *sftp.Request) error {
 	l := h.logger.WithField("source", request.Filepath)
 	if request.Target != "" {
 		l = l.WithField("target", request.Target)
+	}
+
+	// Hydra: the file and, for renames and links, the target must lie within the
+	// folders the user is limited to. Restricted users cannot create links, as a
+	// link could point anywhere on the server.
+	if !h.allowed.Allows(request.Filepath) || (request.Target != "" && !h.allowed.Allows(request.Target)) {
+		return sftp.ErrSSHFxPermissionDenied
+	}
+	if request.Method == "Symlink" && h.allowed.IsRestricted() {
+		return sftp.ErrSSHFxPermissionDenied
 	}
 
 	switch request.Method {
@@ -354,12 +367,27 @@ func (h *Handler) Filelist(request *sftp.Request) (sftp.ListerAt, error) {
 		return nil, sftp.ErrSSHFxPermissionDenied
 	}
 
+	// Hydra: folders on the way to an allowed folder can be opened, but only
+	// show what leads there.
+	if !h.allowed.CanBrowse(request.Filepath) {
+		return nil, sftp.ErrSSHFxPermissionDenied
+	}
+
 	switch request.Method {
 	case "List":
 		entries, err := h.fs.ReadDirStat(request.Filepath)
 		if err != nil {
 			h.logger.WithField("source", request.Filepath).WithField("error", err).Error("error while listing directory")
 			return nil, sftp.ErrSSHFxFailure
+		}
+		if h.allowed.IsRestricted() {
+			visible := entries[:0]
+			for _, entry := range entries {
+				if h.allowed.CanBrowse(path.Join(request.Filepath, entry.Name())) {
+					visible = append(visible, entry)
+				}
+			}
+			entries = visible
 		}
 		return ListerAt(entries), nil
 	case "Stat":
@@ -391,6 +419,14 @@ func (h *Handler) can(permission string) bool {
 		}
 	}
 	return false
+}
+
+// parseAllowedPaths reads the folders the Panel limited the user to.
+func parseAllowedPaths(v string) filesystem.AllowedPaths {
+	if v == "" {
+		return nil
+	}
+	return filesystem.NewAllowedPaths(strings.Split(v, "\x00"))
 }
 
 func (h *Handler) User() string {

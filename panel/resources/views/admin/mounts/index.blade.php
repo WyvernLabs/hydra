@@ -21,7 +21,7 @@
                     <h3 class="box-title">{{ __('admin/mounts.list') }}</h3>
 
                     <div class="box-tools">
-                        <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#newMountModal">{{ __('admin/common.actions.create_new') }}</button>
+                        @if(Auth::user()->hasAdminPermission('mounts.create'))<button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#newMountModal">{{ __('admin/common.actions.create_new') }}</button>@endif
                     </div>
                 </div>
 

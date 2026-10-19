@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
  * The "Workspace" section is shown on every page of the client area.
  */
 export const useWorkspaceSection = (): SidebarSection => {
-    const rootAdmin = useStoreState((state) => state.user.data!.rootAdmin);
+    const adminAccess = useStoreState((state) => state.user.data!.adminAccess);
     const { t } = useTranslation();
 
     const items: Array<SidebarItem | React.ReactElement> = [
@@ -18,7 +18,7 @@ export const useWorkspaceSection = (): SidebarSection => {
         { key: 'dashboard', name: t('nav.dashboard'), icon: ViewGridIcon, to: '/', exact: true },
     ];
 
-    if (rootAdmin) {
+    if (adminAccess) {
         items.push({ key: 'admin', name: t('nav.administration'), icon: ShieldCheckIcon, href: '/admin' });
     }
 

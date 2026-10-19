@@ -3,6 +3,7 @@
 namespace Pterodactyl\Http\Controllers\Api\Client\Servers;
 
 use Pterodactyl\Models\Server;
+use Pterodactyl\Services\Files\AllowedPaths;
 use Pterodactyl\Transformers\Api\Client\ServerTransformer;
 use Pterodactyl\Services\Servers\GetUserPermissionsService;
 use Pterodactyl\Http\Controllers\Api\Client\ClientApiController;
@@ -29,6 +30,7 @@ class ServerController extends ClientApiController
             ->addMeta([
                 'is_server_owner' => $request->user()->id === $server->owner_id,
                 'user_permissions' => $this->permissionsService->handle($server, $request->user()),
+                'allowed_paths' => AllowedPaths::for($server, $request->user())->paths(),
             ])
             ->toArray();
     }

@@ -73,8 +73,12 @@ class LocationController extends Controller
     public function update(LocationFormRequest $request, Location $location): RedirectResponse
     {
         if ($request->input('action') === 'delete') {
+            $this->requireAdminPermission('locations.delete');
+
             return $this->delete($location);
         }
+
+        $this->requireAdminPermission('locations.update');
 
         $this->updateService->handle($location->id, $request->normalize());
         $this->alert->success(trans('admin/locations.updated'))->flash();

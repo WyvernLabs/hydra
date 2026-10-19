@@ -8,6 +8,7 @@ use Spatie\QueryBuilder\QueryBuilder;
 use Pterodactyl\Services\Users\UserUpdateService;
 use Pterodactyl\Services\Users\UserCreationService;
 use Pterodactyl\Services\Users\UserDeletionService;
+use Pterodactyl\Exceptions\Http\HttpForbiddenException;
 use Pterodactyl\Transformers\Api\Application\UserTransformer;
 use Pterodactyl\Http\Requests\Api\Application\Users\GetUsersRequest;
 use Pterodactyl\Http\Requests\Api\Application\Users\StoreUserRequest;
@@ -69,8 +70,10 @@ class UserController extends ApplicationApiController
      */
     public function update(UpdateUserRequest $request, User $user): array
     {
+        $this->assertOutranks($request->user(), $user);
+
         $this->updateService->setUserLevel(User::USER_LEVEL_ADMIN);
-        $user = $this->updateService->handle($user, $request->validated());
+        $user = $this->updateService->handle($user, $this->withoutRootFlag($request->user(), $request->validated()));
 
         $response = $this->fractal->item($user)
             ->transformWith($this->getTransformer(UserTransformer::class));
@@ -87,7 +90,7 @@ class UserController extends ApplicationApiController
      */
     public function store(StoreUserRequest $request): JsonResponse
     {
-        $user = $this->creationService->handle($request->validated());
+        $user = $this->creationService->handle($this->withoutRootFlag($request->user(), $request->validated()));
 
         return $this->fractal->item($user)
             ->transformWith($this->getTransformer(UserTransformer::class))
@@ -107,8 +110,32 @@ class UserController extends ApplicationApiController
      */
     public function delete(DeleteUserRequest $request, User $user): JsonResponse
     {
+        $this->assertOutranks($request->user(), $user);
+
         $this->deletionService->handle($user);
 
         return new JsonResponse([], JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * Hydra: only root admins may hand out or take away the root admin flag.
+     */
+    protected function withoutRootFlag(User $actor, array $data): array
+    {
+        if (!$actor->root_admin) {
+            unset($data['root_admin']);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Hydra: accounts with admin permissions the key owner lacks are off limits.
+     */
+    protected function assertOutranks(User $actor, User $user): void
+    {
+        if (!$actor->outranks($user)) {
+            throw new HttpForbiddenException(__('admin/roles.exceptions.user_outranks'));
+        }
     }
 }

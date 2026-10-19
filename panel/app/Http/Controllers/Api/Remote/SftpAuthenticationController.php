@@ -11,6 +11,7 @@ use Pterodactyl\Models\Permission;
 use Pterodactyl\Models\UserSSHKey;
 use phpseclib3\Crypt\PublicKeyLoader;
 use Pterodactyl\Http\Controllers\Controller;
+use Pterodactyl\Services\Files\AllowedPaths;
 use phpseclib3\Exception\NoKeyLoadedException;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Pterodactyl\Exceptions\Http\HttpForbiddenException;
@@ -84,6 +85,8 @@ class SftpAuthenticationController extends Controller
             'user' => $user->uuid,
             'server' => $server->uuid,
             'permissions' => $this->permissions->handle($server, $user),
+            // Hydra: folders the user is limited to, empty for the whole server.
+            'allowed_paths' => AllowedPaths::for($server, $user)->paths(),
         ]);
     }
 
@@ -145,7 +148,7 @@ class SftpAuthenticationController extends Controller
      */
     protected function validateSftpAccess(User $user, Server $server): void
     {
-        if (!$user->root_admin && $server->owner_id !== $user->id) {
+        if (!$user->canAccessAllServers() && $server->owner_id !== $user->id) {
             $permissions = $this->permissions->handle($server, $user);
 
             if (!in_array(Permission::ACTION_FILE_SFTP, $permissions)) {

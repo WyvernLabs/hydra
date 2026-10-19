@@ -20,6 +20,7 @@ return [
         'nodes' => 'Nodes',
         'servers' => 'Server',
         'users' => 'Benutzer',
+        'roles' => 'Rollen',
         'mounts' => 'Mounts',
         'nests' => 'Nests',
         'exit' => 'Administration verlassen',

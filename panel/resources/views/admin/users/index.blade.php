@@ -21,10 +21,20 @@
                 <div class="box-tools search01">
                     <form action="{{ route('admin.users') }}" method="GET">
                         <div class="input-group input-group-sm">
+                            @if($roles->isNotEmpty())
+                                <select name="filter[role]" class="form-control" onchange="this.form.submit()" title="{{ __('admin/roles.filter_role') }}" style="width: auto; float: left;">
+                                    <option value="">{{ __('admin/roles.all_roles') }}</option>
+                                    @foreach($roles as $role)
+                                        <option value="{{ $role->id }}" @selected((string) request()->input('filter.role') === (string) $role->id)>{{ $role->name }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
                             <input type="text" name="filter[email]" class="form-control pull-right" value="{{ request()->input('filter.email') }}" placeholder="{{ __('admin/users.search') }}">
                             <div class="input-group-btn">
                                 <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
-                                <a href="{{ route('admin.users.new') }}"><button type="button" class="btn btn-sm btn-primary" style="border-radius: 0 3px 3px 0;margin-left:-1px;">{{ __('admin/common.actions.create_new') }}</button></a>
+                                @if(Auth::user()->hasAdminPermission('users.create'))
+                                    <a href="{{ route('admin.users.new') }}"><button type="button" class="btn btn-sm btn-primary" style="border-radius: 0 3px 3px 0;margin-left:-1px;">{{ __('admin/common.actions.create_new') }}</button></a>
+                                @endif
                             </div>
                         </div>
                     </form>
@@ -38,6 +48,7 @@
                             <th>{{ __('admin/users.email') }}</th>
                             <th>{{ __('admin/users.client_name') }}</th>
                             <th>{{ __('admin/users.username') }}</th>
+                            <th>{{ __('admin/roles.title') }}</th>
                             <th class="text-center">{{ __('admin/users.two_factor') }}</th>
                             <th class="text-center"><span data-toggle="tooltip" data-placement="top" title="{{ __('admin/users.servers_owned_help') }}">{{ __('admin/users.servers_owned') }}</span></th>
                             <th class="text-center"><span data-toggle="tooltip" data-placement="top" title="{{ __('admin/users.can_access_help') }}">{{ __('admin/users.can_access') }}</span></th>
@@ -47,9 +58,10 @@
                         @foreach ($users as $user)
                             <tr class="align-middle">
                                 <td><code>{{ $user->id }}</code></td>
-                                <td><a href="{{ route('admin.users.view', $user->id) }}">{{ $user->email }}</a> @if($user->root_admin)<i class="fa fa-star text-yellow"></i>@endif</td>
+                                <td><a href="{{ route('admin.users.view', $user->id) }}">{{ $user->email }}</a></td>
                                 <td>{{ $user->name_last }}, {{ $user->name_first }}</td>
                                 <td>{{ $user->username }}</td>
+                                <td>@include('partials.hydra.role-badges', ['user' => $user])</td>
                                 <td class="text-center">
                                     @if($user->use_totp)
                                         <i class="fa fa-lock text-green"></i>
@@ -68,7 +80,7 @@
             </div>
             @if($users->hasPages())
                 <div class="box-footer with-border">
-                    <div class="col-md-12 text-center">{!! $users->appends(['query' => Request::input('query')])->render() !!}</div>
+                    <div class="col-md-12 text-center">{!! $users->appends(['filter' => Request::input('filter')])->render() !!}</div>
                 </div>
             @endif
         </div>

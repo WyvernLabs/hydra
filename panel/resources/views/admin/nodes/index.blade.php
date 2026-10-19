@@ -29,7 +29,7 @@
                             <input type="text" name="filter[name]" class="form-control pull-right" value="{{ request()->input('filter.name') }}" placeholder="{{ __('admin/nodes.search') }}">
                             <div class="input-group-btn">
                                 <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
-                                <a href="{{ route('admin.nodes.new') }}"><button type="button" class="btn btn-sm btn-primary" style="border-radius: 0 3px 3px 0;margin-left:-1px;">{{ __('admin/common.actions.create_new') }}</button></a>
+                                @if(Auth::user()->hasAdminPermission('nodes.create'))<a href="{{ route('admin.nodes.new') }}"><button type="button" class="btn btn-sm btn-primary" style="border-radius: 0 3px 3px 0;margin-left:-1px;">{{ __('admin/common.actions.create_new') }}</button></a>@endif
                             </div>
                         </div>
                     </form>

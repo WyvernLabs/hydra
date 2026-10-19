@@ -5,6 +5,7 @@ namespace Pterodactyl\Http\Requests\Api\Client\Servers\Subusers;
 use Illuminate\Http\Request;
 use Pterodactyl\Models\User;
 use Pterodactyl\Models\Subuser;
+use Pterodactyl\Services\Files\AllowedPaths;
 use Pterodactyl\Exceptions\Http\HttpForbiddenException;
 use Pterodactyl\Http\Requests\Api\Client\ClientApiRequest;
 use Pterodactyl\Services\Servers\GetUserPermissionsService;
@@ -40,6 +41,17 @@ abstract class SubuserRequest extends ClientApiRequest
             );
         }
 
+        // Hydra: a subuser limited to certain folders can only hand out those folders. New
+        // subusers without folders would get the whole server, so they are checked too.
+        if ($this->method() === Request::METHOD_POST && ($this->has('allowed_paths') || !$user instanceof User)) {
+            $server = $this->route()->parameter('server');
+            $requested = new AllowedPaths(AllowedPaths::clean($this->input('allowed_paths') ?? []));
+
+            if (!AllowedPaths::for($server, $this->user())->covers($requested)) {
+                throw new HttpForbiddenException(__('server/files.paths_not_grantable'));
+            }
+        }
+
         return true;
     }
 
@@ -56,7 +68,7 @@ abstract class SubuserRequest extends ClientApiRequest
         $server = $this->route()->parameter('server');
 
         // If we are a root admin or the server owner, no need to perform these checks.
-        if ($user->root_admin || $user->id === $server->owner_id) {
+        if ($user->canAccessAllServers() || $user->id === $server->owner_id) {
             return;
         }
 

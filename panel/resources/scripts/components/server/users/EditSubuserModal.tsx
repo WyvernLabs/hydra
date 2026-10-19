@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef } from 'react';
 import { Subuser } from '@/state/server/subusers';
 import { Form, Formik } from 'formik';
-import { array, object, string } from 'yup';
+import { array, boolean, object, string } from 'yup';
 import Field from '@/components/elements/Field';
 import { Actions, useStoreActions, useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
@@ -18,6 +18,8 @@ import asModal from '@/hoc/asModal';
 import PermissionRow from '@/components/server/users/PermissionRow';
 import ModalContext from '@/context/ModalContext';
 import { useTranslation } from 'react-i18next';
+import FolderAccessBox from '@/components/server/users/FolderAccessBox';
+import { coversPaths, normalizePath } from '@/plugins/useAllowedPaths';
 
 type Props = {
     subuser?: Subuser;
@@ -26,7 +28,15 @@ type Props = {
 interface Values {
     email: string;
     permissions: string[];
+    restrictFolders: boolean;
+    allowedPaths: string[];
 }
+
+// Hydra: the folders from the form, cleaned up; "/" means the whole server.
+const cleanPaths = (paths: string[]): string[] =>
+    Array.from(new Set(paths.filter((p) => p.trim().length > 0).map((p) => normalizePath(p.trim())))).filter(
+        (p) => p !== '/'
+    );
 
 const EditSubuserModal = ({ subuser }: Props) => {
     const ref = useRef<HTMLHeadingElement>(null);
@@ -38,11 +48,12 @@ const EditSubuserModal = ({ subuser }: Props) => {
     );
     const { dismiss, setPropOverrides } = useContext(ModalContext);
 
-    const isRootAdmin = useStoreState((state) => state.user.data!.rootAdmin);
+    const isRootAdmin = useStoreState((state) => state.user.data!.serverAccess);
     const permissions = useStoreState((state) => state.permissions.data);
     // The currently logged in user's permissions. We're going to filter out any permissions
     // that they should not need.
     const loggedInPermissions = ServerContext.useStoreState((state) => state.server.permissions);
+    const ownPaths = ServerContext.useStoreState((state) => state.server.allowedPaths);
     const [canEditUser] = usePermissions(subuser ? ['user.update'] : ['user.create']);
 
     // The permissions that can be modified by this user.
@@ -64,7 +75,15 @@ const EditSubuserModal = ({ subuser }: Props) => {
         setPropOverrides({ showSpinnerOverlay: true });
         clearFlashes('user:edit');
 
-        createOrUpdateSubuser(uuid, values, subuser)
+        createOrUpdateSubuser(
+            uuid,
+            {
+                email: values.email,
+                permissions: values.permissions,
+                allowedPaths: values.restrictFolders ? cleanPaths(values.allowedPaths) : [],
+            },
+            subuser
+        )
             .then((subuser) => {
                 appendSubuser(subuser);
                 dismiss();
@@ -94,6 +113,8 @@ const EditSubuserModal = ({ subuser }: Props) => {
                 {
                     email: subuser?.email || '',
                     permissions: subuser?.permissions || [],
+                    restrictFolders: (subuser?.allowedPaths.length || 0) > 0 || ownPaths.length > 0,
+                    allowedPaths: subuser?.allowedPaths.length ? subuser.allowedPaths : ownPaths,
                 } as Values
             }
             validationSchema={object().shape({
@@ -102,6 +123,22 @@ const EditSubuserModal = ({ subuser }: Props) => {
                     .email(t('users.email_invalid'))
                     .required(t('users.email_invalid')),
                 permissions: array().of(string()),
+                restrictFolders: boolean(),
+                allowedPaths: array()
+                    .of(string())
+                    .when('restrictFolders', {
+                        is: true,
+                        then: array()
+                            .of(string())
+                            .test(
+                                'required',
+                                t('users.folders_required'),
+                                (value?: string[]) => cleanPaths(value || []).length > 0
+                            )
+                            .test('own', `${t('users.folders_own_only')} ${ownPaths.join(', ')}`, (value?: string[]) =>
+                                coversPaths(ownPaths, cleanPaths(value || []))
+                            ),
+                    }),
             })}
         >
             <Form>
@@ -128,6 +165,7 @@ const EditSubuserModal = ({ subuser }: Props) => {
                         <Field name={'email'} label={t('users.email')} description={t('users.email_help')} />
                     </div>
                 )}
+                <FolderAccessBox isEditable={canEditUser} ownPaths={ownPaths} css={tw`mt-6`} />
                 <div css={tw`my-6`}>
                     {Object.keys(permissions)
                         .filter((key) => key !== 'websocket')

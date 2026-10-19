@@ -26,7 +26,11 @@ export default () => {
     const match = useRouteMatch<{ id: string }>();
     const location = useLocation();
 
-    const rootAdmin = useStoreState((state) => state.user.data!.rootAdmin);
+    const rootAdmin = useStoreState((state) => state.user.data!.serverAccess);
+    const canManageAsAdmin = useStoreState((state) => {
+        const user = state.user.data!;
+        return user.rootAdmin || user.adminPermissions.indexOf('servers.view') >= 0;
+    });
     const [error, setError] = useState('');
 
     const id = ServerContext.useStoreState((state) => state.server.data?.id);
@@ -70,7 +74,7 @@ export default () => {
                               link
                           );
                       }),
-                  ...(rootAdmin
+                  ...(canManageAsAdmin
                       ? [
                             <SidebarLink
                                 key={'admin'}

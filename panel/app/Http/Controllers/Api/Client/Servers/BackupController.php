@@ -8,9 +8,11 @@ use Pterodactyl\Models\Server;
 use Illuminate\Http\JsonResponse;
 use Pterodactyl\Facades\Activity;
 use Pterodactyl\Models\Permission;
+use Pterodactyl\Services\Files\AllowedPaths;
 use Illuminate\Auth\Access\AuthorizationException;
 use Pterodactyl\Services\Backups\DeleteBackupService;
 use Pterodactyl\Services\Backups\DownloadLinkService;
+use Pterodactyl\Exceptions\Http\HttpForbiddenException;
 use Pterodactyl\Repositories\Eloquent\BackupRepository;
 use Pterodactyl\Services\Backups\InitiateBackupService;
 use Pterodactyl\Repositories\Wings\DaemonBackupRepository;
@@ -170,6 +172,8 @@ class BackupController extends ClientApiController
             throw new AuthorizationException();
         }
 
+        $this->assertWholeServerAccess($request, $server);
+
         if ($backup->disk !== Backup::ADAPTER_AWS_S3 && $backup->disk !== Backup::ADAPTER_WINGS) {
             throw new BadRequestHttpException('The backup requested references an unknown disk driver type and cannot be downloaded.');
         }
@@ -197,6 +201,8 @@ class BackupController extends ClientApiController
      */
     public function restore(RestoreBackupRequest $request, Server $server, Backup $backup): JsonResponse
     {
+        $this->assertWholeServerAccess($request, $server);
+
         // Cannot restore a backup unless a server is fully installed and not currently
         // processing a different backup restoration request.
         if (!is_null($server->status)) {
@@ -226,5 +232,16 @@ class BackupController extends ClientApiController
         });
 
         return new JsonResponse([], JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * Hydra: a backup holds the whole server, so subusers limited to certain
+     * folders may neither download nor restore one.
+     */
+    private function assertWholeServerAccess(Request $request, Server $server): void
+    {
+        if (AllowedPaths::for($server, $request->user())->isRestricted()) {
+            throw new HttpForbiddenException(__('server/files.restricted_backups'));
+        }
     }
 }

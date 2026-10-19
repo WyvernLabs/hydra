@@ -37,6 +37,11 @@ abstract class ApplicationApiRequest extends FormRequest
             throw new PterodactylException('An ACL resource must be defined on API requests.');
         }
 
+        // Hydra: admins with roles may only use the API for what their roles allow.
+        if (!AdminAcl::userCan($this->user(), $this->resource, $this->permission)) {
+            return false;
+        }
+
         $token = $this->user()->currentAccessToken();
         if ($token instanceof TransientToken) { // @phpstan-ignore instanceof.alwaysFalse
             return true;

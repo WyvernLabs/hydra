@@ -7,18 +7,19 @@
             ['admin.index', __('admin/common.nav.overview'), 'home', $route === 'admin.index', null],
             ['admin.settings', __('admin/common.nav.settings'), 'cog', starts_with($route, 'admin.settings'), 'settings.view'],
             ['admin.design', __('admin/common.nav.design'), 'color-swatch', starts_with($route, 'admin.design'), 'design.view'],
-            ['admin.api.index', __('admin/common.nav.api'), 'code', starts_with($route, 'admin.api'), 'api.view'],
         ],
-        __('admin/common.nav.management') => [
-            ['admin.databases', __('admin/common.nav.databases'), 'database', starts_with($route, 'admin.databases'), 'databases.view'],
+        __('admin/common.nav.server_management') => [
             ['admin.locations', __('admin/common.nav.locations'), 'location-marker', starts_with($route, 'admin.locations'), 'locations.view'],
             ['admin.nodes', __('admin/common.nav.nodes'), 'chip', starts_with($route, 'admin.nodes'), 'nodes.view'],
             ['admin.servers', __('admin/common.nav.servers'), 'server', starts_with($route, 'admin.servers'), 'servers.view'],
+        ],
+        __('admin/common.nav.community') => [
             ['admin.users', __('admin/common.nav.users'), 'users', starts_with($route, 'admin.users'), 'users.view'],
             ['admin.roles', __('admin/common.nav.roles'), 'shield-check', starts_with($route, 'admin.roles'), 'roles.view'],
         ],
         __('admin/common.nav.service') => [
-            ['admin.mounts', __('admin/common.nav.mounts'), 'link', starts_with($route, 'admin.mounts'), 'mounts.view'],
+            ['admin.databases', __('admin/common.nav.databases'), 'database', starts_with($route, 'admin.databases'), 'databases.view'],
+            ['admin.api.index', __('admin/common.nav.api'), 'code', starts_with($route, 'admin.api'), 'api.view'],
             ['admin.nests', __('admin/common.nav.nests'), 'collection', starts_with($route, 'admin.nests'), 'nests.view'],
         ],
     ];

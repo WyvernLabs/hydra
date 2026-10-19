@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Pterodactyl\Models\Traits\HasRealtimeIdentifier;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
  * @property int $id
@@ -38,7 +37,6 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @property Location $location
- * @property \Pterodactyl\Models\Mount[]|\Illuminate\Database\Eloquent\Collection $mounts
  * @property \Pterodactyl\Models\Server[]|\Illuminate\Database\Eloquent\Collection $servers
  * @property \Pterodactyl\Models\Allocation[]|\Illuminate\Database\Eloquent\Collection $allocations
  */
@@ -162,7 +160,7 @@ class Node extends Model implements Identifiable
                     'bind_port' => $this->daemonSFTP,
                 ],
             ],
-            'allowed_mounts' => $this->mounts->pluck('source')->toArray(),
+            'allowed_mounts' => [],
             'remote' => route('index'),
         ];
     }
@@ -196,14 +194,6 @@ class Node extends Model implements Identifiable
     public function isUnderMaintenance(): bool
     {
         return $this->maintenance_mode;
-    }
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough<\Pterodactyl\Models\Mount, \Pterodactyl\Models\MountNode, $this>
-     */
-    public function mounts(): HasManyThrough
-    {
-        return $this->hasManyThrough(Mount::class, MountNode::class, 'node_id', 'id', 'id', 'mount_id');
     }
 
     /**

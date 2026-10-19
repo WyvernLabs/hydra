@@ -16,8 +16,6 @@ return [
     'install_failed' => 'Install Failed',
     'active' => 'Active',
     'not_set' => 'Not Set',
-    'mount_added' => 'Mount was added successfully.',
-    'mount_removed' => 'Mount was removed successfully.',
     'failed_install' => 'This server is in a failed install state and cannot be recovered. Please delete and re-create the server.',
     'page_title' => 'Server — :name',
     'page_title_tab' => 'Server — :name: :tab',
@@ -29,7 +27,6 @@ return [
         'startup' => 'Startup',
         'database' => 'Database',
         'databases' => 'Databases',
-        'mounts' => 'Mounts',
         'manage' => 'Manage',
         'delete' => 'Delete',
     ],
@@ -194,17 +191,6 @@ return [
         'password_reset' => 'The password for this database has been reset.',
     ],
 
-    'mounts' => [
-        'subtitle' => 'Manage server mounts.',
-        'available' => 'Available Mounts',
-        'id' => 'ID',
-        'name' => 'Name',
-        'source' => 'Source',
-        'target' => 'Target',
-        'status' => 'Status',
-        'unmounted' => 'Unmounted',
-        'mounted' => 'Mounted',
-    ],
 
     'manage' => [
         'subtitle' => 'Additional actions to control this server.',

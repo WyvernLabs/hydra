@@ -66,7 +66,6 @@ return [
         'servers' => 'Servers',
         'users' => 'Users',
         'roles' => 'Roles',
-        'mounts' => 'Mounts',
         'nests' => 'Nests',
         'eggs' => 'Eggs',
     ],
@@ -112,7 +111,6 @@ return [
             'build' => ['title' => 'Build', 'description' => 'Change resources, limits and allocations.'],
             'startup' => ['title' => 'Startup', 'description' => 'Change egg, startup command, image and variables.'],
             'databases' => ['title' => 'Databases', 'description' => 'Create, reset and delete server databases.'],
-            'mounts' => ['title' => 'Mounts', 'description' => 'Add and remove mounts.'],
             'manage' => ['title' => 'Manage', 'description' => 'Suspend, reinstall and change the install status.'],
             'transfer' => ['title' => 'Transfer', 'description' => 'Move servers to another node.'],
             'delete' => ['title' => 'Delete', 'description' => 'Delete servers.'],
@@ -130,12 +128,6 @@ return [
             'update' => ['title' => 'Change', 'description' => 'Edit roles with their own permissions at most.'],
             'delete' => ['title' => 'Delete', 'description' => 'Delete roles.'],
             'assign' => ['title' => 'Assign', 'description' => 'Give roles to users and take them away.'],
-        ],
-        'mounts' => [
-            'view' => ['title' => 'View', 'description' => 'See mounts.'],
-            'create' => ['title' => 'Create', 'description' => 'Add mounts.'],
-            'update' => ['title' => 'Change', 'description' => 'Edit mounts and their eggs and nodes.'],
-            'delete' => ['title' => 'Delete', 'description' => 'Remove mounts.'],
         ],
         'nests' => [
             'view' => ['title' => 'View', 'description' => 'See nests.'],

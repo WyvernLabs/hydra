@@ -10,7 +10,8 @@ return [
     'nav' => [
         'menu' => 'Menu',
         'basic' => 'Basic Administration',
-        'management' => 'Management',
+        'server_management' => 'Server Management',
+        'community' => 'Community Management',
         'service' => 'Service Management',
         'overview' => 'Overview',
         'settings' => 'Settings',
@@ -22,7 +23,6 @@ return [
         'servers' => 'Servers',
         'users' => 'Users',
         'roles' => 'Roles',
-        'mounts' => 'Mounts',
         'nests' => 'Nests',
         'exit' => 'Exit Admin Control',
         'logout' => 'Logout',

@@ -5,17 +5,14 @@ namespace Pterodactyl\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Pterodactyl\Models\User;
 use Illuminate\Http\Response;
-use Pterodactyl\Models\Mount;
 use Pterodactyl\Models\Server;
 use Pterodactyl\Models\Database;
-use Pterodactyl\Models\MountServer;
 use Illuminate\Http\RedirectResponse;
 use Prologue\Alerts\AlertsMessageBag;
 use Pterodactyl\Exceptions\DisplayException;
 use Pterodactyl\Http\Controllers\Controller;
 use Illuminate\Validation\ValidationException;
 use Pterodactyl\Services\Servers\SuspensionService;
-use Pterodactyl\Repositories\Eloquent\MountRepository;
 use Pterodactyl\Services\Servers\ServerDeletionService;
 use Pterodactyl\Services\Servers\ReinstallServerService;
 use Pterodactyl\Exceptions\Model\DataValidationException;
@@ -54,7 +51,6 @@ class ServersController extends Controller
         protected DetailsModificationService $detailsModificationService,
         protected ReinstallServerService $reinstallService,
         protected ServerRepositoryInterface $repository,
-        protected MountRepository $mountRepository,
         protected NestRepositoryInterface $nestRepository,
         protected ServerConfigurationStructureService $serverConfigurationStructureService,
         protected StartupModificationService $startupModificationService,
@@ -239,36 +235,5 @@ class ServersController extends Controller
         $this->databaseManagementService->delete($database);
 
         return response('', 204);
-    }
-
-    /**
-     * Add a mount to a server.
-     *
-     * @throws \Throwable
-     */
-    public function addMount(Request $request, Server $server): RedirectResponse
-    {
-        $mountServer = (new MountServer())->forceFill([
-            'mount_id' => $request->input('mount_id'),
-            'server_id' => $server->id,
-        ]);
-
-        $mountServer->saveOrFail();
-
-        $this->alert->success(trans('admin/servers.mount_added'))->flash();
-
-        return redirect()->route('admin.servers.view.mounts', $server->id);
-    }
-
-    /**
-     * Remove a mount from a server.
-     */
-    public function deleteMount(Server $server, Mount $mount): RedirectResponse
-    {
-        MountServer::where('mount_id', $mount->id)->where('server_id', $server->id)->delete();
-
-        $this->alert->success(trans('admin/servers.mount_removed'))->flash();
-
-        return redirect()->route('admin.servers.view.mounts', $server->id);
     }
 }

@@ -2,7 +2,6 @@
 
 namespace Pterodactyl\Services\Servers;
 
-use Pterodactyl\Models\Mount;
 use Pterodactyl\Models\Server;
 
 class ServerConfigurationStructureService
@@ -77,13 +76,8 @@ class ServerConfigurationStructureService
                 ],
                 'mappings' => $server->getAllocationMappings(),
             ],
-            'mounts' => $server->mounts->map(function (Mount $mount) {
-                return [
-                    'source' => $mount->source,
-                    'target' => $mount->target,
-                    'read_only' => $mount->read_only,
-                ];
-            }),
+            // Hydra: mounts were removed, the key stays for Wings.
+            'mounts' => [],
             'egg' => [
                 'id' => $server->egg->uuid,
                 'file_denylist' => $server->egg->inherit_file_denylist,

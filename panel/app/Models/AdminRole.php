@@ -35,10 +35,9 @@ class AdminRole extends Model
         'databases' => ['view', 'create', 'update', 'delete'],
         'locations' => ['view', 'create', 'update', 'delete'],
         'nodes' => ['view', 'create', 'update', 'allocations', 'configuration', 'delete'],
-        'servers' => ['view', 'create', 'details', 'build', 'startup', 'databases', 'mounts', 'manage', 'transfer', 'delete', 'access'],
+        'servers' => ['view', 'create', 'details', 'build', 'startup', 'databases', 'manage', 'transfer', 'delete', 'access'],
         'users' => ['view', 'create', 'update', 'delete'],
         'roles' => ['view', 'create', 'update', 'delete', 'assign'],
-        'mounts' => ['view', 'create', 'update', 'delete'],
         'nests' => ['view', 'create', 'update', 'delete'],
         'eggs' => ['view', 'create', 'update', 'import', 'delete'],
     ];

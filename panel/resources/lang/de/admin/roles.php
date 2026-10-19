@@ -66,7 +66,6 @@ return [
         'servers' => 'Server',
         'users' => 'Benutzer',
         'roles' => 'Rollen',
-        'mounts' => 'Mounts',
         'nests' => 'Nests',
         'eggs' => 'Eggs',
     ],
@@ -112,7 +111,6 @@ return [
             'build' => ['title' => 'Ressourcen', 'description' => 'Ressourcen, Limits und Zuweisungen ändern.'],
             'startup' => ['title' => 'Start', 'description' => 'Egg, Startbefehl, Image und Variablen ändern.'],
             'databases' => ['title' => 'Datenbanken', 'description' => 'Server-Datenbanken anlegen, zurücksetzen und löschen.'],
-            'mounts' => ['title' => 'Mounts', 'description' => 'Mounts hinzufügen und entfernen.'],
             'manage' => ['title' => 'Verwalten', 'description' => 'Sperren, neu installieren und den Installationsstatus ändern.'],
             'transfer' => ['title' => 'Umziehen', 'description' => 'Server auf eine andere Node verschieben.'],
             'delete' => ['title' => 'Löschen', 'description' => 'Server löschen.'],
@@ -130,12 +128,6 @@ return [
             'update' => ['title' => 'Ändern', 'description' => 'Rollen bearbeiten, höchstens mit den eigenen Rechten.'],
             'delete' => ['title' => 'Löschen', 'description' => 'Rollen löschen.'],
             'assign' => ['title' => 'Zuweisen', 'description' => 'Benutzern Rollen geben und wieder wegnehmen.'],
-        ],
-        'mounts' => [
-            'view' => ['title' => 'Ansehen', 'description' => 'Mounts sehen.'],
-            'create' => ['title' => 'Anlegen', 'description' => 'Mounts hinzufügen.'],
-            'update' => ['title' => 'Ändern', 'description' => 'Mounts samt Eggs und Nodes bearbeiten.'],
-            'delete' => ['title' => 'Löschen', 'description' => 'Mounts entfernen.'],
         ],
         'nests' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Nests sehen.'],

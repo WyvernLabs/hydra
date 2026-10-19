@@ -8,7 +8,6 @@ use Pterodactyl\Models\Egg;
 use Pterodactyl\Models\Nest;
 use Pterodactyl\Models\Node;
 use Pterodactyl\Models\User;
-use Pterodactyl\Models\Mount;
 use Pterodactyl\Models\Backup;
 use Pterodactyl\Models\Server;
 use Pterodactyl\Models\Location;
@@ -151,9 +150,6 @@ class TelemetryCollectionService
                     'count' => Location::count(),
                 ],
 
-                'mounts' => [
-                    'count' => Mount::count(),
-                ],
 
                 'nests' => [
                     'count' => Nest::count(),

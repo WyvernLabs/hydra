@@ -29,11 +29,6 @@
                         <a href="{{ route('admin.servers.view.database', $server->id) }}">{{ __('admin/servers.tabs.database') }}</a>
                     </li>
                     @endif
-                    @if(Auth::user()->hasAdminPermission('servers.mounts'))
-                    <li class="{{ $router->currentRouteNamed('admin.servers.view.mounts') ? 'active' : '' }}">
-                        <a href="{{ route('admin.servers.view.mounts', $server->id) }}">{{ __('admin/servers.tabs.mounts') }}</a>
-                    </li>
-                    @endif
                 @endif
                 @if(Auth::user()->hasAdminPermission('servers.manage') || Auth::user()->hasAdminPermission('servers.transfer'))
                 <li class="{{ $router->currentRouteNamed('admin.servers.view.manage') ? 'active' : '' }}">

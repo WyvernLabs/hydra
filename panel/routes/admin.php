@@ -164,7 +164,6 @@ Route::group(['prefix' => 'servers'], function () {
         Route::get('/view/{server:id}/build', [Admin\Servers\ServerViewController::class, 'build'])->name('admin.servers.view.build')->middleware('admin.can:servers.build');
         Route::get('/view/{server:id}/startup', [Admin\Servers\ServerViewController::class, 'startup'])->name('admin.servers.view.startup')->middleware('admin.can:servers.startup');
         Route::get('/view/{server:id}/database', [Admin\Servers\ServerViewController::class, 'database'])->name('admin.servers.view.database')->middleware('admin.can:servers.databases');
-        Route::get('/view/{server:id}/mounts', [Admin\Servers\ServerViewController::class, 'mounts'])->name('admin.servers.view.mounts')->middleware('admin.can:servers.mounts');
     });
 
     Route::get('/view/{server:id}/manage', [Admin\Servers\ServerViewController::class, 'manage'])->name('admin.servers.view.manage')->middleware('admin.can:servers.manage|servers.transfer');
@@ -174,7 +173,6 @@ Route::group(['prefix' => 'servers'], function () {
     Route::post('/view/{server:id}/build', [Admin\ServersController::class, 'updateBuild'])->middleware('admin.can:servers.build');
     Route::post('/view/{server:id}/startup', [Admin\ServersController::class, 'saveStartup'])->middleware('admin.can:servers.startup');
     Route::post('/view/{server:id}/database', [Admin\ServersController::class, 'newDatabase'])->middleware('admin.can:servers.databases');
-    Route::post('/view/{server:id}/mounts', [Admin\ServersController::class, 'addMount'])->name('admin.servers.view.mounts.store')->middleware('admin.can:servers.mounts');
     Route::post('/view/{server:id}/manage/toggle', [Admin\ServersController::class, 'toggleInstall'])->name('admin.servers.view.manage.toggle')->middleware('admin.can:servers.manage');
     Route::post('/view/{server:id}/manage/suspension', [Admin\ServersController::class, 'manageSuspension'])->name('admin.servers.view.manage.suspension')->middleware('admin.can:servers.manage');
     Route::post('/view/{server:id}/manage/reinstall', [Admin\ServersController::class, 'reinstallServer'])->name('admin.servers.view.manage.reinstall')->middleware('admin.can:servers.manage');
@@ -185,8 +183,6 @@ Route::group(['prefix' => 'servers'], function () {
     Route::patch('/view/{server:id}/database', [Admin\ServersController::class, 'resetDatabasePassword'])->middleware('admin.can:servers.databases');
 
     Route::delete('/view/{server:id}/database/{database:id}/delete', [Admin\ServersController::class, 'deleteDatabase'])->name('admin.servers.view.database.delete')->middleware('admin.can:servers.databases');
-    Route::delete('/view/{server:id}/mounts/{mount:id}', [Admin\ServersController::class, 'deleteMount'])
-        ->name('admin.servers.view.mounts.delete')->middleware('admin.can:servers.mounts');
 });
 
 /*
@@ -218,28 +214,6 @@ Route::group(['prefix' => 'nodes'], function () {
     Route::delete('/view/{node:id}/delete', [Admin\NodesController::class, 'delete'])->name('admin.nodes.view.delete')->middleware('admin.can:nodes.delete');
     Route::delete('/view/{node:id}/allocation/remove/{allocation:id}', [Admin\NodesController::class, 'allocationRemoveSingle'])->name('admin.nodes.view.allocation.removeSingle')->middleware('admin.can:nodes.allocations');
     Route::delete('/view/{node:id}/allocations', [Admin\NodesController::class, 'allocationRemoveMultiple'])->name('admin.nodes.view.allocation.removeMultiple')->middleware('admin.can:nodes.allocations');
-});
-
-/*
-|--------------------------------------------------------------------------
-| Mount Controller Routes
-|--------------------------------------------------------------------------
-|
-| Endpoint: /admin/mounts
-|
-*/
-Route::group(['prefix' => 'mounts'], function () {
-    Route::get('/', [Admin\MountController::class, 'index'])->name('admin.mounts')->middleware('admin.can:mounts.view');
-    Route::get('/view/{mount:id}', [Admin\MountController::class, 'view'])->name('admin.mounts.view')->middleware('admin.can:mounts.view');
-
-    Route::post('/', [Admin\MountController::class, 'create'])->middleware('admin.can:mounts.create');
-    Route::post('/{mount:id}/eggs', [Admin\MountController::class, 'addEggs'])->name('admin.mounts.eggs')->middleware('admin.can:mounts.update');
-    Route::post('/{mount:id}/nodes', [Admin\MountController::class, 'addNodes'])->name('admin.mounts.nodes')->middleware('admin.can:mounts.update');
-
-    Route::patch('/view/{mount:id}', [Admin\MountController::class, 'update'])->middleware('admin.can:mounts.update|mounts.delete');
-
-    Route::delete('/{mount:id}/eggs/{egg_id}', [Admin\MountController::class, 'deleteEgg'])->middleware('admin.can:mounts.update');
-    Route::delete('/{mount:id}/nodes/{node_id}', [Admin\MountController::class, 'deleteNode'])->middleware('admin.can:mounts.update');
 });
 
 /*

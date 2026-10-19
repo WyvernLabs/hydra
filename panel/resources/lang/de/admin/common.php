@@ -10,7 +10,8 @@ return [
     'nav' => [
         'menu' => 'Menü',
         'basic' => 'Grundeinstellungen',
-        'management' => 'Verwaltung',
+        'server_management' => 'Serververwaltung',
+        'community' => 'Community',
         'service' => 'Dienste',
         'overview' => 'Übersicht',
         'settings' => 'Einstellungen',
@@ -22,7 +23,6 @@ return [
         'servers' => 'Server',
         'users' => 'Benutzer',
         'roles' => 'Rollen',
-        'mounts' => 'Mounts',
         'nests' => 'Nests',
         'exit' => 'Administration verlassen',
         'logout' => 'Abmelden',

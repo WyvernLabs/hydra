@@ -11,7 +11,6 @@ use Pterodactyl\Http\Controllers\Controller;
 use Pterodactyl\Services\Servers\EnvironmentService;
 use Pterodactyl\Repositories\Eloquent\NestRepository;
 use Pterodactyl\Repositories\Eloquent\NodeRepository;
-use Pterodactyl\Repositories\Eloquent\MountRepository;
 use Pterodactyl\Traits\Controllers\JavascriptInjection;
 use Pterodactyl\Repositories\Eloquent\LocationRepository;
 use Pterodactyl\Repositories\Eloquent\DatabaseHostRepository;
@@ -26,7 +25,6 @@ class ServerViewController extends Controller
     public function __construct(
         private DatabaseHostRepository $databaseHostRepository,
         private LocationRepository $locationRepository,
-        private MountRepository $mountRepository,
         private NestRepository $nestRepository,
         private NodeRepository $nodeRepository,
         private EnvironmentService $environmentService,
@@ -93,19 +91,6 @@ class ServerViewController extends Controller
     {
         return view('admin.servers.view.database', [
             'hosts' => $this->databaseHostRepository->all(),
-            'server' => $server,
-        ]);
-    }
-
-    /**
-     * Returns all the mounts that exist for the server.
-     */
-    public function mounts(Request $request, Server $server): View
-    {
-        $server->load('mounts');
-
-        return view('admin.servers.view.mounts', [
-            'mounts' => $this->mountRepository->getMountListForServer($server),
             'server' => $server,
         ]);
     }

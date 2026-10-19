@@ -16,8 +16,6 @@ return [
     'install_failed' => 'Installation fehlgeschlagen',
     'active' => 'Aktiv',
     'not_set' => 'Nicht gesetzt',
-    'mount_added' => 'Der Mount wurde hinzugefügt.',
-    'mount_removed' => 'Der Mount wurde entfernt.',
     'failed_install' => 'Die Installation dieses Servers ist fehlgeschlagen und lässt sich nicht reparieren. Lösche den Server und lege ihn neu an.',
     'page_title' => 'Server – :name',
     'page_title_tab' => 'Server – :name: :tab',
@@ -29,7 +27,6 @@ return [
         'startup' => 'Start',
         'database' => 'Datenbanken',
         'databases' => 'Datenbanken',
-        'mounts' => 'Mounts',
         'manage' => 'Verwalten',
         'delete' => 'Löschen',
     ],
@@ -193,17 +190,6 @@ return [
         'password_reset' => 'Das Passwort dieser Datenbank wurde erneuert.',
     ],
 
-    'mounts' => [
-        'subtitle' => 'Mounts des Servers verwalten.',
-        'available' => 'Verfügbare Mounts',
-        'id' => 'ID',
-        'name' => 'Name',
-        'source' => 'Quelle',
-        'target' => 'Ziel',
-        'status' => 'Status',
-        'unmounted' => 'Nicht eingehängt',
-        'mounted' => 'Eingehängt',
-    ],
 
     'manage' => [
         'subtitle' => 'Weitere Aktionen für diesen Server.',

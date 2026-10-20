@@ -24,4 +24,16 @@ return [
     'throttle' => 'Zu viele Anmeldeversuche. Bitte versuche es in :seconds Sekunden erneut.',
     'password_requirements' => 'Das Passwort muss mindestens 8 Zeichen lang sein und sollte nur für diese Seite verwendet werden.',
     '2fa_must_be_enabled' => 'Der Administrator verlangt, dass für dein Konto die Zwei-Faktor-Anmeldung aktiviert ist, um das Panel zu nutzen.',
+
+    'captcha_failed' => 'Die Captcha-Prüfung ist fehlgeschlagen. Bitte versuche es erneut.',
+
+    'register' => [
+        'email_taken' => 'Mit dieser E-Mail-Adresse gibt es bereits ein Konto.',
+        'domain_not_allowed' => 'Mit E-Mail-Adressen dieser Domain können keine Konten angelegt werden.',
+        'wait' => 'Bitte warte :seconds Sekunden, bevor du einen neuen Code anforderst.',
+        'code_invalid' => 'Der Code ist nicht richtig.',
+        'code_expired' => 'Der Code ist abgelaufen. Bitte fordere einen neuen an.',
+        'too_many_attempts' => 'Der Code wurde zu oft falsch eingegeben. Bitte fordere einen neuen an.',
+        'not_verified' => 'Bitte bestätige zuerst deine E-Mail-Adresse.',
+    ],
 ];

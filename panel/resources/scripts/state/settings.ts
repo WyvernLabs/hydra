@@ -5,10 +5,14 @@ export interface SiteSettings {
     locale: string;
     // Installed languages with their native names, e.g. { en: 'English', de: 'Deutsch' }.
     languages: Record<string, string>;
-    recaptcha: {
-        enabled: boolean;
+    // Hydra: Cloudflare Turnstile (Design > Addons). siteKey is empty while
+    // the addon is off, forms says which forms need a token.
+    turnstile: {
         siteKey: string;
+        forms: Record<TurnstileForm, boolean>;
     };
+    // Hydra: visitors can create an account themselves.
+    registration: boolean;
     branding: {
         accent: string;
         logo: string;
@@ -21,6 +25,8 @@ export interface SiteSettings {
         dashboard: HydraBackground;
     };
 }
+
+export type TurnstileForm = 'login' | 'password' | 'register';
 
 // Hydra: a background set in the admin area. Without an image the hexagon
 // pattern is used; blur is in pixels, dim in percent.

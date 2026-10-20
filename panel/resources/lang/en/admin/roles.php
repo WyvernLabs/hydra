@@ -59,6 +59,7 @@ return [
     'areas' => [
         'settings' => 'Settings',
         'design' => 'Design',
+        'addons' => 'Addons',
         'updates' => 'Updates',
         'api' => 'Application API',
         'databases' => 'Database Hosts',
@@ -79,6 +80,10 @@ return [
         'design' => [
             'view' => ['title' => 'View', 'description' => 'Open colors, logo, backgrounds and links & pages.'],
             'update' => ['title' => 'Change', 'description' => 'Change colors, logo and backgrounds, and edit links and pages.'],
+        ],
+        'addons' => [
+            'view' => ['title' => 'View', 'description' => 'Open the addons and their settings.'],
+            'update' => ['title' => 'Change', 'description' => 'Switch addons on and off and change their settings, e.g. the Turnstile keys.'],
         ],
         'updates' => [
             'view' => ['title' => 'View', 'description' => 'See the installed versions of the panel and the nodes.'],

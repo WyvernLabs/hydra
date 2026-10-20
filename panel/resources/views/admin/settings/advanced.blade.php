@@ -20,47 +20,6 @@
             <form action="" method="POST">
                 <div class="box">
                     <div class="box-header with-border">
-                        <h3 class="box-title">reCAPTCHA</h3>
-                    </div>
-                    <div class="box-body">
-                        <div class="row">
-                            <div class="form-group col-md-4">
-                                <label class="control-label">{{ __('admin/settings.advanced.status') }}</label>
-                                <div>
-                                    <select class="form-control" name="recaptcha:enabled">
-                                        <option value="true">{{ __('admin/common.enabled') }}</option>
-                                        <option value="false" @if(old('recaptcha:enabled', config('recaptcha.enabled')) == '0') selected @endif>{{ __('admin/common.disabled') }}</option>
-                                    </select>
-                                    <p class="text-muted small">{{ __('admin/settings.advanced.recaptcha_help') }}</p>
-                                </div>
-                            </div>
-                            <div class="form-group col-md-4">
-                                <label class="control-label">{{ __('admin/settings.advanced.site_key') }}</label>
-                                <div>
-                                    <input type="text" required class="form-control" name="recaptcha:website_key" value="{{ old('recaptcha:website_key', config('recaptcha.website_key')) }}">
-                                </div>
-                            </div>
-                            <div class="form-group col-md-4">
-                                <label class="control-label">{{ __('admin/settings.advanced.secret_key') }}</label>
-                                <div>
-                                    <input type="text" required class="form-control" name="recaptcha:secret_key" value="{{ old('recaptcha:secret_key', config('recaptcha.secret_key')) }}">
-                                    <p class="text-muted small">{{ __('admin/settings.advanced.secret_key_help') }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        @if($showRecaptchaWarning)
-                            <div class="row">
-                                <div class="col-xs-12">
-                                    <div class="alert alert-warning no-margin">
-                                        {!! __('admin/settings.advanced.recaptcha_warning') !!}
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-                <div class="box">
-                    <div class="box-header with-border">
                         <h3 class="box-title">{{ __('admin/settings.advanced.http') }}</h3>
                     </div>
                     <div class="box-body">

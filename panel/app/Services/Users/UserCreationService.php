@@ -25,12 +25,13 @@ class UserCreationService
     }
 
     /**
-     * Create a new user on the system.
+     * Create a new user on the system. Hydra: $notify = false skips the
+     * "account created" email, e.g. for accounts people register themselves.
      *
      * @throws \Exception
      * @throws \Pterodactyl\Exceptions\Model\DataValidationException
      */
-    public function handle(array $data): User
+    public function handle(array $data, bool $notify = true): User
     {
         if (array_key_exists('password', $data) && !empty($data['password'])) {
             $data['password'] = $this->hasher->make($data['password']);
@@ -57,7 +58,9 @@ class UserCreationService
         }
 
         $this->connection->commit();
-        $user->notify(new AccountCreated($user, $token ?? null));
+        if ($notify) {
+            $user->notify(new AccountCreated($user, $token ?? null));
+        }
 
         Activity::event('user:user.create')
             ->subject($user)

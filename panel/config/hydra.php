@@ -62,4 +62,36 @@ return [
         'login' => ['image' => null, 'blur' => 0, 'dim' => 0],
         'dashboard' => ['image' => null, 'blur' => 0, 'dim' => 0],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Addons
+    |--------------------------------------------------------------------------
+    |
+    | Default settings of the addons in the admin area under Design > Addons
+    | ("settings::hydra:addons:<addon>:<setting>").
+    |
+    | turnstile:    Cloudflare Turnstile for the login ("login"), the password
+    |               reset ("password") and the registration ("register").
+    | registration: visitors create an account themselves after confirming
+    |               their email with a code that is valid "code_lifetime"
+    |               minutes. "allowed_domains" limits the email domains
+    |               (comma separated, empty = every domain).
+    |
+    */
+    'addons' => [
+        'turnstile' => [
+            'enabled' => false,
+            'site_key' => env('TURNSTILE_SITE_KEY'),
+            'secret_key' => env('TURNSTILE_SECRET_KEY'),
+            'login' => true,
+            'password' => true,
+            'register' => true,
+        ],
+        'registration' => [
+            'enabled' => false,
+            'code_lifetime' => 15,
+            'allowed_domains' => null,
+        ],
+    ],
 ];

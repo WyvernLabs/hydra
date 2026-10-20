@@ -8,7 +8,7 @@ import { object, string } from 'yup';
 import Field from '@/components/elements/Field';
 import tw from 'twin.macro';
 import Button from '@/components/elements/Button';
-import Reaptcha from 'reaptcha';
+import Turnstile, { TurnstileHandle, useTurnstile } from '@/components/auth/Turnstile';
 import useFlash from '@/plugins/useFlash';
 import { useTranslation } from 'react-i18next';
 
@@ -18,12 +18,13 @@ interface Values {
 }
 
 const LoginContainer = ({ history }: RouteComponentProps) => {
-    const ref = useRef<Reaptcha>(null);
+    const ref = useRef<TurnstileHandle>(null);
     const { t } = useTranslation('client/auth');
     const [token, setToken] = useState('');
 
-    const { clearFlashes, clearAndAddHttpError } = useFlash();
-    const { enabled: recaptchaEnabled, siteKey } = useStoreState((state) => state.settings.data!.recaptcha);
+    const { clearFlashes, clearAndAddHttpError, addFlash } = useFlash();
+    const turnstile = useTurnstile('login');
+    const registration = useStoreState((state) => state.settings.data!.registration);
 
     useEffect(() => {
         clearFlashes();
@@ -32,20 +33,14 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
     const onSubmit = (values: Values, { setSubmitting }: FormikHelpers<Values>) => {
         clearFlashes();
 
-        // If there is no token in the state yet, request the token and then abort this submit request
-        // since it will be re-submitted when the recaptcha data is returned by the component.
-        if (recaptchaEnabled && !token) {
-            ref.current!.execute().catch((error) => {
-                console.error(error);
-
-                setSubmitting(false);
-                clearAndAddHttpError({ error });
-            });
+        if (turnstile.enabled && !token) {
+            setSubmitting(false);
+            addFlash({ type: 'error', title: t('client/common:error'), message: t('captcha.required') });
 
             return;
         }
 
-        login({ ...values, recaptchaData: token })
+        login({ ...values, captcha: token })
             .then((response) => {
                 if (response.complete) {
                     // @ts-expect-error this is valid
@@ -58,7 +53,6 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
             .catch((error) => {
                 console.error(error);
 
-                setToken('');
                 if (ref.current) ref.current.reset();
 
                 setSubmitting(false);
@@ -75,7 +69,7 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
                 password: string().required(t('login.password_required')),
             })}
         >
-            {({ isSubmitting, setSubmitting, submitForm }) => (
+            {({ isSubmitting }) => (
                 <LoginFormContainer title={t('login.title')}>
                     <Field type={'text'} label={t('login.username')} name={'username'} disabled={isSubmitting} />
                     <div css={tw`mt-6`}>
@@ -86,25 +80,22 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
                             disabled={isSubmitting}
                         />
                     </div>
+                    {turnstile.enabled && <Turnstile ref={ref} siteKey={turnstile.siteKey} onToken={setToken} />}
                     <div css={tw`mt-6`}>
                         <Button type={'submit'} size={'xlarge'} isLoading={isSubmitting} disabled={isSubmitting}>
                             {t('login.submit')}
                         </Button>
                     </div>
-                    {recaptchaEnabled && (
-                        <Reaptcha
-                            ref={ref}
-                            size={'invisible'}
-                            sitekey={siteKey || '_invalid_key'}
-                            onVerify={(response) => {
-                                setToken(response);
-                                submitForm();
-                            }}
-                            onExpire={() => {
-                                setSubmitting(false);
-                                setToken('');
-                            }}
-                        />
+                    {registration && (
+                        <div css={tw`mt-4`}>
+                            <p css={tw`text-center text-xs text-neutral-400 mb-2`}>{t('login.no_account')}</p>
+                            <Link
+                                to={'/auth/register'}
+                                css={tw`block w-full p-4 rounded border border-neutral-600 bg-transparent text-center text-sm font-semibold text-neutral-200 no-underline transition-all duration-150 hover:border-neutral-500 hover:text-neutral-100`}
+                            >
+                                {t('login.register')}
+                            </Link>
+                        </div>
                     )}
                     <div css={tw`mt-6 text-center`}>
                         <Link

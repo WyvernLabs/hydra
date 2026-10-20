@@ -47,4 +47,10 @@ return [
         'subject' => 'Testnachricht von :app',
         'line' => 'Das ist ein Test des E-Mail-Versands von :app. Alles funktioniert!',
     ],
+    'registration_code' => [
+        'subject' => ':code ist dein Code für :app',
+        'intro' => 'Mit diesem Code bestätigst du deine E-Mail-Adresse und schließt die Registrierung bei :app ab:',
+        'lifetime' => 'Der Code ist :minutes Minuten gültig.',
+        'outro' => 'Wenn du kein Konto anlegen wolltest, kannst du diese E-Mail ignorieren.',
+    ],
 ];

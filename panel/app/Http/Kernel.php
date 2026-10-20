@@ -12,7 +12,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Pterodactyl\Http\Middleware\EncryptCookies;
 use Pterodactyl\Http\Middleware\Api\IsValidJson;
 use Pterodactyl\Http\Middleware\VerifyCsrfToken;
-use Pterodactyl\Http\Middleware\VerifyReCaptcha;
+use Pterodactyl\Http\Middleware\VerifyTurnstile;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Pterodactyl\Http\Middleware\LanguageMiddleware;
 use Pterodactyl\Http\Middleware\SetSecurityHeaders;
@@ -106,7 +106,7 @@ class Kernel extends HttpKernel
         'throttle' => ThrottleRequests::class,
         'can' => Authorize::class,
         'bindings' => SubstituteBindings::class,
-        'recaptcha' => VerifyReCaptcha::class,
+        'captcha' => VerifyTurnstile::class,
         'node.maintenance' => MaintenanceMiddleware::class,
         'admin.can' => RequireAdminPermission::class,
     ];

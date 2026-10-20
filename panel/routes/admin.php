@@ -96,15 +96,19 @@ Route::group(['prefix' => 'settings'], function () {
 Route::group(['prefix' => 'design'], function () {
     Route::get('/', [Admin\Design\BrandingController::class, 'index'])->name('admin.design')->middleware('admin.can:design.view');
     Route::get('/backgrounds', [Admin\Design\BackgroundController::class, 'index'])->name('admin.design.backgrounds')->middleware('admin.can:design.view');
+    Route::get('/addons', [Admin\Design\AddonController::class, 'index'])->name('admin.design.addons')->middleware('admin.can:addons.view');
+    Route::get('/addons/{addon}', [Admin\Design\AddonController::class, 'view'])->name('admin.design.addons.view')->middleware('admin.can:addons.view');
     Route::get('/links', [Admin\Design\LinkController::class, 'index'])->name('admin.design.links')->middleware('admin.can:design.view');
     Route::get('/links/new', [Admin\Design\LinkController::class, 'create'])->name('admin.design.links.new')->middleware('admin.can:design.update');
     Route::get('/links/{link:id}', [Admin\Design\LinkController::class, 'view'])->name('admin.design.links.view')->middleware('admin.can:design.view');
 
+    Route::post('/addons/{addon}/toggle', [Admin\Design\AddonController::class, 'toggle'])->name('admin.design.addons.toggle')->middleware('admin.can:addons.update');
     Route::post('/links/new', [Admin\Design\LinkController::class, 'store'])->middleware('admin.can:design.update');
     Route::post('/links/preview', [Admin\Design\LinkController::class, 'preview'])->name('admin.design.links.preview')->middleware('admin.can:design.view');
 
     Route::patch('/', [Admin\Design\BrandingController::class, 'update'])->middleware('admin.can:design.update');
     Route::patch('/backgrounds', [Admin\Design\BackgroundController::class, 'update'])->middleware('admin.can:design.update');
+    Route::patch('/addons/{addon}', [Admin\Design\AddonController::class, 'update'])->middleware('admin.can:addons.update');
     Route::patch('/links/{link:id}', [Admin\Design\LinkController::class, 'update'])->middleware('admin.can:design.update');
 
     Route::delete('/links/{link:id}', [Admin\Design\LinkController::class, 'delete'])->name('admin.design.links.delete')->middleware('admin.can:design.update');

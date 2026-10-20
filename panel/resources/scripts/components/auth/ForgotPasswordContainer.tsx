@@ -4,13 +4,12 @@ import { Link } from 'react-router-dom';
 import requestPasswordResetEmail from '@/api/auth/requestPasswordResetEmail';
 import { httpErrorToHuman } from '@/api/http';
 import LoginFormContainer from '@/components/auth/LoginFormContainer';
-import { useStoreState } from 'easy-peasy';
 import Field from '@/components/elements/Field';
 import { Formik, FormikHelpers } from 'formik';
 import { object, string } from 'yup';
 import tw from 'twin.macro';
 import Button from '@/components/elements/Button';
-import Reaptcha from 'reaptcha';
+import Turnstile, { TurnstileHandle, useTurnstile } from '@/components/auth/Turnstile';
 import useFlash from '@/plugins/useFlash';
 import { useTranslation } from 'react-i18next';
 
@@ -19,12 +18,12 @@ interface Values {
 }
 
 export default () => {
-    const ref = useRef<Reaptcha>(null);
+    const ref = useRef<TurnstileHandle>(null);
     const { t } = useTranslation('client/auth');
     const [token, setToken] = useState('');
 
     const { clearFlashes, addFlash } = useFlash();
-    const { enabled: recaptchaEnabled, siteKey } = useStoreState((state) => state.settings.data!.recaptcha);
+    const turnstile = useTurnstile('password');
 
     useEffect(() => {
         clearFlashes();
@@ -33,15 +32,9 @@ export default () => {
     const handleSubmission = ({ email }: Values, { setSubmitting, resetForm }: FormikHelpers<Values>) => {
         clearFlashes();
 
-        // If there is no token in the state yet, request the token and then abort this submit request
-        // since it will be re-submitted when the recaptcha data is returned by the component.
-        if (recaptchaEnabled && !token) {
-            ref.current!.execute().catch((error) => {
-                console.error(error);
-
-                setSubmitting(false);
-                addFlash({ type: 'error', title: t('client/common:error'), message: httpErrorToHuman(error) });
-            });
+        if (turnstile.enabled && !token) {
+            setSubmitting(false);
+            addFlash({ type: 'error', title: t('client/common:error'), message: t('captcha.required') });
 
             return;
         }
@@ -56,7 +49,6 @@ export default () => {
                 addFlash({ type: 'error', title: t('client/common:error'), message: httpErrorToHuman(error) });
             })
             .then(() => {
-                setToken('');
                 if (ref.current) ref.current.reset();
 
                 setSubmitting(false);
@@ -71,7 +63,7 @@ export default () => {
                 email: string().email(t('forgot.email_invalid')).required(t('forgot.email_invalid')),
             })}
         >
-            {({ isSubmitting, setSubmitting, submitForm }) => (
+            {({ isSubmitting }) => (
                 <LoginFormContainer title={t('forgot.title')}>
                     <Field
                         label={t('forgot.email')}
@@ -79,26 +71,12 @@ export default () => {
                         name={'email'}
                         type={'email'}
                     />
+                    {turnstile.enabled && <Turnstile ref={ref} siteKey={turnstile.siteKey} onToken={setToken} />}
                     <div css={tw`mt-6`}>
                         <Button type={'submit'} size={'xlarge'} disabled={isSubmitting} isLoading={isSubmitting}>
                             {t('forgot.submit')}
                         </Button>
                     </div>
-                    {recaptchaEnabled && (
-                        <Reaptcha
-                            ref={ref}
-                            size={'invisible'}
-                            sitekey={siteKey || '_invalid_key'}
-                            onVerify={(response) => {
-                                setToken(response);
-                                submitForm();
-                            }}
-                            onExpire={() => {
-                                setSubmitting(false);
-                                setToken('');
-                            }}
-                        />
-                    )}
                     <div css={tw`mt-6 text-center`}>
                         <Link
                             to={'/auth/login'}

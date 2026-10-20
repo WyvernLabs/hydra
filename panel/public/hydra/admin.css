@@ -1043,3 +1043,101 @@
         transform: none;
     }
 }
+
+/* Hydra: addons (Design > Addons). Every addon is a box, the whole box links
+   to its settings, the switch in the corner turns it on and off. */
+.hydra-addon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--hydra-gap);
+    margin-bottom: var(--hydra-gap);
+}
+
+.hydra-addon-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    background: var(--hydra-panel);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius);
+    box-shadow: var(--hydra-shadow);
+    transition: border-color .15s, transform .15s;
+}
+
+.hydra-addon-card:hover { border-color: var(--hydra-border-strong); transform: translateY(-1px); }
+.hydra-addon-card.is-active { border-color: rgb(var(--hydra-accent-500) / .45); }
+
+.hydra-addon-card-link { position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+.hydra-addon-card-link:focus-visible { outline: 2px solid rgb(var(--hydra-accent-400)); outline-offset: 2px; }
+
+.hydra-addon-head { display: flex; align-items: center; gap: 12px; }
+.box-body > .hydra-addon-head { margin-bottom: 12px; }
+
+.hydra-addon-icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--hydra-panel-3);
+    color: var(--hydra-muted);
+}
+
+.hydra-addon-card.is-active .hydra-addon-icon, .hydra-addon-icon.is-active {
+    background: rgb(var(--hydra-accent-500));
+    color: var(--hydra-on-accent);
+}
+
+.hydra-addon-icon-svg { width: 22px; height: 22px; }
+
+.hydra-addon-title { display: flex; flex: 1; flex-direction: column; gap: 2px; min-width: 0; }
+.hydra-addon-title strong { color: var(--hydra-text); font-size: 15px; }
+.hydra-addon-status { color: var(--hydra-muted); font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.hydra-addon-card.is-active .hydra-addon-status { color: rgb(var(--hydra-accent-400)); }
+
+.hydra-addon-description { margin: 0; color: var(--hydra-text-2); font-size: 13px; }
+
+.hydra-addon-summary {
+    margin: auto 0 0;
+    padding: 10px 0 0;
+    border-top: 1px solid var(--hydra-border);
+    color: var(--hydra-muted);
+    font-size: 12px;
+    list-style: none;
+}
+
+.hydra-addon-toggle { position: relative; z-index: 2; margin: 0; }
+
+.hydra-switch {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: var(--hydra-panel-3);
+    box-shadow: inset 0 0 0 1px var(--hydra-border-strong);
+    cursor: pointer;
+    transition: background .15s;
+}
+
+.hydra-switch::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--hydra-text-2);
+    transition: transform .15s, background .15s;
+}
+
+.hydra-switch.is-on { background: rgb(var(--hydra-accent-500)); box-shadow: none; }
+.hydra-switch.is-on::after { transform: translateX(18px); background: var(--hydra-on-accent); }
+.hydra-switch:focus-visible { outline: 2px solid rgb(var(--hydra-accent-400)); outline-offset: 2px; }
+
+.hydra-admin .checkbox.no-margin-bottom { margin-bottom: 0; }

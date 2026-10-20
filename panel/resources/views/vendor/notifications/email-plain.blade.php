@@ -7,7 +7,8 @@ if (! empty($greeting)) {
 }
 
 if (! empty($introLines)) {
-    echo implode("\n", $introLines), "\n\n";
+    // Hydra: lines can be HTML (e.g. the registration code), the plain text mail shows them without tags.
+    echo implode("\n", array_map(fn ($line) => strip_tags((string) $line), $introLines)), "\n\n";
 }
 
 if (isset($actionText)) {

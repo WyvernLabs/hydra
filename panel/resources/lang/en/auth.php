@@ -24,4 +24,16 @@ return [
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
     'password_requirements' => 'Password must be at least 8 characters in length and should be unique to this site.',
     '2fa_must_be_enabled' => 'The administrator has required that 2-Factor Authentication be enabled for your account in order to use the Panel.',
+
+    'captcha_failed' => 'The captcha check failed. Please try again.',
+
+    'register' => [
+        'email_taken' => 'An account with this email address already exists.',
+        'domain_not_allowed' => 'Accounts cannot be created with email addresses of this domain.',
+        'wait' => 'Please wait :seconds seconds before requesting another code.',
+        'code_invalid' => 'The code is not correct.',
+        'code_expired' => 'The code has expired. Please request a new one.',
+        'too_many_attempts' => 'The code was entered wrong too often. Please request a new one.',
+        'not_verified' => 'Please confirm your email address first.',
+    ],
 ];

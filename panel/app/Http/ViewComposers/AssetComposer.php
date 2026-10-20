@@ -7,6 +7,8 @@ use Pterodactyl\Models\PanelLink;
 use Illuminate\Database\QueryException;
 use Pterodactyl\Services\Hydra\BrandingService;
 use Pterodactyl\Services\Hydra\BackgroundService;
+use Pterodactyl\Services\Hydra\Addons\TurnstileAddon;
+use Pterodactyl\Services\Hydra\Addons\RegistrationAddon;
 use Pterodactyl\Services\Helpers\AssetHashService;
 use Pterodactyl\Traits\Helpers\AvailableLanguages;
 use Pterodactyl\Services\Users\ProfileMediaService;
@@ -22,6 +24,8 @@ class AssetComposer
         private AssetHashService $assetHashService,
         private BrandingService $branding,
         private BackgroundService $backgrounds,
+        private TurnstileAddon $turnstile,
+        private RegistrationAddon $registration,
     ) {
     }
 
@@ -38,10 +42,9 @@ class AssetComposer
             'locale' => app()->getLocale(),
             // All installed languages with their native names, e.g. ['de' => 'Deutsch'].
             'languages' => $this->getAvailableLanguages(true),
-            'recaptcha' => [
-                'enabled' => config('recaptcha.enabled', false),
-                'siteKey' => config('recaptcha.website_key') ?? '',
-            ],
+            // Hydra: Cloudflare Turnstile and the registration (Design > Addons).
+            'turnstile' => $this->turnstile->toArray(),
+            'registration' => $this->registration->enabled(),
             'branding' => $this->branding->toArray(),
             // Hydra: largest profile picture or banner in megabytes.
             'profileUploadLimit' => ProfileMediaService::uploadLimit(),

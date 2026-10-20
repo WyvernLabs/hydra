@@ -8,6 +8,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Pterodactyl\Services\Hydra\Addons\AddonManager;
 use Pterodactyl\Contracts\Repository\SettingsRepositoryInterface;
 
 class SettingsServiceProvider extends ServiceProvider
@@ -19,9 +20,6 @@ class SettingsServiceProvider extends ServiceProvider
     protected array $keys = [
         'app:name',
         'app:locale',
-        'recaptcha:enabled',
-        'recaptcha:secret_key',
-        'recaptcha:website_key',
         'pterodactyl:guzzle:timeout',
         'pterodactyl:guzzle:connect_timeout',
         'pterodactyl:console:count',
@@ -75,6 +73,11 @@ class SettingsServiceProvider extends ServiceProvider
             $this->keys = array_merge($this->keys, $this->emailKeys);
         }
 
+        // Hydra: the settings of every addon (Design > Addons).
+        [$addonKeys, $addonEncrypted] = AddonManager::settingKeys();
+        $this->keys = array_merge($this->keys, $addonKeys);
+        $encrypted = array_merge(self::$encrypted, $addonEncrypted);
+
         try {
             $values = $settings->all()->mapWithKeys(function ($setting) {
                 return [$setting->key => $setting->value];
@@ -87,14 +90,14 @@ class SettingsServiceProvider extends ServiceProvider
 
         foreach ($this->keys as $key) {
             $value = array_get($values, 'settings::' . $key, $config->get(str_replace(':', '.', $key)));
-            if (in_array($key, self::$encrypted)) {
+            if (in_array($key, $encrypted)) {
                 try {
                     $value = $encrypter->decrypt($value);
                 } catch (DecryptException $exception) {
                 }
             }
 
-            switch (strtolower($value)) {
+            switch (strtolower((string) $value)) {
                 case 'true':
                 case '(true)':
                     $value = true;

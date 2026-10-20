@@ -47,4 +47,10 @@ return [
         'subject' => ':app Test Message',
         'line' => "This is a test of the :app mail system. You're good to go!",
     ],
+    'registration_code' => [
+        'subject' => ':code is your code for :app',
+        'intro' => 'Use this code to confirm your email address and finish creating your account on :app:',
+        'lifetime' => 'The code is valid for :minutes minutes.',
+        'outro' => 'If you did not try to create an account, you can ignore this email.',
+    ],
 ];

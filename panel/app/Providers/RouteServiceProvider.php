@@ -80,6 +80,12 @@ class RouteServiceProvider extends ServiceProvider
                 return Limit::perMinute(2)->by($request->ip());
             }
 
+            // Hydra: every request of a registration code sends an email. Counted
+            // separately, so failed logins do not block the registration.
+            if ($request->route()->named('auth.post.register-code')) {
+                return Limit::perMinute(3)->by('register:' . $request->ip());
+            }
+
             return Limit::perMinute(10)->by($request->ip());
         });
 

@@ -10,6 +10,7 @@ return [
         'general' => 'Farben & Logo',
         'backgrounds' => 'Hintergründe',
         'links' => 'Links & Seiten',
+        'addons' => 'Addons',
     ],
 
     'general' => [

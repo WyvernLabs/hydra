@@ -59,6 +59,7 @@ return [
     'areas' => [
         'settings' => 'Einstellungen',
         'design' => 'Design',
+        'addons' => 'Addons',
         'updates' => 'Updates',
         'api' => 'Application-API',
         'databases' => 'Datenbank-Hosts',
@@ -79,6 +80,10 @@ return [
         'design' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Farben, Logo, Hintergründe sowie Links & Seiten öffnen.'],
             'update' => ['title' => 'Ändern', 'description' => 'Farben, Logo und Hintergründe ändern sowie Links und Seiten bearbeiten.'],
+        ],
+        'addons' => [
+            'view' => ['title' => 'Ansehen', 'description' => 'Die Addons und ihre Einstellungen öffnen.'],
+            'update' => ['title' => 'Ändern', 'description' => 'Addons ein- und ausschalten und ihre Einstellungen ändern, z. B. die Turnstile-Schlüssel.'],
         ],
         'updates' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Die installierten Versionen von Panel und Nodes sehen.'],

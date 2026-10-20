@@ -56,6 +56,8 @@ func postServerPower(c *gin.Context) {
 	var data struct {
 		Action      server.PowerAction `json:"action"`
 		WaitSeconds int                `json:"wait_seconds"`
+		// Hydra: set by the Panel for admins who may start suspended servers.
+		IgnoreSuspension bool `json:"hydra_ignore_suspension"`
 	}
 
 	if err := c.BindJSON(&data); err != nil {
@@ -75,7 +77,7 @@ func postServerPower(c *gin.Context) {
 	//
 	// We don't really care about any of the other actions at this point, they'll all result
 	// in the process being stopped, which should have happened anyways if the server is suspended.
-	if (data.Action == server.PowerActionStart || data.Action == server.PowerActionRestart) && s.IsSuspended() {
+	if (data.Action == server.PowerActionStart || data.Action == server.PowerActionRestart) && s.IsSuspended() && !data.IgnoreSuspension {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": "Cannot start or restart a server that is suspended.",
 		})
@@ -89,7 +91,11 @@ func postServerPower(c *gin.Context) {
 		if data.WaitSeconds < 0 || data.WaitSeconds > 300 {
 			data.WaitSeconds = 30
 		}
-		if err := s.HandlePowerAction(data.Action, data.WaitSeconds); err != nil {
+		handle := s.HandlePowerAction
+		if data.IgnoreSuspension {
+			handle = s.HandlePowerActionIgnoringSuspension
+		}
+		if err := handle(data.Action, data.WaitSeconds); err != nil {
 			if errors.Is(err, context.DeadlineExceeded) {
 				s.Log().WithField("action", data.Action).WithField("error", err).Warn("could not process server power action")
 			} else if errors.Is(err, server.ErrIsRunning) {

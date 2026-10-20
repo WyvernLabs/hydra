@@ -30,6 +30,7 @@ interface Props {
 
 export default ({ backup }: Props) => {
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
+    const suspended = ServerContext.useStoreState((state) => state.server.data!.status === 'suspended');
     const { t } = useTranslation('client/server');
     const setServerFromState = ServerContext.useStoreActions((actions) => actions.server.setServerFromState);
     const [modal, setModal] = useState('');
@@ -179,12 +180,15 @@ export default ({ backup }: Props) => {
                                 <span css={tw`ml-2`}>{t('backups.download')}</span>
                             </DropdownButtonRow>
                         </Can>
-                        <Can action={'backup.restore'}>
-                            <DropdownButtonRow onClick={() => setModal('restore')}>
-                                <FontAwesomeIcon fixedWidth icon={faBoxOpen} css={tw`text-xs`} />
-                                <span css={tw`ml-2`}>{t('backups.restore')}</span>
-                            </DropdownButtonRow>
-                        </Can>
+                        {/* Hydra: a restore would lift the suspension, so it waits until the server is unsuspended. */}
+                        {!suspended && (
+                            <Can action={'backup.restore'}>
+                                <DropdownButtonRow onClick={() => setModal('restore')}>
+                                    <FontAwesomeIcon fixedWidth icon={faBoxOpen} css={tw`text-xs`} />
+                                    <span css={tw`ml-2`}>{t('backups.restore')}</span>
+                                </DropdownButtonRow>
+                            </Can>
+                        )}
                         <Can action={'backup.delete'}>
                             <>
                                 <DropdownButtonRow onClick={onLockToggle}>

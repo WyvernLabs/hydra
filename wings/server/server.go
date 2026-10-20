@@ -190,6 +190,10 @@ func (s *Server) Sync() error {
 		return errors.WithStackIf(err)
 	}
 
+	// Hydra: admins may keep using (and start) a suspended server, so only the moment
+	// a server becomes suspended stops it and disconnects everyone, not every sync.
+	wasSuspended := s.IsSuspended()
+
 	if err := s.SyncWithConfiguration(cfg); err != nil {
 		return errors.WithStackIf(err)
 	}
@@ -198,14 +202,14 @@ func (s *Server) Sync() error {
 	// it changes.
 	s.fs.SetDiskLimit(s.DiskSpace())
 
-	s.SyncWithEnvironment()
+	justSuspended := s.IsSuspended() && !wasSuspended
+	s.SyncWithEnvironment(justSuspended)
 
-	// If the server is suspended immediately disconnect all open websocket connections
-	// and any connected SFTP clients. We don't need to worry about revoking any JWTs
-	// here since they'll be blocked from re-connecting to the websocket anyways. This
-	// just forces the client to disconnect and attempt to reconnect (rather than waiting
-	// on them to send a message and hit that disconnect logic).
-	if s.IsSuspended() {
+	// If the server was just suspended immediately disconnect all open websocket
+	// connections and any connected SFTP clients. Clients reconnect and are then
+	// limited to what a suspended server allows (Hydra: files for everyone, the
+	// console only for admins).
+	if justSuspended {
 		s.Websockets().CancelAll()
 		s.Sftp().CancelAll()
 	}

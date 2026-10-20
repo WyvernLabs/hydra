@@ -424,6 +424,16 @@ class User extends Model implements
     }
 
     /**
+     * Hydra: whether this user keeps full access (console, power, every tab) to
+     * suspended servers they can open. Everyone else only keeps files,
+     * databases and backups of a suspended server.
+     */
+    public function canUseSuspendedServers(): bool
+    {
+        return $this->hasAdminPermission('servers.suspended');
+    }
+
+    /**
      * Hydra: whether this user may open every server in the client area with
      * full rights, like a root admin.
      */

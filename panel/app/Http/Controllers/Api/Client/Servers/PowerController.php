@@ -25,7 +25,9 @@ class PowerController extends ClientApiController
     public function index(SendPowerRequest $request, Server $server): Response
     {
         $this->repository->setServer($server)->send(
-            $request->input('signal')
+            $request->input('signal'),
+            // Hydra: only users allowed to use suspended servers get this far on one.
+            $server->isSuspended() && $request->user()->canUseSuspendedServers(),
         );
 
         Activity::event(strtolower("server:power.{$request->input('signal')}"))->log();

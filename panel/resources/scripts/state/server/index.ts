@@ -13,6 +13,9 @@ export type ServerStatus = 'offline' | 'starting' | 'stopping' | 'running' | nul
 interface ServerDataStore {
     data?: Server;
     inConflictState: Computed<ServerDataStore, boolean>;
+    // Hydra: access to a suspended server. "limited" keeps only files,
+    // databases and backups, "full" is for admins who may use suspended servers.
+    suspendedAccess: Computed<ServerDataStore, 'none' | 'limited' | 'full'>;
     isInstalling: Computed<ServerDataStore, boolean>;
     permissions: string[];
     // Hydra: folders the user is limited to, empty for the whole server.
@@ -35,6 +38,13 @@ const server: ServerDataStore = {
         }
 
         return state.data.status !== null || state.data.isTransferring || state.data.isNodeUnderMaintenance;
+    }),
+
+    suspendedAccess: computed((state) => {
+        if (!state.data || state.data.status !== 'suspended') return 'none';
+        if (state.data.isTransferring || state.data.isNodeUnderMaintenance) return 'none';
+
+        return state.data.canUseSuspended ? 'full' : 'limited';
     }),
 
     isInstalling: computed((state) => {

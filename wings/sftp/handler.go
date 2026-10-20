@@ -408,7 +408,8 @@ func (h *Handler) Filelist(request *sftp.Request) (sftp.ListerAt, error) {
 // Determines if a user has permission to perform a specific action on the SFTP server. These
 // permissions are defined and returned by the Panel API.
 func (h *Handler) can(permission string) bool {
-	if h.server.IsSuspended() || h.server.IsInProtectedState() {
+	// Hydra: suspended servers keep their files reachable so data can be saved.
+	if h.server.IsInProtectedState() {
 		return false
 	}
 	for _, p := range h.permissions {

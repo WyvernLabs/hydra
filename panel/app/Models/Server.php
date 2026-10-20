@@ -385,12 +385,15 @@ class Server extends Model implements Identifiable
      * exception is raised. This should be called whenever something needs to make
      * sure the server is not in a weird state that should block user access.
      *
+     * Hydra: $allowSuspended lets suspended servers pass, e.g. for SFTP, which
+     * stays available so data can be saved.
+     *
      * @throws ServerStateConflictException
      */
-    public function validateCurrentState()
+    public function validateCurrentState(bool $allowSuspended = false)
     {
         if (
-            $this->isSuspended()
+            ($this->isSuspended() && !$allowSuspended)
             || $this->node->isUnderMaintenance()
             || !$this->isInstalled()
             || $this->status === self::STATUS_RESTORING_BACKUP

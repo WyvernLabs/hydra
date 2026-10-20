@@ -60,7 +60,7 @@ class PowerControllerTest extends ClientApiIntegrationTestCase
             ->andReturnSelf()
             ->getMock()
             ->expects('send')
-            ->with(trim($action));
+            ->with(trim($action), false);
 
         $this->actingAs($user)
             ->postJson("/api/client/servers/$server->uuid/power", ['signal' => $action])

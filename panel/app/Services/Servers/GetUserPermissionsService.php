@@ -23,12 +23,26 @@ class GetUserPermissionsService
                 $permissions[] = 'admin.websocket.transfer';
             }
 
-            return $permissions;
+            return $this->withSuspended($user, $permissions);
         }
 
         /** @var \Pterodactyl\Models\Subuser|null $subuserPermissions */
         $subuserPermissions = $server->subusers()->where('user_id', $user->id)->first();
 
-        return $subuserPermissions ? $subuserPermissions->permissions : [];
+        return $this->withSuspended($user, $subuserPermissions ? $subuserPermissions->permissions : []);
+    }
+
+    /**
+     * Hydra: lets Wings know that this user may use the console of a suspended
+     * server and start it. Only exact matches count for "admin.*" permissions,
+     * so "*" does not include it.
+     */
+    private function withSuspended(User $user, array $permissions): array
+    {
+        if (!empty($permissions) && $user->canUseSuspendedServers()) {
+            $permissions[] = 'admin.websocket.suspended';
+        }
+
+        return $permissions;
     }
 }

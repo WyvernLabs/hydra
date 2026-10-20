@@ -140,15 +140,9 @@ func handleServerWebsocket(c *gin.Context, maxConnections int, authTimeout time.
 		}
 	}()
 
-	// Due to how websockets are handled we need to connect to the socket
-	// and _then_ abort it if the server is suspended. You cannot capture
-	// the HTTP response in the websocket client, thus we connect and then
-	// immediately close with failure.
-	if s.IsSuspended() {
-		_ = handler.SendClose(4409, "server is suspended")
-
-		return
-	}
+	// Hydra: suspended servers are no longer rejected right here. Admins with the
+	// "admin.websocket.suspended" permission may keep using the console, everyone
+	// else is disconnected once their token is checked (see HandleInbound).
 
 	// There is a separate rate limiter that applies to individual message types
 	// within the actual websocket logic handler. _This_ rate limiter just exists

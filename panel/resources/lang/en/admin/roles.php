@@ -125,6 +125,7 @@ return [
             'transfer' => ['title' => 'Transfer', 'description' => 'Move servers to another node.'],
             'delete' => ['title' => 'Delete', 'description' => 'Delete servers.'],
             'access' => ['title' => 'Open any server', 'description' => 'Open every server in the client area with full rights, like the owner.'],
+            'suspended' => ['title' => 'Use suspended servers', 'description' => 'Keep full access to suspended servers (console, start, every tab). Other users only keep files, databases and backups. Together with "Open any server" this works for every server.'],
         ],
         'users' => [
             'view' => ['title' => 'View', 'description' => 'See users and their details.'],

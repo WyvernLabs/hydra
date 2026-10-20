@@ -87,6 +87,8 @@ class ServerTransformer extends BaseClientTransformer
             // This field is deprecated, please use "status".
             'is_installing' => !$server->isInstalled(),
             'is_transferring' => !is_null($server->transfer),
+            // Hydra: whether the requesting user keeps full access while the server is suspended.
+            'can_use_suspended' => $this->getUser()->canUseSuspendedServers(),
             'skip_scripts' => $server->skip_scripts,
         ];
     }

@@ -55,6 +55,17 @@ func (s *Server) ExecutingPowerAction() bool {
 // function rather than making direct calls to the start/stop/restart functions on the
 // environment struct.
 func (s *Server) HandlePowerAction(action PowerAction, waitSeconds ...int) error {
+	return s.handlePowerAction(action, false, waitSeconds...)
+}
+
+// HandlePowerActionIgnoringSuspension works like HandlePowerAction, but also starts a
+// suspended server. Hydra: the Panel only asks for this for admins who may use
+// suspended servers.
+func (s *Server) HandlePowerActionIgnoringSuspension(action PowerAction, waitSeconds ...int) error {
+	return s.handlePowerAction(action, true, waitSeconds...)
+}
+
+func (s *Server) handlePowerAction(action PowerAction, ignoreSuspension bool, waitSeconds ...int) error {
 	if s.IsInstalling() || s.IsTransferring() || s.IsRestoring() {
 		if s.IsRestoring() {
 			return ErrServerIsRestoring
@@ -131,7 +142,7 @@ func (s *Server) HandlePowerAction(action PowerAction, waitSeconds ...int) error
 		}
 
 		// Run the pre-boot logic for the server before processing the environment start.
-		if err := s.onBeforeStart(); err != nil {
+		if err := s.onBeforeStart(ignoreSuspension); err != nil {
 			return err
 		}
 
@@ -158,7 +169,7 @@ func (s *Server) HandlePowerAction(action PowerAction, waitSeconds ...int) error
 		}
 
 		// Now actually try to start the process by executing the normal pre-boot logic.
-		if err := s.onBeforeStart(); err != nil {
+		if err := s.onBeforeStart(ignoreSuspension); err != nil {
 			return err
 		}
 
@@ -172,7 +183,7 @@ func (s *Server) HandlePowerAction(action PowerAction, waitSeconds ...int) error
 
 // Execute a few functions before actually calling the environment start commands. This ensures
 // that everything is ready to go for environment booting, and that the server can even be started.
-func (s *Server) onBeforeStart() error {
+func (s *Server) onBeforeStart(ignoreSuspension bool) error {
 	// Sync also applies the new environment variables and process resource limits
 	// to the environment.
 	s.Log().Info("syncing server configuration with panel")
@@ -182,7 +193,7 @@ func (s *Server) onBeforeStart() error {
 
 	// Disallow start & restart if the server is suspended. Do this check after performing a sync
 	// action with the Panel to ensure that we have the most up-to-date information for that server.
-	if s.IsSuspended() {
+	if s.IsSuspended() && !ignoreSuspension {
 		return ErrSuspended
 	}
 

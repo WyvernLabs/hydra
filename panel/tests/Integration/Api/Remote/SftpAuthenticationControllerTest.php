@@ -187,6 +187,17 @@ class SftpAuthenticationControllerTest extends IntegrationTestCase
     }
 
     /**
+     * Hydra: files of a suspended server stay reachable so data can be saved.
+     */
+    public function testSuspendedServerAllowsSftp()
+    {
+        $this->server->update(['status' => Server::STATUS_SUSPENDED]);
+
+        $this->postJson('/api/remote/sftp/auth', ['username' => $this->getUsername(), 'password' => 'foobar'])
+            ->assertOk();
+    }
+
+    /**
      * Test that permissions are returned for the user account correctly.
      */
     public function testUserPermissionsAreReturnedCorrectly()
@@ -235,7 +246,6 @@ class SftpAuthenticationControllerTest extends IntegrationTestCase
     {
         return [
             'installing' => [Server::STATUS_INSTALLING],
-            'suspended' => [Server::STATUS_SUSPENDED],
             'restoring a backup' => [Server::STATUS_RESTORING_BACKUP],
         ];
     }

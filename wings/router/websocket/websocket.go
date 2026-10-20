@@ -36,6 +36,8 @@ const (
 	PermissionReceiveInstall   = "admin.websocket.install"
 	PermissionReceiveTransfer  = "admin.websocket.transfer"
 	PermissionReceiveBackups   = "backup.read"
+	// Hydra: may use the console of a suspended server and start it.
+	PermissionSuspended = "admin.websocket.suspended"
 )
 
 // writeTimeout is how long a single write to a websocket may take before the
@@ -339,10 +341,6 @@ func (h *Handler) setJwt(token *tokens.WebsocketPayload) {
 
 // HandleInbound handles an inbound socket request and route it to the proper action.
 func (h *Handler) HandleInbound(ctx context.Context, m Message) error {
-	if h.server.IsSuspended() {
-		return server.ErrSuspended
-	}
-
 	if h.IsThrottled(m.Event) {
 		return nil
 	}
@@ -359,6 +357,11 @@ func (h *Handler) HandleInbound(ctx context.Context, m Message) error {
 			})
 			return nil
 		}
+
+		// Hydra: only admins may use the socket of a suspended server.
+		if h.server.IsSuspended() && !j.HasPermission(PermissionSuspended) {
+			return server.ErrSuspended
+		}
 	}
 
 	switch m.Event {
@@ -372,6 +375,10 @@ func (h *Handler) HandleInbound(ctx context.Context, m Message) error {
 			// Only tokens issued for this server are stored on the socket.
 			if token.GetServerUuid() != h.server.ID() {
 				return ErrJwtUuidMismatch
+			}
+
+			if h.server.IsSuspended() && !token.HasPermission(PermissionSuspended) {
+				return server.ErrSuspended
 			}
 
 			// Check if the user has previously authenticated successfully.
@@ -449,7 +456,12 @@ func (h *Handler) HandleInbound(ctx context.Context, m Message) error {
 				}
 			}
 
-			err := h.server.HandlePowerAction(action)
+			// Getting here on a suspended server requires PermissionSuspended.
+			handle := h.server.HandlePowerAction
+			if h.server.IsSuspended() {
+				handle = h.server.HandlePowerActionIgnoringSuspension
+			}
+			err := handle(action)
 			if errors.Is(err, system.ErrLockerLocked) {
 				m, _ := h.GetErrorMessage("another power action is currently being processed for this server, please try again later")
 

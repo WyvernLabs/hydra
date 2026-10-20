@@ -19,14 +19,15 @@ class DaemonPowerRepository extends DaemonRepository
      *
      * @throws DaemonConnectionException
      */
-    public function send(string $action): ResponseInterface
+    public function send(string $action, bool $ignoreSuspension = false): ResponseInterface
     {
         Assert::isInstanceOf($this->server, Server::class);
 
         try {
             return $this->getHttpClient()->post(
                 sprintf('/api/servers/%s/power', $this->server->uuid),
-                ['json' => ['action' => $action]]
+                // Hydra: lets admins start a suspended server.
+                ['json' => ['action' => $action, 'hydra_ignore_suspension' => $ignoreSuspension]]
             );
         } catch (TransferException $exception) {
             throw new DaemonConnectionException($exception);

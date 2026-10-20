@@ -2,6 +2,7 @@
 
 namespace Pterodactyl\Http\Middleware\Api\Client\Server;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Pterodactyl\Models\Server;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -15,6 +16,12 @@ class AuthenticateServerAccess
     protected array $except = [
         'api:client:server.ws',
     ];
+
+    /**
+     * Hydra: areas of the client API that stay available while a server is
+     * suspended, so users can fix problems or at least save their data.
+     */
+    public const SUSPENDED_AREAS = ['files', 'databases', 'backups'];
 
     /**
      * AuthenticateServerAccess constructor.
@@ -51,7 +58,7 @@ class AuthenticateServerAccess
         } catch (ServerStateConflictException $exception) {
             // Still allow users to get information about their server if it is installing or
             // being transferred.
-            if (!$request->routeIs('api:client:server.view')) {
+            if (!$request->routeIs('api:client:server.view') && !$this->allowedWhileSuspended($request, $server)) {
                 if (($server->isSuspended() || $server->node->isUnderMaintenance()) && !$request->routeIs('api:client:server.resources')) {
                     throw $exception;
                 }
@@ -64,5 +71,24 @@ class AuthenticateServerAccess
         $request->attributes->set('server', $server);
 
         return $next($request);
+    }
+
+    /**
+     * Hydra: users allowed to use suspended servers keep full access, everyone
+     * else keeps the files, databases and backups of a suspended server.
+     */
+    private function allowedWhileSuspended(Request $request, Server $server): bool
+    {
+        if (!$server->isSuspended() || $server->node->isUnderMaintenance() || !is_null($server->transfer)) {
+            return false;
+        }
+
+        if ($request->user()->canUseSuspendedServers()) {
+            return true;
+        }
+
+        $area = Str::before(Str::after($request->route()->uri(), '{server}/'), '/');
+
+        return in_array($area, self::SUSPENDED_AREAS, true);
     }
 }

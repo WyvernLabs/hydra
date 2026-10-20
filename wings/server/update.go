@@ -18,7 +18,10 @@ import (
 // This functionality allows a server's resources limits to be modified on the
 // fly and have them apply right away allowing for dynamic resource allocation
 // and responses to abusive server processes.
-func (s *Server) SyncWithEnvironment() {
+//
+// Hydra: a running process is only stopped when the server was just suspended
+// (justSuspended), since admins may start a suspended server on purpose.
+func (s *Server) SyncWithEnvironment(justSuspended bool) {
 	s.Log().Debug("syncing server settings with environment")
 
 	cfg := s.Config()
@@ -54,7 +57,7 @@ func (s *Server) SyncWithEnvironment() {
 			// next boot, or fail out entirely in a more logical position.
 			s.Log().WithField("error", err).Warn("failed to perform on-the-fly update of the server environment")
 		}
-	} else {
+	} else if justSuspended {
 		// Checks if the server is now in a suspended state. If so and a server process is currently running it
 		// will be gracefully stopped (and terminated if it refuses to stop).
 		if s.Environment.State() != environment.ProcessOfflineState {

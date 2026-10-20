@@ -125,6 +125,7 @@ return [
             'transfer' => ['title' => 'Umziehen', 'description' => 'Server auf eine andere Node verschieben.'],
             'delete' => ['title' => 'Löschen', 'description' => 'Server löschen.'],
             'access' => ['title' => 'Jeden Server öffnen', 'description' => 'Jeden Server im Kundenbereich mit vollen Rechten öffnen, wie der Besitzer.'],
+            'suspended' => ['title' => 'Gesperrte Server nutzen', 'description' => 'Gesperrte Server weiter voll nutzen (Konsole, Starten, alle Reiter). Andere Benutzer behalten nur Dateien, Datenbanken und Backups. Zusammen mit „Jeden Server öffnen“ gilt das für alle Server.'],
         ],
         'users' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Benutzer und ihre Daten sehen.'],

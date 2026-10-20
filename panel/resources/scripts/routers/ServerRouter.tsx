@@ -21,6 +21,7 @@ import { SidebarLink, SidebarSection } from '@/components/hydra/Sidebar';
 import { useWorkspaceSection } from '@/components/hydra/sections';
 import ServerSidebarHeader from '@/components/hydra/ServerSidebarHeader';
 import { useTranslation } from 'react-i18next';
+import SuspendedNotice, { isSuspendedPath, SuspendedBanner } from '@/components/server/SuspendedNotice';
 
 export default () => {
     const match = useRouteMatch<{ id: string }>();
@@ -36,6 +37,10 @@ export default () => {
     const id = ServerContext.useStoreState((state) => state.server.data?.id);
     const uuid = ServerContext.useStoreState((state) => state.server.data?.uuid);
     const inConflictState = ServerContext.useStoreState((state) => state.server.inConflictState);
+    const suspendedAccess = ServerContext.useStoreState((state) => state.server.suspendedAccess);
+    // Hydra: on a suspended server, users without full access only see files, databases and backups.
+    const serverRoutes =
+        suspendedAccess === 'limited' ? routes.server.filter((route) => isSuspendedPath(route.path)) : routes.server;
     const serverId = ServerContext.useStoreState((state) => state.server.data?.internalId);
     const background = ServerContext.useStoreState((state) => state.server.data?.background);
     const workspace = useWorkspaceSection();
@@ -57,7 +62,7 @@ export default () => {
         items: !uuid
             ? []
             : [
-                  ...routes.server
+                  ...serverRoutes
                       .filter((route) => !!route.name)
                       .map(({ path, name, icon, exact, permission }) => {
                           const link = (
@@ -123,14 +128,22 @@ export default () => {
                 <>
                     <InstallListener />
                     <TransferListener />
-                    <WebsocketHandler />
-                    {inConflictState && (!rootAdmin || (rootAdmin && !location.pathname.endsWith(`/server/${id}`))) ? (
+                    {suspendedAccess !== 'limited' && <WebsocketHandler />}
+                    {inConflictState &&
+                    suspendedAccess === 'none' &&
+                    (!rootAdmin || (rootAdmin && !location.pathname.endsWith(`/server/${id}`))) ? (
                         <ConflictStateRenderer />
                     ) : (
                         <ErrorBoundary>
+                            <SuspendedBanner />
                             <TransitionRouter>
                                 <Switch location={location}>
-                                    {routes.server.map(({ path, permission, component: Component }) => (
+                                    {suspendedAccess === 'limited' && (
+                                        <Route path={to('/')} exact>
+                                            <SuspendedNotice />
+                                        </Route>
+                                    )}
+                                    {serverRoutes.map(({ path, permission, component: Component }) => (
                                         <PermissionRoute key={path} permission={permission} path={to(path)} exact>
                                             <Spinner.Suspense>
                                                 <Component />

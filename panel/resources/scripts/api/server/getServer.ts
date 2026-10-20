@@ -60,6 +60,8 @@ export interface Server {
     };
     isTransferring: boolean;
     skipScripts: boolean;
+    // Hydra: whether this user keeps full access while the server is suspended.
+    canUseSuspended: boolean;
     variables: ServerEggVariable[];
     allocations: Allocation[];
     // Hydra: only filled in for users who may open every server.
@@ -92,6 +94,7 @@ export const rawDataToServerObject = ({ attributes: data }: FractalResponseData)
     featureLimits: { ...data.feature_limits },
     isTransferring: data.is_transferring,
     skipScripts: data.skip_scripts,
+    canUseSuspended: data.can_use_suspended || false,
     variables: ((data.relationships?.variables as FractalResponseList | undefined)?.data || []).map(
         rawDataToServerEggVariable
     ),

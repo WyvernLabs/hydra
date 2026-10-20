@@ -158,7 +158,8 @@ class SftpAuthenticationController extends Controller
             }
         }
 
-        $server->validateCurrentState();
+        // Hydra: files stay reachable while a server is suspended.
+        $server->validateCurrentState(true);
     }
 
     /**

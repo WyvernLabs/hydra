@@ -11,7 +11,7 @@ import useFileManagerSwr from '@/plugins/useFileManagerSwr';
 import { ServerContext } from '@/state/server';
 import { WithClassname } from '@/components/types';
 import Portal from '@/components/elements/Portal';
-import { CloudUploadIcon } from '@heroicons/react/outline';
+import { CloudUpload as CloudUploadIcon } from 'lucide-react';
 import { useSignal } from '@preact/signals-react';
 import { useTranslation } from 'react-i18next';
 

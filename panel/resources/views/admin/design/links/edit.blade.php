@@ -48,12 +48,10 @@
                         @endforeach
                         <p class="text-muted small">{{ __('admin/design.links.title_help') }}</p>
                         <div class="form-group">
-                            <label class="control-label" for="icon">{{ __('admin/design.links.icon') }}</label>
-                            <select id="icon" name="icon" class="form-control">
-                                @foreach($icons as $icon)
-                                    <option value="{{ $icon }}" @selected(old('icon', $link->icon ?? 'document-text') === $icon)>{{ __('admin/design.links.icons.' . $icon) }}</option>
-                                @endforeach
-                            </select>
+                            <label class="control-label">{{ __('admin/design.links.icon') }}</label>
+                            <div>
+                                @include('partials.admin.hydra.icon-picker', ['name' => 'icon', 'value' => old('icon', $link->icon ?? 'file-text')])
+                            </div>
                         </div>
                         <div class="form-group" data-for-type="page">
                             <label class="control-label" for="slug">{{ __('admin/design.links.slug') }}</label>
@@ -144,6 +142,7 @@
 
 @section('footer-scripts')
     @parent
+    @include('partials.admin.hydra.icon-picker-script')
     <script>
         (function () {
             // Show only the fields of the chosen type.

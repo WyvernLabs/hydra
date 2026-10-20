@@ -5,7 +5,9 @@ namespace Pterodactyl\Http\ViewComposers;
 use Illuminate\View\View;
 use Pterodactyl\Models\PanelLink;
 use Illuminate\Database\QueryException;
+use Pterodactyl\Services\Hydra\Icons;
 use Pterodactyl\Services\Hydra\BrandingService;
+use Pterodactyl\Services\Hydra\ServerNavigation;
 use Pterodactyl\Services\Hydra\BackgroundService;
 use Pterodactyl\Services\Hydra\Addons\TurnstileAddon;
 use Pterodactyl\Services\Hydra\Addons\RegistrationAddon;
@@ -26,6 +28,7 @@ class AssetComposer
         private BackgroundService $backgrounds,
         private TurnstileAddon $turnstile,
         private RegistrationAddon $registration,
+        private ServerNavigation $navigation,
     ) {
     }
 
@@ -36,6 +39,9 @@ class AssetComposer
     {
         $view->with('asset', $this->assetHashService);
         $view->with('branding', $this->branding);
+        $links = $this->links();
+        $navigation = $this->navigation->toFrontend();
+
         $view->with('siteConfiguration', [
             'name' => config('app.name') ?? 'Hydra',
             // The language resolved for this request (user > browser > panel default).
@@ -49,7 +55,15 @@ class AssetComposer
             // Hydra: largest profile picture or banner in megabytes.
             'profileUploadLimit' => ProfileMediaService::uploadLimit(),
             // Hydra: links and pages for the sidebar and the login page.
-            'links' => $this->links(),
+            'links' => $links,
+            // Hydra: categories and buttons of the server pages (Design > Navigation).
+            'serverNavigation' => $navigation,
+            // Hydra: drawing data of every icon picked in the admin area (Lucide).
+            'icons' => Icons::subset(array_merge(
+                ['circle'],
+                $this->navigation->icons(),
+                array_column($links, 'icon'),
+            )),
             // Hydra: backgrounds of the login page and the dashboard.
             'backgrounds' => [
                 'login' => $this->backgrounds->forSlot('login'),

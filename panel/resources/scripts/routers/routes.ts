@@ -14,20 +14,11 @@ import AccountSSHContainer from '@/components/dashboard/ssh/AccountSSHContainer'
 import ActivityLogContainer from '@/components/dashboard/activity/ActivityLogContainer';
 import ServerActivityLogContainer from '@/components/server/ServerActivityLogContainer';
 import {
-    ArchiveIcon,
-    CalendarIcon,
-    ClockIcon,
-    CodeIcon,
-    CogIcon,
-    DatabaseIcon,
-    FolderIcon,
-    GlobeAltIcon,
-    KeyIcon,
-    PlayIcon,
-    TerminalIcon,
-    UserCircleIcon,
-    UsersIcon,
-} from '@heroicons/react/outline';
+    Code as CodeIcon,
+    History as ClockIcon,
+    KeyRound as KeyIcon,
+    CircleUser as UserCircleIcon,
+} from 'lucide-react';
 
 // Each of the router files is already code split out appropriately — so
 // all of the items above will only be loaded in when that router is loaded.
@@ -51,6 +42,8 @@ interface RouteDefinition {
 
 interface ServerRouteDefinition extends RouteDefinition {
     permission: string | string[] | null;
+    // Hydra: button of the server navigation this page belongs to (Design > Navigation).
+    navKey: string;
 }
 
 interface Routes {
@@ -91,85 +84,87 @@ export default {
     server: [
         {
             path: '/',
+            navKey: 'console',
             permission: null,
             name: 'routes.console',
-            icon: TerminalIcon,
             component: ServerConsole,
             exact: true,
         },
         {
             path: '/files',
+            navKey: 'files',
             permission: 'file.*',
             name: 'routes.files',
-            icon: FolderIcon,
             component: FileManagerContainer,
         },
         {
             path: '/files/:action(edit|new)',
+            navKey: 'files',
             permission: 'file.*',
             name: undefined,
             component: FileEditContainer,
         },
         {
             path: '/databases',
+            navKey: 'databases',
             permission: 'database.*',
             name: 'routes.databases',
-            icon: DatabaseIcon,
             component: DatabasesContainer,
         },
         {
             path: '/schedules',
+            navKey: 'schedules',
             permission: 'schedule.*',
             name: 'routes.schedules',
-            icon: CalendarIcon,
             component: ScheduleContainer,
         },
         {
             path: '/schedules/:id',
+            navKey: 'schedules',
             permission: 'schedule.*',
             name: undefined,
             component: ScheduleEditContainer,
         },
         {
             path: '/users',
+            navKey: 'users',
             permission: 'user.*',
             name: 'routes.users',
-            icon: UsersIcon,
             component: UsersContainer,
         },
         {
             path: '/backups',
+            navKey: 'backups',
             permission: 'backup.*',
             name: 'routes.backups',
-            icon: ArchiveIcon,
             component: BackupContainer,
         },
         {
             path: '/network',
+            navKey: 'network',
             permission: 'allocation.*',
             name: 'routes.network',
-            icon: GlobeAltIcon,
             component: NetworkContainer,
         },
         {
             path: '/startup',
+            navKey: 'startup',
             permission: 'startup.*',
             name: 'routes.startup',
-            icon: PlayIcon,
             component: StartupContainer,
         },
         {
             path: '/settings',
+            navKey: 'settings',
             permission: ['settings.*', 'file.sftp'],
             name: 'routes.settings',
-            icon: CogIcon,
             component: SettingsContainer,
         },
         {
             path: '/activity',
+            navKey: 'activity',
             permission: 'activity.*',
             name: 'routes.activity',
-            icon: ClockIcon,
             component: ServerActivityLogContainer,
         },
     ],

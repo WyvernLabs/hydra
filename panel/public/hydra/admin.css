@@ -1141,3 +1141,79 @@
 .hydra-switch:focus-visible { outline: 2px solid rgb(var(--hydra-accent-400)); outline-offset: 2px; }
 
 .hydra-admin .checkbox.no-margin-bottom { margin-bottom: 0; }
+
+/* Hydra: Lucide icon picker (partials/admin/hydra/icon-picker*.blade.php). */
+.hydra-icon-field-button { display: inline-flex; align-items: center; gap: 8px; }
+.hydra-picker-icon { width: 18px; height: 18px; flex: none; }
+.hydra-icon-field-name { font-family: var(--hydra-font-mono); font-size: 12px; }
+
+.hydra-icon-picker-search { margin-bottom: 10px; }
+.hydra-icon-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 6px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.hydra-icon-picker-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    padding: 10px 4px;
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius-sm);
+    background: var(--hydra-panel-2);
+    color: var(--hydra-text-2);
+    cursor: pointer;
+}
+
+.hydra-icon-picker-item .hydra-picker-icon { width: 22px; height: 22px; }
+.hydra-icon-picker-item span { max-width: 100%; overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.hydra-icon-picker-item:hover { border-color: var(--hydra-border-strong); color: var(--hydra-text); }
+.hydra-icon-picker-item.is-selected { border-color: rgb(var(--hydra-accent-500)); color: rgb(var(--hydra-accent-400)); }
+
+/* Hydra: navigation editor (Design > Navigation). */
+.hydra-navcat-header { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.hydra-navcat-names { display: flex; flex: 1; flex-wrap: wrap; gap: 8px; min-width: 240px; }
+.hydra-navcat-name { flex: 1; min-width: 160px; }
+.hydra-navcat-name .control-label, .hydra-navcat-color .control-label { margin-bottom: 2px; }
+.hydra-navcat-color-row { display: flex; align-items: center; gap: 8px; height: 30px; }
+.hydra-navcat-color-row input[type="color"] { width: 36px; height: 28px; padding: 0; border: 1px solid var(--hydra-border); border-radius: 6px; background: none; }
+.hydra-navcat-color-row input[type="color"]:disabled { opacity: .35; }
+.hydra-navcat-color-row label { margin: 0; font-weight: normal; }
+.hydra-navcat-actions { display: flex; gap: 4px; }
+
+.hydra-navcat-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 48px;
+    margin: 0;
+    padding: 6px;
+    border: 1px dashed transparent;
+    border-radius: var(--hydra-radius-sm);
+    list-style: none;
+}
+
+.hydra-navcat-items.is-drop-target { border-color: rgb(var(--hydra-accent-500)); background: var(--hydra-accent-soft); }
+.hydra-navcat-empty { padding: 12px; color: var(--hydra-muted); font-size: 12px; text-align: center; }
+
+.hydra-navitem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius-sm);
+    background: var(--hydra-panel-2);
+}
+
+.hydra-navitem.is-dragging { opacity: .4; }
+.hydra-navitem-handle { color: var(--hydra-muted); cursor: grab; letter-spacing: -3px; user-select: none; }
+.hydra-navitem-pick { display: inline-flex; align-items: center; padding: 4px 6px; }
+.hydra-navitem-icon { display: inline-flex; }
+.hydra-navitem-label { width: 140px; color: var(--hydra-text); font-weight: 600; }
+.hydra-navitem-eggs { flex: 1; min-width: 160px; }

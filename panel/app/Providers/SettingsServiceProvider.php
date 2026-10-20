@@ -38,6 +38,7 @@ class SettingsServiceProvider extends ServiceProvider
         'hydra:backgrounds:dashboard:image',
         'hydra:backgrounds:dashboard:blur',
         'hydra:backgrounds:dashboard:dim',
+        'hydra:navigation:server',
     ];
 
     /**

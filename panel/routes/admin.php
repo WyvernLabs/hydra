@@ -96,6 +96,7 @@ Route::group(['prefix' => 'settings'], function () {
 Route::group(['prefix' => 'design'], function () {
     Route::get('/', [Admin\Design\BrandingController::class, 'index'])->name('admin.design')->middleware('admin.can:design.view');
     Route::get('/backgrounds', [Admin\Design\BackgroundController::class, 'index'])->name('admin.design.backgrounds')->middleware('admin.can:design.view');
+    Route::get('/navigation', [Admin\Design\NavigationController::class, 'index'])->name('admin.design.navigation')->middleware('admin.can:design.view');
     Route::get('/addons', [Admin\Design\AddonController::class, 'index'])->name('admin.design.addons')->middleware('admin.can:addons.view');
     Route::get('/addons/{addon}', [Admin\Design\AddonController::class, 'view'])->name('admin.design.addons.view')->middleware('admin.can:addons.view');
     Route::get('/links', [Admin\Design\LinkController::class, 'index'])->name('admin.design.links')->middleware('admin.can:design.view');
@@ -108,6 +109,7 @@ Route::group(['prefix' => 'design'], function () {
 
     Route::patch('/', [Admin\Design\BrandingController::class, 'update'])->middleware('admin.can:design.update');
     Route::patch('/backgrounds', [Admin\Design\BackgroundController::class, 'update'])->middleware('admin.can:design.update');
+    Route::patch('/navigation', [Admin\Design\NavigationController::class, 'update'])->middleware('admin.can:design.update');
     Route::patch('/addons/{addon}', [Admin\Design\AddonController::class, 'update'])->middleware('admin.can:addons.update');
     Route::patch('/links/{link:id}', [Admin\Design\LinkController::class, 'update'])->middleware('admin.can:design.update');
 

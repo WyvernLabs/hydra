@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import classNames from 'classnames';
-import { LogoutIcon, ShieldCheckIcon } from '@heroicons/react/outline';
+import { LogOut as LogoutIcon, ShieldCheck as ShieldCheckIcon } from 'lucide-react';
 import { useStoreState } from '@/state/hooks';
 import http from '@/api/http';
 import Avatar from '@/components/Avatar';
@@ -9,12 +9,14 @@ import Tooltip from '@/components/elements/tooltip/Tooltip';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 import { useTranslation } from 'react-i18next';
 
-type IconComponent = React.ComponentType<{ className?: string }>;
+type IconComponent = React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 
 export interface SidebarItem {
     key: string;
     name: string;
     icon?: IconComponent;
+    // Hydra: color of the icon, set per category of the server navigation.
+    iconColor?: string | null;
     // Internal route (react-router) …
     to?: string;
     exact?: boolean;
@@ -41,7 +43,9 @@ interface Props {
 
 const ItemContent = ({ item }: { item: SidebarItem }) => (
     <>
-        {item.icon && <item.icon className={'hydra-nav-icon'} />}
+        {item.icon && (
+            <item.icon className={'hydra-nav-icon'} style={item.iconColor ? { color: item.iconColor } : undefined} />
+        )}
         <span>{item.name}</span>
     </>
 );

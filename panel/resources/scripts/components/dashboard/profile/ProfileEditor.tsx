@@ -11,7 +11,7 @@ import useFlash, { useFlashKey } from '@/plugins/useFlash';
 import updateProfile, { ProfileValues } from '@/api/account/updateProfile';
 import ProfileCard from '@/components/dashboard/profile/ProfileCard';
 import ColorInput from '@/components/dashboard/profile/ColorInput';
-import { SwitchVerticalIcon } from '@heroicons/react/outline';
+import { ArrowUpDown as SwitchVerticalIcon } from 'lucide-react';
 
 const BIO_LIMIT = 240;
 const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];

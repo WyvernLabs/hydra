@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SearchIcon } from '@heroicons/react/outline';
+import { Search as SearchIcon } from 'lucide-react';
 import useEventListener from '@/plugins/useEventListener';
 import SearchModal from '@/components/dashboard/search/SearchModal';
 import { SidebarLink } from '@/components/hydra/Sidebar';

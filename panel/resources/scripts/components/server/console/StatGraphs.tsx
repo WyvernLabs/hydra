@@ -6,7 +6,7 @@ import { Line } from 'react-chartjs-2';
 import { useChart, useChartTickLabel } from '@/components/server/console/chart';
 import { hexToRgba, hydraColor } from '@/lib/helpers';
 import { bytesToString } from '@/lib/formatters';
-import { CloudDownloadIcon, CloudUploadIcon } from '@heroicons/react/solid';
+import { CloudDownload as CloudDownloadIcon, CloudUpload as CloudUploadIcon } from 'lucide-react';
 import { theme } from 'twin.macro';
 import ChartBlock from '@/components/server/console/ChartBlock';
 import Tooltip from '@/components/elements/tooltip/Tooltip';

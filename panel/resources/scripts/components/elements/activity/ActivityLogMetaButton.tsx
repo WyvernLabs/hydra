@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ClipboardListIcon } from '@heroicons/react/outline';
+import { ClipboardList as ClipboardListIcon } from 'lucide-react';
 import { Dialog } from '@/components/elements/dialog';
 import { Button } from '@/components/elements/button/index';
 import { useTranslation } from 'react-i18next';

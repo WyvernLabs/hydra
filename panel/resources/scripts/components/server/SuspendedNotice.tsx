@@ -11,13 +11,9 @@ import TitledGreyBox from '@/components/elements/TitledGreyBox';
 import CopyOnClick from '@/components/elements/CopyOnClick';
 import Input from '@/components/elements/Input';
 import Can from '@/components/elements/Can';
-import routes from '@/routers/routes';
+import HydraIcon from '@/components/hydra/HydraIcon';
+import { useServerNavigation } from '@/components/hydra/serverNavigation';
 import { ip } from '@/lib/formatters';
-
-// Hydra: parts of a server that stay available while it is suspended.
-export const SUSPENDED_PATHS = ['/files', '/databases', '/backups'];
-
-export const isSuspendedPath = (path: string) => SUSPENDED_PATHS.some((allowed) => path.startsWith(allowed));
 
 /**
  * Banner above every page of a suspended server.
@@ -46,28 +42,33 @@ export default () => {
     const sftp = ServerContext.useStoreState((state) => state.server.data!.sftpDetails, isEqual);
     const username = useStoreState((state) => state.user.data!.username);
     const base = match.url.replace(/\/*$/, '');
+    // Already limited to the parts a suspended server keeps.
+    const { categories } = useServerNavigation();
 
     return (
         <ServerContentBlock title={t('conflict.suspended_title')}>
             <h1 css={tw`font-header font-medium text-2xl text-neutral-50 mb-4`}>{t('conflict.suspended_title')}</h1>
             <div css={tw`grid grid-cols-1 md:grid-cols-3 gap-4 mb-6`}>
-                {routes.server
-                    .filter((route) => !!route.name && route.icon && isSuspendedPath(route.path))
-                    .map(({ path, name, icon: Icon, permission }) => (
-                        <Can key={path} action={permission || ''} matchAny>
-                            <Link
-                                to={`${base}${path}`}
-                                className={'hydra-card'}
-                                css={tw`flex items-center gap-3 p-4 no-underline`}
-                            >
-                                {Icon && <Icon css={tw`w-6 h-6 text-primary-400`} />}
-                                <span css={tw`flex-1 text-neutral-100 font-semibold`}>
-                                    {t(`client/common:${name}`)}
-                                </span>
-                                <span css={tw`text-xs text-neutral-400 uppercase`}>{t('conflict.suspended_open')}</span>
-                            </Link>
-                        </Can>
-                    ))}
+                {categories.flatMap((category) =>
+                    category.items.map((item) => (
+                        <Link
+                            key={item.key}
+                            to={`${base}${item.path}`}
+                            className={'hydra-card'}
+                            css={tw`flex items-center gap-3 p-4 no-underline`}
+                        >
+                            <HydraIcon
+                                name={item.icon}
+                                css={tw`w-6 h-6 text-primary-400`}
+                                style={category.color ? { color: category.color } : undefined}
+                            />
+                            <span css={tw`flex-1 text-neutral-100 font-semibold`}>
+                                {t(`client/common:${item.name}`)}
+                            </span>
+                            <span css={tw`text-xs text-neutral-400 uppercase`}>{t('conflict.suspended_open')}</span>
+                        </Link>
+                    ))
+                )}
             </div>
             <Can action={'file.sftp'}>
                 <TitledGreyBox title={t('conflict.suspended_sftp')}>

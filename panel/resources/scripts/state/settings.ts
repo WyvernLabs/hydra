@@ -20,6 +20,10 @@ export interface SiteSettings {
     };
     profileUploadLimit: number;
     links: PanelLinkItem[];
+    // Hydra: navigation of the server pages (Design > Navigation).
+    serverNavigation: ServerNavCategory[];
+    // Hydra: drawing data of the Lucide icons picked in the admin area, by name.
+    icons: Record<string, Array<[string, Record<string, string>]>>;
     backgrounds: {
         login: HydraBackground;
         dashboard: HydraBackground;
@@ -34,6 +38,22 @@ export interface HydraBackground {
     image: string | null;
     blur: number;
     dim: number;
+}
+
+// Hydra: a category of the server navigation. "name" is null for the default
+// name, "color" colors the icons of its buttons.
+export interface ServerNavCategory {
+    id: string;
+    name: string | null;
+    color: string | null;
+    items: ServerNavItem[];
+}
+
+// Hydra: a button of the server navigation, "eggs" limits it to some eggs.
+export interface ServerNavItem {
+    key: string;
+    icon: string;
+    eggs: number[] | null;
 }
 
 // Hydra: a link or page in the "Links" section of the sidebar.

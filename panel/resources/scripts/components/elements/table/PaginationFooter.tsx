@@ -2,7 +2,7 @@ import React from 'react';
 import { PaginationDataSet } from '@/api/http';
 import classNames from 'classnames';
 import { Button } from '@/components/elements/button/index';
-import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon } from '@heroicons/react/solid';
+import { ChevronsLeft as ChevronDoubleLeftIcon, ChevronsRight as ChevronDoubleRightIcon } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
 
 interface Props {

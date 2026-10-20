@@ -94,4 +94,18 @@ return [
             'allowed_domains' => null,
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Navigation
+    |--------------------------------------------------------------------------
+    |
+    | Navigation of the server pages as JSON, edited under Design > Navigation
+    | ("settings::hydra:navigation:server"). Null uses the default navigation,
+    | see Pterodactyl\Services\Hydra\ServerNavigation.
+    |
+    */
+    'navigation' => [
+        'server' => null,
+    ],
 ];

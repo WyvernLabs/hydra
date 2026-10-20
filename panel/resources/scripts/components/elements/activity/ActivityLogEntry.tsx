@@ -5,7 +5,7 @@ import Translate from '@/components/elements/Translate';
 import { formatDate, formatDistanceToNowStrict } from '@/lib/date';
 import { ActivityLog } from '@definitions/user';
 import ActivityLogMetaButton from '@/components/elements/activity/ActivityLogMetaButton';
-import { FolderOpenIcon, TerminalIcon } from '@heroicons/react/solid';
+import { FolderOpen as FolderOpenIcon, SquareTerminal as TerminalIcon } from 'lucide-react';
 import classNames from 'classnames';
 import style from './style.module.css';
 import Avatar from '@/components/Avatar';

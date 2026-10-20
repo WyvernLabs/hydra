@@ -17,7 +17,7 @@ class RegistrationAddon extends Addon
 
     public function icon(): string
     {
-        return 'user-add';
+        return 'user-plus';
     }
 
     public function rules(): array

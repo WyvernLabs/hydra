@@ -33,11 +33,6 @@ class PanelLink extends Model
     /**
      * Icons an admin can pick for a link.
      */
-    public const ICONS = [
-        'document-text', 'identification', 'scale', 'shield-check', 'information-circle',
-        'question-mark-circle', 'book-open', 'chat', 'globe-alt', 'link', 'heart', 'discord',
-    ];
-
     protected $table = 'panel_links';
 
     protected $fillable = ['type', 'title', 'icon', 'slug', 'url', 'content', 'enabled', 'public', 'sort'];
@@ -53,7 +48,7 @@ class PanelLink extends Model
     public static array $validationRules = [
         'type' => 'required|string|in:page,url',
         'title' => 'required|array',
-        'icon' => 'required|string|max:32',
+        'icon' => 'required|string|max:64',
         'slug' => 'nullable|required_if:type,page|string|max:64|regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/|unique:panel_links,slug',
         'url' => 'nullable|string|max:2048|url:http,https',
         'content' => 'nullable|array',

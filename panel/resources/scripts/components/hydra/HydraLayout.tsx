@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
-import { MenuIcon, XIcon } from '@heroicons/react/outline';
+import { Menu as MenuIcon, X as XIcon } from 'lucide-react';
 import Sidebar, { SidebarSection } from '@/components/hydra/Sidebar';
 import { useStoreState } from '@/state/hooks';
 import http from '@/api/http';

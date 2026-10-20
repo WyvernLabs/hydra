@@ -54,11 +54,11 @@ class PanelLinkTest extends HttpTestCase
         $this->actingAs($admin)->post('/admin/design/links/new', [
             'type' => 'url',
             'title' => ['en' => 'Website'],
-            'icon' => 'globe-alt',
+            'icon' => 'globe',
             'url' => 'javascript:alert(1)',
             'sort' => 6,
         ]);
-        $this->assertFalse(PanelLink::query()->where('icon', 'globe-alt')->exists());
+        $this->assertFalse(PanelLink::query()->where('icon', 'globe')->exists());
     }
 
     public function testRoleWithoutSettingsPermissionCannotEditLinks(): void

@@ -80,7 +80,6 @@ class LinkController extends Controller
         return [
             'link' => $link,
             'languages' => $this->getAvailableLanguages(true),
-            'icons' => PanelLink::ICONS,
         ];
     }
 }

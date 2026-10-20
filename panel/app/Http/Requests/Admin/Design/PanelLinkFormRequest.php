@@ -4,6 +4,7 @@ namespace Pterodactyl\Http\Requests\Admin\Design;
 
 use Illuminate\Validation\Rule;
 use Pterodactyl\Models\PanelLink;
+use Pterodactyl\Services\Hydra\Icons;
 use Pterodactyl\Traits\Helpers\AvailableLanguages;
 use Pterodactyl\Http\Requests\Admin\AdminFormRequest;
 
@@ -23,7 +24,12 @@ class PanelLinkFormRequest extends AdminFormRequest
             'type' => 'required|string|in:page,url',
             'title' => 'required|array',
             'title.*' => 'nullable|string|max:64',
-            'icon' => ['required', 'string', Rule::in(PanelLink::ICONS)],
+            // Hydra: any Lucide icon, or "discord".
+            'icon' => ['required', 'string', 'max:64', function (string $attribute, mixed $value, \Closure $fail) {
+                if (!is_string($value) || !Icons::exists($value)) {
+                    $fail(trans('admin/design.links.icon_unknown'));
+                }
+            }],
             'slug' => [
                 'nullable', 'required_if:type,page', 'string', 'max:64', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
                 Rule::unique('panel_links', 'slug')->ignore($link instanceof PanelLink ? $link->id : null),

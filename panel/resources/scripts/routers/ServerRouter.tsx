@@ -1,27 +1,28 @@
 import TransferListener from '@/components/server/TransferListener';
 import React, { useEffect, useState } from 'react';
-import { Route, Switch, useRouteMatch } from 'react-router-dom';
+import { Redirect, Route, Switch, useRouteMatch } from 'react-router-dom';
 import TransitionRouter from '@/TransitionRouter';
 import WebsocketHandler from '@/components/server/WebsocketHandler';
 import { ServerContext } from '@/state/server';
-import Can from '@/components/elements/Can';
 import Spinner from '@/components/elements/Spinner';
 import { NotFound, ServerError } from '@/components/elements/ScreenBlock';
 import { httpErrorToHuman } from '@/api/http';
 import { useStoreState } from 'easy-peasy';
 import InstallListener from '@/components/server/InstallListener';
 import ErrorBoundary from '@/components/elements/ErrorBoundary';
-import { ExternalLinkIcon } from '@heroicons/react/outline';
+import { ExternalLink as ExternalLinkIcon } from 'lucide-react';
 import { useLocation } from 'react-router';
 import ConflictStateRenderer from '@/components/server/ConflictStateRenderer';
 import PermissionRoute from '@/components/elements/PermissionRoute';
 import routes from '@/routers/routes';
 import HydraLayout from '@/components/hydra/HydraLayout';
-import { SidebarLink, SidebarSection } from '@/components/hydra/Sidebar';
+import { SidebarItem, SidebarSection } from '@/components/hydra/Sidebar';
+import { iconComponent } from '@/components/hydra/HydraIcon';
+import { isSuspendedPath, useServerNavigation } from '@/components/hydra/serverNavigation';
 import { useWorkspaceSection } from '@/components/hydra/sections';
 import ServerSidebarHeader from '@/components/hydra/ServerSidebarHeader';
 import { useTranslation } from 'react-i18next';
-import SuspendedNotice, { isSuspendedPath, SuspendedBanner } from '@/components/server/SuspendedNotice';
+import SuspendedNotice, { SuspendedBanner } from '@/components/server/SuspendedNotice';
 
 export default () => {
     const match = useRouteMatch<{ id: string }>();
@@ -38,9 +39,13 @@ export default () => {
     const uuid = ServerContext.useStoreState((state) => state.server.data?.uuid);
     const inConflictState = ServerContext.useStoreState((state) => state.server.inConflictState);
     const suspendedAccess = ServerContext.useStoreState((state) => state.server.suspendedAccess);
+    const { categories, isVisible } = useServerNavigation();
     // Hydra: on a suspended server, users without full access only see files, databases and backups.
-    const serverRoutes =
-        suspendedAccess === 'limited' ? routes.server.filter((route) => isSuspendedPath(route.path)) : routes.server;
+    // Pages whose button is hidden for the egg of this server are not reachable either.
+    const serverRoutes = routes.server.filter(
+        (route) => isVisible(route.navKey) && (suspendedAccess !== 'limited' || isSuspendedPath(route.path))
+    );
+    const firstPage = categories[0]?.items[0]?.path;
     const serverId = ServerContext.useStoreState((state) => state.server.data?.internalId);
     const background = ServerContext.useStoreState((state) => state.server.data?.background);
     const workspace = useWorkspaceSection();
@@ -55,46 +60,35 @@ export default () => {
         return `${(url ? match.url : match.path).replace(/\/*$/, '')}/${value.replace(/^\/+/, '')}`;
     };
 
-    const serverSection: SidebarSection = {
-        key: 'server',
-        title: t('nav.server'),
-        header: uuid ? <ServerSidebarHeader /> : undefined,
-        items: !uuid
-            ? []
-            : [
-                  ...serverRoutes
-                      .filter((route) => !!route.name)
-                      .map(({ path, name, icon, exact, permission }) => {
-                          const link = (
-                              <SidebarLink
-                                  key={path}
-                                  item={{ key: path, name: t(name!), icon, exact, to: to(path, true) }}
-                              />
-                          );
-
-                          return permission ? (
-                              <Can key={path} action={permission} matchAny>
-                                  {link}
-                              </Can>
-                          ) : (
-                              link
-                          );
-                      }),
-                  ...(canManageAsAdmin
-                      ? [
-                            <SidebarLink
-                                key={'admin'}
-                                item={{
-                                    key: 'admin',
-                                    name: t('nav.manage_as_admin'),
-                                    icon: ExternalLinkIcon,
-                                    href: `/admin/servers/view/${serverId}`,
-                                }}
-                            />,
-                        ]
-                      : []),
-              ],
+    // Hydra: one sidebar section per category of the navigation set in the admin area.
+    const adminLink: SidebarItem = {
+        key: 'admin',
+        name: t('nav.manage_as_admin'),
+        icon: ExternalLinkIcon,
+        href: `/admin/servers/view/${serverId}`,
     };
+    const serverSections: SidebarSection[] = !uuid
+        ? [{ key: 'server', title: t('nav.server'), items: [] }]
+        : (categories.length > 0 ? categories : [{ id: 'server', name: null, color: null, items: [] }]).map(
+              (category, index, all) => ({
+                  key: `server-${category.id}`,
+                  title: category.name || t('nav.server'),
+                  header: index === 0 ? <ServerSidebarHeader /> : undefined,
+                  items: [
+                      ...category.items.map(
+                          (item): SidebarItem => ({
+                              key: item.key,
+                              name: t(item.name),
+                              icon: iconComponent(item.icon),
+                              iconColor: category.color,
+                              exact: item.exact,
+                              to: to(item.path, true),
+                          })
+                      ),
+                      ...(canManageAsAdmin && index === all.length - 1 ? [adminLink] : []),
+                  ],
+              })
+          );
 
     useEffect(
         () => () => {
@@ -117,7 +111,7 @@ export default () => {
     }, [match.params.id]);
 
     return (
-        <HydraLayout key={'server-router'} sections={[workspace, serverSection]} background={background}>
+        <HydraLayout key={'server-router'} sections={[workspace, ...serverSections]} background={background}>
             {!uuid || !id ? (
                 error ? (
                     <ServerError message={error} />
@@ -138,10 +132,18 @@ export default () => {
                             <SuspendedBanner />
                             <TransitionRouter>
                                 <Switch location={location}>
-                                    {suspendedAccess === 'limited' && (
+                                    {suspendedAccess === 'limited' ? (
                                         <Route path={to('/')} exact>
                                             <SuspendedNotice />
                                         </Route>
+                                    ) : (
+                                        // Without a console for this egg the first visible page opens instead.
+                                        !isVisible('console') &&
+                                        firstPage && (
+                                            <Route path={to('/')} exact>
+                                                <Redirect to={to(firstPage, true)} />
+                                            </Route>
+                                        )
                                     )}
                                     {serverRoutes.map(({ path, permission, component: Component }) => (
                                         <PermissionRoute key={path} permission={permission} path={to(path)} exact>

@@ -4,13 +4,13 @@
     // Hydra: every entry names the permission needed to see it; overview is open to all admins.
     $navigation = [
         __('admin/common.nav.basic') => [
-            ['admin.index', __('admin/common.nav.overview'), 'home', $route === 'admin.index', null],
-            ['admin.settings', __('admin/common.nav.settings'), 'cog', starts_with($route, 'admin.settings'), 'settings.view'],
-            ['admin.design', __('admin/common.nav.design'), 'color-swatch', starts_with($route, 'admin.design'), 'design.view'],
+            ['admin.index', __('admin/common.nav.overview'), 'house', $route === 'admin.index', null],
+            ['admin.settings', __('admin/common.nav.settings'), 'settings', starts_with($route, 'admin.settings'), 'settings.view'],
+            ['admin.design', __('admin/common.nav.design'), 'palette', starts_with($route, 'admin.design'), 'design.view'],
         ],
         __('admin/common.nav.server_management') => [
-            ['admin.locations', __('admin/common.nav.locations'), 'location-marker', starts_with($route, 'admin.locations'), 'locations.view'],
-            ['admin.nodes', __('admin/common.nav.nodes'), 'chip', starts_with($route, 'admin.nodes'), 'nodes.view'],
+            ['admin.locations', __('admin/common.nav.locations'), 'map-pin', starts_with($route, 'admin.locations'), 'locations.view'],
+            ['admin.nodes', __('admin/common.nav.nodes'), 'cpu', starts_with($route, 'admin.nodes'), 'nodes.view'],
             ['admin.servers', __('admin/common.nav.servers'), 'server', starts_with($route, 'admin.servers'), 'servers.view'],
         ],
         __('admin/common.nav.community') => [
@@ -20,7 +20,7 @@
         __('admin/common.nav.service') => [
             ['admin.databases', __('admin/common.nav.databases'), 'database', starts_with($route, 'admin.databases'), 'databases.view'],
             ['admin.api.index', __('admin/common.nav.api'), 'code', starts_with($route, 'admin.api'), 'api.view'],
-            ['admin.nests', __('admin/common.nav.nests'), 'collection', starts_with($route, 'admin.nests'), 'nests.view'],
+            ['admin.nests', __('admin/common.nav.nests'), 'layers', starts_with($route, 'admin.nests'), 'nests.view'],
         ],
     ];
     foreach ($navigation as $title => $items) {
@@ -86,13 +86,13 @@
                 </nav>
                 <div class="hydra-sidebar-footer">
                     <a href="{{ route('account') }}" class="hydra-icon-btn" data-toggle="tooltip" data-placement="top" title="{{ Auth::user()->name_first }} {{ Auth::user()->name_last }}">
-                        <x-hydra.icon name="user-circle" />
+                        <x-hydra.icon name="circle-user" />
                     </a>
                     <a href="{{ route('index') }}" class="hydra-icon-btn" data-toggle="tooltip" data-placement="top" title="{{ __('admin/common.nav.exit') }}">
-                        <x-hydra.icon name="view-grid" />
+                        <x-hydra.icon name="layout-grid" />
                     </a>
                     <a href="{{ route('auth.logout') }}" class="hydra-icon-btn" id="logoutButton" data-toggle="tooltip" data-placement="top" title="{{ __('admin/common.nav.logout') }}">
-                        <x-hydra.icon name="logout" />
+                        <x-hydra.icon name="log-out" />
                     </a>
                 </div>
             </aside>

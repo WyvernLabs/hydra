@@ -74,6 +74,8 @@ class ServerTransformer extends BaseClientTransformer
             'invocation' => $service->handle($server, !$user->can(Permission::ACTION_STARTUP_READ, $server)),
             'docker_image' => $server->image,
             'egg_features' => $server->egg->inherit_features,
+            // Hydra: buttons of the navigation can be limited to some eggs.
+            'egg_id' => $server->egg_id,
             // Hydra: background of the server pages, null for the dashboard background.
             'background' => Container::getInstance()->make(BackgroundService::class)->forEgg($server->egg),
             'feature_limits' => [

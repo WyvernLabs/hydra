@@ -1,4 +1,4 @@
-import { ExclamationIcon, ShieldExclamationIcon } from '@heroicons/react/outline';
+import { TriangleAlert as ExclamationIcon, ShieldAlert as ShieldExclamationIcon } from 'lucide-react';
 import React from 'react';
 import classNames from 'classnames';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheckIcon, ViewGridIcon } from '@heroicons/react/outline';
+import { ShieldCheck as ShieldCheckIcon, LayoutGrid as ViewGridIcon } from 'lucide-react';
 import { useStoreState } from '@/state/hooks';
 import SearchContainer from '@/components/dashboard/search/SearchContainer';
 import { SidebarItem, SidebarSection } from '@/components/hydra/Sidebar';

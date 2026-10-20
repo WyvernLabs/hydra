@@ -30,7 +30,6 @@ return [
 
     'logout_confirm' => 'Do you want to log out?',
     'validation_error' => 'There was an error validating the data provided.',
-    'footer' => ':name © :year · Powered by Hydra :version',
 
     'actions' => [
         'save' => 'Save',

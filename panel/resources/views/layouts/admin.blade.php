@@ -125,7 +125,7 @@
                     @yield('content')
                 </section>
                 <footer class="hydra-footer">
-                    {{ __('admin/common.footer', ['name' => config('app.name', 'Hydra'), 'year' => date('Y'), 'version' => $appVersion]) }}
+                    @include('partials.hydra.credit') {{ $appVersion }}
                     &middot; {{ round(microtime(true) - LARAVEL_START, 3) }}s
                 </footer>
             </main>

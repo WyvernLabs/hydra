@@ -178,6 +178,7 @@ $style = [
                                             <a style="{{ $style['anchor'] }}" href="{{ url('/') }}" target="_blank">{{ config('app.name') }}</a>.
                                             {{ __('mail.rights') }}
                                         </p>
+                                        <p style="{{ $style['paragraph-sub'] }}">{{ \Pterodactyl\Services\Hydra\BrandingService::CREDIT }}</p>
                                     </td>
                                 </tr>
                             </table>

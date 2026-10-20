@@ -30,7 +30,6 @@ return [
 
     'logout_confirm' => 'Möchtest du dich abmelden?',
     'validation_error' => 'Die eingegebenen Daten sind fehlerhaft.',
-    'footer' => ':name © :year · Hydra :version',
 
     'actions' => [
         'save' => 'Speichern',

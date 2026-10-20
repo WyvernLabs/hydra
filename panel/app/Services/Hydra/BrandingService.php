@@ -15,6 +15,14 @@ use Pterodactyl\Contracts\Repository\SettingsRepositoryInterface;
  */
 class BrandingService
 {
+    /**
+     * Credit in the footer of every page and email. WyvernLabs is a registered
+     * trademark; unlike the rest of the branding this text is not configurable
+     * and must not be removed. The React frontend has the same text in
+     * resources/scripts/components/hydra/Footer.tsx.
+     */
+    public const CREDIT = 'Hydra by WyvernLabs®';
+
     public const DEFAULT_ACCENT = '#74c236';
 
     public const DEFAULT_LOGO = '/hydra/logo.svg';

@@ -21,7 +21,10 @@
                     @endif
                 </div>
             </article>
-            <p class="hydra-footer"><a href="{{ route('auth.login') }}">{{ __('client/auth.login.title') }}</a></p>
+            <p class="hydra-footer">
+                @include('partials.hydra.credit')
+                &middot; <a href="{{ route('auth.login') }}">{{ __('client/auth.login.title') }}</a>
+            </p>
         </main>
         <script>
             document.addEventListener('click', function (event) {

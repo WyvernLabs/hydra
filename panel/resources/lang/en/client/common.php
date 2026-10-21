@@ -34,6 +34,13 @@ return [
         'submit' => 'Submit',
     ],
 
+    // Hydra: warnings from the admins.
+    'warnings' => [
+        'title' => 'Warning',
+        'hint' => 'Please follow the rules, further violations can lead to a ban.',
+        'acknowledge' => 'Understood',
+    ],
+
     'nav' => [
         'menu' => 'Menu',
         'workspace' => 'Workspace',
@@ -53,6 +60,7 @@ return [
         'api' => 'API Credentials',
         'ssh' => 'SSH Keys',
         'activity' => 'Activity',
+        'dashboard' => 'Dashboard',
         'console' => 'Console',
         'files' => 'Files',
         'databases' => 'Databases',

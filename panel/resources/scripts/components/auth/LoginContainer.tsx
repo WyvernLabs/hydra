@@ -28,6 +28,11 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
 
     useEffect(() => {
         clearFlashes();
+
+        // Hydra: the session was ended because the account got banned.
+        if (new URLSearchParams(window.location.search).has('banned')) {
+            addFlash({ type: 'error', title: t('client/common:error'), message: t('login.banned_notice') });
+        }
     }, []);
 
     const onSubmit = (values: Values, { setSubmitting }: FormikHelpers<Values>) => {

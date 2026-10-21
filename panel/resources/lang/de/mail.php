@@ -53,4 +53,22 @@ return [
         'lifetime' => 'Der Code ist :minutes Minuten gültig.',
         'outro' => 'Wenn du kein Konto anlegen wolltest, kannst du diese E-Mail ignorieren.',
     ],
+    // Hydra: Verwarnungen und Sperren.
+    'account_warned' => [
+        'subject' => 'Du hast eine Verwarnung erhalten',
+        'intro' => 'Ein Administrator hat dein Konto verwarnt.',
+        'reason' => 'Grund: :reason',
+        'outro' => 'Bitte halte dich an die Regeln, weitere Verstöße können zu einer Sperre führen. Die Verwarnung wird dir auch beim Anmelden angezeigt.',
+        'action' => 'Panel öffnen',
+    ],
+    'account_banned' => [
+        'subject' => 'Dein Konto wurde gesperrt',
+        'intro' => 'Ein Administrator hat dein Konto gesperrt. Du kannst dich nicht mehr anmelden.',
+        'reason' => 'Grund: :reason',
+        'until' => 'Die Sperre endet am :date.',
+        'permanent' => 'Die Sperre ist dauerhaft.',
+        'servers' => 'Alle deine Server wurden gesperrt.',
+        'deletion' => 'Dein Konto und deine Server werden nach :days Tagen automatisch gelöscht.',
+        'outro' => 'Wenn du denkst, dass es sich um einen Fehler handelt, wende dich bitte an den Support.',
+    ],
 ];

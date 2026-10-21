@@ -5,6 +5,8 @@ return [
 
     'login' => [
         'title' => 'Anmelden',
+        // Hydra: nach einer Sperre abgemeldet.
+        'banned_notice' => 'Du wurdest abgemeldet, weil dieses Konto gesperrt wurde. Beim Anmelden siehst du den Grund.',
         'username' => 'Benutzername',
         'password' => 'Passwort',
         'submit' => 'Anmelden',

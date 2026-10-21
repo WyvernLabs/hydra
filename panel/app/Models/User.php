@@ -231,6 +231,8 @@ class User extends Model implements
                 'admin_access' => $this->isAdmin(),
                 'admin_permissions' => $this->adminPermissions(),
                 'server_access' => $this->canAccessAllServers(),
+                // Hydra: warnings shown until the user confirms them.
+                'warnings' => $this->pendingWarnings(),
             ])
             ->merge($this->profile())
             ->toArray();
@@ -463,6 +465,42 @@ class User extends Model implements
         }
 
         return !$other->root_admin && $this->canGrantAdminPermissions($other->adminPermissions());
+    }
+
+    /**
+     * Hydra: warnings and bans of this account.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\Pterodactyl\Models\UserSanction, $this>
+     */
+    public function sanctions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(UserSanction::class);
+    }
+
+    /**
+     * Hydra: the ban that applies right now, if any.
+     */
+    public function activeBan(): ?UserSanction
+    {
+        return $this->sanctions()->activeBans()->latest('id')->first();
+    }
+
+    /**
+     * Hydra: warnings the user has not confirmed yet, shown in the client area.
+     */
+    public function pendingWarnings(): array
+    {
+        return $this->sanctions()
+            ->where('type', UserSanction::TYPE_WARNING)
+            ->whereNull('acknowledged_at')
+            ->orderBy('id')
+            ->get(['id', 'reason', 'created_at'])
+            ->map(fn (UserSanction $warning) => [
+                'id' => $warning->id,
+                'reason' => $warning->reason,
+                'created_at' => $warning->created_at->toAtomString(),
+            ])
+            ->all();
     }
 
     /**

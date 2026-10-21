@@ -148,6 +148,13 @@ class SftpAuthenticationController extends Controller
      */
     protected function validateSftpAccess(User $user, Server $server): void
     {
+        // Hydra: banned accounts lose SFTP too, although suspended servers keep it.
+        if ($user->activeBan()) {
+            Activity::event('server:sftp.denied')->actor($user)->subject($server)->log();
+
+            throw new HttpForbiddenException('This account has been banned.');
+        }
+
         if (!$user->canAccessAllServers() && $server->owner_id !== $user->id) {
             $permissions = $this->permissions->handle($server, $user);
 

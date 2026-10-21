@@ -20,6 +20,7 @@ import Input from '@/components/elements/Input';
 import GreyRowBox from '@/components/elements/GreyRowBox';
 import CopyOnClick from '@/components/elements/CopyOnClick';
 import { Trans, useTranslation } from 'react-i18next';
+import DatabaseTools from '@/components/server/databases/DatabaseTools';
 
 interface Props {
     database: ServerDatabase;
@@ -172,8 +173,9 @@ export default ({ database, className }: Props) => {
                     </CopyOnClick>
                     <p css={tw`mt-1 text-2xs text-neutral-500 uppercase select-none`}>{t('databases.username')}</p>
                 </div>
-                <div css={tw`ml-8`}>
-                    <Button isSecondary css={tw`mr-2`} onClick={() => setConnectionVisible(true)}>
+                <div css={tw`ml-8 flex items-center`}>
+                    <DatabaseTools database={database} showManage flashKey={'databases'} />
+                    <Button isSecondary css={tw`mx-2`} onClick={() => setConnectionVisible(true)}>
                         <FontAwesomeIcon icon={faEye} fixedWidth />
                     </Button>
                     <Can action={'database.delete'}>

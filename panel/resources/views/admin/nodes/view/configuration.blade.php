@@ -15,25 +15,7 @@
 @endsection
 
 @section('content')
-<div class="row">
-    <div class="col-xs-12">
-        <div class="nav-tabs-custom nav-tabs-floating">
-            <ul class="nav nav-tabs">
-                <li><a href="{{ route('admin.nodes.view', $node->id) }}">{{ __('admin/nodes.tabs.about') }}</a></li>
-@if(Auth::user()->hasAdminPermission('nodes.update'))
-                <li><a href="{{ route('admin.nodes.view.settings', $node->id) }}">{{ __('admin/nodes.tabs.settings') }}</a></li>
-@endif
-@if(Auth::user()->hasAdminPermission('nodes.configuration'))
-                <li class="active"><a href="{{ route('admin.nodes.view.configuration', $node->id) }}">{{ __('admin/nodes.tabs.configuration') }}</a></li>
-@endif
-@if(Auth::user()->hasAdminPermission('nodes.allocations'))
-                <li><a href="{{ route('admin.nodes.view.allocation', $node->id) }}">{{ __('admin/nodes.tabs.allocation') }}</a></li>
-@endif
-                <li><a href="{{ route('admin.nodes.view.servers', $node->id) }}">{{ __('admin/nodes.tabs.servers') }}</a></li>
-            </ul>
-        </div>
-    </div>
-</div>
+@include('partials.admin.nodes.tabs', ['active' => 'configuration'])
 <div class="row">
     <div class="col-sm-8">
         <div class="box box-primary">

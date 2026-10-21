@@ -5,6 +5,8 @@ return [
 
     'login' => [
         'title' => 'Login to Continue',
+        // Hydra: logged out after a ban.
+        'banned_notice' => 'You have been logged out because this account has been banned. You will see the reason when you log in.',
         'username' => 'Username',
         'password' => 'Password',
         'submit' => 'Login',

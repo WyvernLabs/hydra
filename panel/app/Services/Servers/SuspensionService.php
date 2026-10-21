@@ -46,6 +46,8 @@ class SuspensionService
         $server->update([
             'status' => $isSuspending ? Server::STATUS_SUSPENDED : null,
         ]);
+        // Hydra: since when, for the autodelete addon.
+        $server->forceFill(['hydra_suspended_at' => $isSuspending ? now() : null])->save();
 
         try {
             // Tell wings to re-sync the server state.

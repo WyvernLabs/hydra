@@ -11,6 +11,13 @@ export const SUSPENDED_PATHS = ['/files', '/databases', '/backups'];
 
 export const isSuspendedPath = (path: string) => SUSPENDED_PATHS.some((allowed) => path.startsWith(allowed));
 
+// Hydra: link to a server from the lists: its dashboard when the addon says so.
+export const useServerLink = () => {
+    const landing = useStoreState((state) => state.settings.data!.dashboard?.landing || false);
+
+    return (id: string) => `/server/${id}${landing ? '/dashboard' : ''}`;
+};
+
 const can = (userPermissions: string[], permission: string | string[] | null): boolean => {
     if (!permission || userPermissions[0] === '*') return true;
 
@@ -38,11 +45,14 @@ export const useServerNavigation = () => {
     const permissions = ServerContext.useStoreState((state) => state.server.permissions);
     const suspendedAccess = ServerContext.useStoreState((state) => state.server.suspendedAccess);
 
+    const dashboard = useStoreState((state) => state.settings.data!.dashboard?.enabled || false);
+
     const buttons = navigation.flatMap((category) => category.items);
 
     // Pages of buttons hidden for this egg are not reachable either. Buttons the
-    // navigation does not know (yet) stay visible.
+    // navigation does not know (yet) stay visible. The dashboard is an addon.
     const isVisible = (navKey: string): boolean => {
+        if (navKey === 'dashboard' && !dashboard) return false;
         const button = buttons.find((item) => item.key === navKey);
 
         return !button || !button.eggs || eggId === undefined || button.eggs.indexOf(eggId) >= 0;

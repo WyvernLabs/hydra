@@ -7,6 +7,7 @@ import http from '@/api/http';
 import HydraBackdrop from '@/components/hydra/HydraBackdrop';
 import { HydraBackground } from '@/state/settings';
 import { useTranslation } from 'react-i18next';
+import WarningNotices from '@/components/hydra/WarningNotices';
 
 interface Props {
     sections: SidebarSection[];
@@ -53,7 +54,10 @@ export default ({ sections, children, background }: Props) => {
             </header>
             {open && <div className={'hydra-backdrop'} onClick={() => setOpen(false)} />}
             <Sidebar sections={sections} open={open} onNavigate={() => setOpen(false)} />
-            <main className={'hydra-main'}>{children}</main>
+            <main className={'hydra-main'}>
+                <WarningNotices />
+                {children}
+            </main>
         </div>
     );
 };

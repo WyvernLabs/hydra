@@ -8,6 +8,8 @@ use Illuminate\Database\QueryException;
 use Pterodactyl\Services\Hydra\Icons;
 use Pterodactyl\Services\Hydra\BrandingService;
 use Pterodactyl\Services\Hydra\ServerNavigation;
+use Pterodactyl\Services\Hydra\PhpMyAdminService;
+use Pterodactyl\Services\Hydra\Addons\DashboardAddon;
 use Pterodactyl\Services\Hydra\BackgroundService;
 use Pterodactyl\Services\Hydra\Addons\TurnstileAddon;
 use Pterodactyl\Services\Hydra\Addons\RegistrationAddon;
@@ -51,6 +53,10 @@ class AssetComposer
             // Hydra: Cloudflare Turnstile and the registration (Design > Addons).
             'turnstile' => $this->turnstile->toArray(),
             'registration' => $this->registration->enabled(),
+            // Hydra: users can open their databases in phpMyAdmin (Design > Addons).
+            'phpMyAdmin' => app(PhpMyAdminService::class)->isOffered(),
+            // Hydra: overview page of the servers (Design > Addons).
+            'dashboard' => app(DashboardAddon::class)->toArray(),
             'branding' => $this->branding->toArray(),
             // Hydra: largest profile picture or banner in megabytes.
             'profileUploadLimit' => ProfileMediaService::uploadLimit(),

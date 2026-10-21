@@ -15,6 +15,7 @@ import tw from 'twin.macro';
 import Input from '@/components/elements/Input';
 import { ip } from '@/lib/formatters';
 import { useTranslation } from 'react-i18next';
+import { useServerLink } from '@/components/hydra/serverNavigation';
 
 type Props = RequiredModalProps;
 
@@ -49,6 +50,7 @@ const SearchWatcher = () => {
 export default ({ ...props }: Props) => {
     const ref = useRef<HTMLInputElement>(null);
     const { t } = useTranslation('client/dashboard');
+    const serverLink = useServerLink();
     const isAdmin = useStoreState((state) => state.user.data!.serverAccess);
     const [servers, setServers] = useState<Server[]>([]);
     const { clearAndAddHttpError, clearFlashes } = useStoreActions(
@@ -105,7 +107,7 @@ export default ({ ...props }: Props) => {
                             {servers.map((server) => (
                                 <ServerResult
                                     key={server.uuid}
-                                    to={`/server/${server.id}`}
+                                    to={serverLink(server.id)}
                                     onClick={() => props.onDismissed()}
                                 >
                                     <div css={tw`flex-1 mr-4`}>

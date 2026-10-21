@@ -124,6 +124,9 @@
             @include('admin.users.partials.roles', ['readonly' => !$canManage])
         </div>
     </form>
+    @if(Auth::user()->hasAdminPermission('users.warn') || Auth::user()->hasAdminPermission('users.ban'))
+        @include('admin.users.partials.sanctions', ['user' => $user, 'canManage' => $canManage])
+    @endif
     @if($canManage && Auth::user()->hasAdminPermission('users.delete') && !Auth::user()->is($user))
     <div class="col-xs-12">
         <div class="box box-danger">

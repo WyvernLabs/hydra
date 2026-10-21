@@ -14,6 +14,7 @@ use Pterodactyl\Exceptions\DisplayException;
 use Pterodactyl\Http\Controllers\Controller;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Pterodactyl\Http\Middleware\Hydra\EnsureUserIsNotBanned;
 
 abstract class AbstractLoginController extends Controller
 {
@@ -72,6 +73,15 @@ abstract class AbstractLoginController extends Controller
      */
     protected function sendLoginResponse(User $user, Request $request): JsonResponse
     {
+        // Hydra: banned accounts cannot log in. Checked only after the password
+        // (and 2FA), so the ban does not tell whether an account exists.
+        if ($ban = $user->activeBan()) {
+            $request->session()->remove('auth_confirmation_token');
+            $this->fireFailedLoginEvent($user, ['username' => $user->username]);
+
+            throw new DisplayException(EnsureUserIsNotBanned::message($ban));
+        }
+
         $request->session()->remove('auth_confirmation_token');
         $request->session()->regenerate();
 

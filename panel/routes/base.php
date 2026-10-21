@@ -37,5 +37,10 @@ Route::get('/profiles/{uuid}/{type}', Base\ProfileMediaController::class)
     ->where('type', 'avatar|banner')
     ->name('profiles.media');
 
+// Hydra: download of a database export, the link comes from the client API.
+Route::get('/databases/export/{token}', Base\DatabaseExportController::class)
+    ->where('token', '[A-Za-z0-9]{48}')
+    ->name('databases.export');
+
 Route::get('/{react}', [Base\IndexController::class, 'index'])
     ->where('react', '^(?!(\/)?(api|auth|admin|daemon)).+');

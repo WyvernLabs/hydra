@@ -26,6 +26,12 @@ class Permission extends Model
     public const ACTION_DATABASE_UPDATE = 'database.update';
     public const ACTION_DATABASE_DELETE = 'database.delete';
     public const ACTION_DATABASE_VIEW_PASSWORD = 'database.view_password';
+    // Hydra: database manager, import, export and phpMyAdmin in the client area.
+    public const ACTION_DATABASE_BROWSE = 'database.browse';
+    public const ACTION_DATABASE_EDIT = 'database.edit';
+    public const ACTION_DATABASE_IMPORT = 'database.import';
+    public const ACTION_DATABASE_EXPORT = 'database.export';
+    public const ACTION_DATABASE_PHPMYADMIN = 'database.phpmyadmin';
 
     public const ACTION_SCHEDULE_READ = 'schedule.read';
     public const ACTION_SCHEDULE_CREATE = 'schedule.create';
@@ -179,6 +185,11 @@ class Permission extends Model
                 'update' => 'Allows a user to rotate the password on a database instance. If the user does not have the view_password permission they will not see the updated password.',
                 'delete' => 'Allows a user to remove a database instance from this server.',
                 'view_password' => 'Allows a user to view the password associated with a database instance for this server.',
+                'browse' => 'Allows a user to view the tables and data of the databases in the panel.',
+                'edit' => 'Allows a user to change data and run SQL statements in the panel.',
+                'import' => 'Allows a user to import SQL files into a database.',
+                'export' => 'Allows a user to download a database as an SQL file.',
+                'phpmyadmin' => 'Allows a user to open the databases in phpMyAdmin, with full rights on the database.',
             ],
         ],
 

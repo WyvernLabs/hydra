@@ -26,6 +26,12 @@ return [
             'email-changed' => 'E-Mail-Adresse von :old in :new geändert',
             'password-changed' => 'Passwort geändert',
             'username-changed' => 'Benutzername von :old in :new geändert',
+            // Hydra: Verwarnungen, Sperren und das Autodelete-Addon.
+            'warned' => 'Konto verwarnt: :reason',
+            'banned' => 'Konto gesperrt: :reason',
+            'unbanned' => 'Sperre aufgehoben',
+            'ban-expired' => 'Sperre abgelaufen',
+            'auto-deleted' => 'Konto :username automatisch gelöscht',
         ],
         'api-key' => [
             'create' => 'Neuen API-Schlüssel :identifier erstellt',
@@ -41,6 +47,8 @@ return [
         ],
     ],
     'server' => [
+        // Hydra: autodelete addon.
+        'auto-deleted' => 'Server :name automatisch gelöscht',
         'reinstall' => 'Server neu installiert',
         'console' => [
             'command' => '":command" auf dem Server ausgeführt',
@@ -67,6 +75,10 @@ return [
             'create' => 'Neue Datenbank :name angelegt',
             'rotate-password' => 'Passwort für Datenbank :name erneuert',
             'delete' => 'Datenbank :name gelöscht',
+            'query' => 'SQL-Befehl in Datenbank :name ausgeführt',
+            'import' => ':file in Datenbank :name importiert',
+            'export' => 'Datenbank :name exportiert',
+            'phpmyadmin' => 'Datenbank :name in phpMyAdmin geöffnet',
         ],
         'file' => [
             'compress_one' => ':directory:files.0 komprimiert',

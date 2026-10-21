@@ -2,10 +2,12 @@
 
 namespace Pterodactyl\Providers;
 
+use Pterodactyl\Models\Node;
 use Pterodactyl\Models\User;
 use Pterodactyl\Models\Server;
 use Pterodactyl\Models\Subuser;
 use Pterodactyl\Models\EggVariable;
+use Pterodactyl\Observers\NodeObserver;
 use Pterodactyl\Observers\UserObserver;
 use Pterodactyl\Observers\ServerObserver;
 use Pterodactyl\Observers\SubuserObserver;
@@ -45,5 +47,6 @@ class EventServiceProvider extends ServiceProvider
         Server::observe(ServerObserver::class);
         Subuser::observe(SubuserObserver::class);
         EggVariable::observe(EggVariableObserver::class);
+        Node::observe(NodeObserver::class);
     }
 }

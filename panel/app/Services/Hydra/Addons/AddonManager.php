@@ -18,6 +18,9 @@ class AddonManager
     public const ADDONS = [
         TurnstileAddon::class,
         RegistrationAddon::class,
+        PhpMyAdminAddon::class,
+        DashboardAddon::class,
+        AutoDeleteAddon::class,
     ];
 
     public function __construct(private SettingsRepositoryInterface $settings, private Encrypter $encrypter)

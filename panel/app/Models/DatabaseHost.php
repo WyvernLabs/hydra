@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string $password
  * @property int|null $max_databases
  * @property int|null $node_id
+ * @property bool $hydra_managed
  * @property \Carbon\CarbonImmutable $created_at
  * @property \Carbon\CarbonImmutable $updated_at
  */
@@ -55,6 +56,7 @@ class DatabaseHost extends Model
         'id' => 'integer',
         'max_databases' => 'integer',
         'node_id' => 'integer',
+        'hydra_managed' => 'boolean',
     ];
 
     /**

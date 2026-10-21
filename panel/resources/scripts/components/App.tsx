@@ -37,6 +37,8 @@ interface ExtendedWindow extends Window {
         language: string;
         updated_at: string;
         created_at: string;
+        // Hydra: warnings the user has not confirmed yet.
+        warnings?: Array<{ id: number; reason: string; created_at: string }>;
         /* eslint-enable camelcase */
     };
 }
@@ -61,6 +63,11 @@ const App = () => {
             useTotp: PterodactylUser.use_totp,
             createdAt: new Date(PterodactylUser.created_at),
             updatedAt: new Date(PterodactylUser.updated_at),
+            warnings: (PterodactylUser.warnings || []).map((w) => ({
+                id: w.id,
+                reason: w.reason,
+                createdAt: new Date(w.created_at),
+            })),
         });
     }
 

@@ -4,6 +4,10 @@ return [
     'sign_in' => 'Anmelden',
     'go_to_login' => 'Zur Anmeldung',
     'failed' => 'Mit diesen Zugangsdaten wurde kein Konto gefunden.',
+    // Hydra: gesperrte Konten.
+    'banned' => 'Dieses Konto wurde gesperrt. Grund: :reason',
+    'banned_until' => 'Dieses Konto ist bis :date gesperrt. Grund: :reason',
+    'banned_notice' => 'Du wurdest abgemeldet, weil dieses Konto gesperrt wurde.',
 
     'forgot_password' => [
         'label' => 'Passwort vergessen?',

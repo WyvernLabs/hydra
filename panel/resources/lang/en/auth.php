@@ -4,6 +4,10 @@ return [
     'sign_in' => 'Sign In',
     'go_to_login' => 'Go to Login',
     'failed' => 'No account matching those credentials could be found.',
+    // Hydra: banned accounts.
+    'banned' => 'This account has been banned. Reason: :reason',
+    'banned_until' => 'This account has been banned until :date. Reason: :reason',
+    'banned_notice' => 'You have been logged out because this account has been banned.',
 
     'forgot_password' => [
         'label' => 'Forgot Password?',

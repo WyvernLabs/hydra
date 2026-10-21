@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string $uuid
  * @property int $nest_id
  * @property array|null $hydra_background
+ * @property string|null $hydra_banner
  * @property string $author
  * @property string $name
  * @property string|null $description

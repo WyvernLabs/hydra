@@ -19,6 +19,14 @@ export interface UserData {
     // Hydra: profile.
     nameLast: string;
     profile: UserProfile;
+    // Hydra: warnings from the admins the user has not confirmed yet.
+    warnings: UserWarning[];
+}
+
+export interface UserWarning {
+    id: number;
+    reason: string;
+    createdAt: Date;
 }
 
 export interface UserProfile {

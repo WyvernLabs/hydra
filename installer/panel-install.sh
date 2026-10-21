@@ -267,7 +267,7 @@ install_caddy_github() {
 
 step "Pakete installieren"
 apt_update || die "apt-get update fehlgeschlagen."
-apt-get install -y -qq curl ca-certificates gnupg lsb-release apt-transport-https rsync git tar unzip cron >/dev/null
+apt-get install -y -qq curl ca-certificates gnupg lsb-release apt-transport-https rsync git tar unzip cron ufw >/dev/null
 info "Basis-Pakete ok"
 
 # PHP: Die Distributionsversion reicht ab PHP 8.2 (Debian 12: 8.2, Debian 13: 8.4, Ubuntu 24.04: 8.3).
@@ -291,7 +291,7 @@ PHP_BIN="/usr/bin/php${PHP_VER}"
 PHP_FPM_SOCK="/run/php/php${PHP_VER}-fpm.sock"
 info "PHP $("$PHP_BIN" -r 'echo PHP_VERSION;') ok"
 
-apt-get install -y -qq mariadb-server redis-server >/dev/null
+apt-get install -y -qq mariadb-server mariadb-client redis-server >/dev/null
 systemctl enable --now mariadb redis-server >/dev/null 2>&1
 info "MariaDB und Redis ok"
 
@@ -519,7 +519,7 @@ systemctl enable "$QUEUE_SERVICE" >/dev/null 2>&1
 systemctl restart "$QUEUE_SERVICE"
 info "Queue-Worker ($QUEUE_SERVICE) ok"
 
-install -d -m 755 "$CONF_DIR"
+install -d -m 755 "$CONF_DIR" "$CONF_DIR/panel.d"
 if (( SSL )); then SITE_ADDRESS="$DOMAIN"; else SITE_ADDRESS="http://$DOMAIN, http://:80"; fi
 cat > "$CADDY_SITE" <<EOF
 # Hydra Panel – wird vom Installer erzeugt, Änderungen gehen beim Update verloren.
@@ -538,6 +538,9 @@ $SITE_ADDRESS {
 		Referrer-Policy same-origin
 		Strict-Transport-Security "max-age=31536000"
 	}
+
+	# Zusätze wie phpMyAdmin (Adminbereich > Design > Addons)
+	import $CONF_DIR/panel.d/*.caddy
 
 	php_fastcgi unix/$PHP_FPM_SOCK {
 		env HTTP_PROXY ""
@@ -568,9 +571,15 @@ systemctl enable caddy >/dev/null 2>&1
 systemctl restart caddy
 info "Caddy ok"
 
-if command -v ufw >/dev/null && ufw status | grep -q "Status: active"; then
-  ufw allow 80/tcp >/dev/null && ufw allow 443/tcp >/dev/null
-  info "Firewall (ufw): Ports 80 und 443 freigegeben"
+# UFW wird mitinstalliert, aber nicht eingeschaltet. Die Regeln für SSH und das Panel stehen
+# schon bereit, damit man sich beim Einschalten (ufw enable) nicht aussperrt.
+SSH_PORTS="$(sshd -T 2>/dev/null | awk '$1 == "port" {print $2}' | sort -u || true)"
+for port in ${SSH_PORTS:-22}; do ufw allow "$port/tcp" comment 'SSH' >/dev/null; done
+ufw allow 80/tcp comment 'Hydra Panel' >/dev/null && ufw allow 443/tcp comment 'Hydra Panel' >/dev/null
+if ufw status | grep -q "Status: active"; then
+  info "Firewall (ufw): SSH, Ports 80 und 443 freigegeben"
+else
+  info "Firewall (ufw) installiert, Regeln für SSH, 80 und 443 angelegt (noch aus: ufw enable)"
 fi
 
 # ------------------------------------------------------------------ Abschluss
@@ -689,6 +698,213 @@ systemctl enable hydra-panel-update.path >/dev/null 2>&1
 # Während eines Updates aus dem Adminbereich läuft der Updater gerade selbst – nicht neu starten.
 [[ -n "${HYDRA_UPDATER:-}" ]] || systemctl restart hydra-panel-update.path
 info "Updates aus dem Adminbereich ok"
+
+# ------------------------------------------------------------------ phpMyAdmin (Addon)
+#
+# Wie bei den Updates legt das Panel unter storage/app/hydra/phpmyadmin eine Datei
+# "request" mit "install" oder "uninstall" an, die systemd-Pfad-Unit startet daraufhin
+# als root den Helfer. phpMyAdmin liegt root-eigen unter /usr/share/hydra-phpmyadmin und
+# wird von Caddy unter /phpmyadmin/ ausgeliefert. Benutzer melden sich nur über das Panel
+# an: Es legt ein Einmal-Token ab, das hydra-signon.php einlöst (auth_type "signon").
+PMA_DIR="$INSTALL_DIR/storage/app/hydra/phpmyadmin"
+install -d -m 775 -o "$WEB_USER" -g "$WEB_USER" "$PMA_DIR"
+install -d -m 700 -o "$WEB_USER" -g "$WEB_USER" "$PMA_DIR/tokens"
+
+cat > /usr/local/lib/hydra/phpmyadmin-helper <<EOF
+#!/usr/bin/env bash
+# Hydra Panel – installiert und entfernt phpMyAdmin (Adminbereich > Design > Addons).
+# Wird vom Installer erzeugt und von hydra-phpmyadmin.service als root gestartet.
+set -u
+export LC_ALL=C.UTF-8 LANG=C.UTF-8
+DIR=$(printf '%q' "$PMA_DIR")
+PHP=$(printf '%q' "$PHP_BIN")
+FPM_SOCK=$(printf '%q' "$PHP_FPM_SOCK")
+PANEL_URL=$(printf '%q' "$APP_URL")
+WEB_USER=$(printf '%q' "$WEB_USER")
+SNIPPET=$(printf '%q' "$CONF_DIR/panel.d/phpmyadmin.caddy")
+EOF
+cat >> /usr/local/lib/hydra/phpmyadmin-helper <<'EOF'
+ROOT=/usr/share/hydra-phpmyadmin
+TARGET="$ROOT/phpmyadmin"
+DATA=/var/lib/hydra-phpmyadmin
+LOG=/var/log/hydra-phpmyadmin.log
+SOURCE=https://www.phpmyadmin.net/downloads/phpMyAdmin-latest-all-languages.tar.gz
+
+# Dateien im Verzeichnis des Panels (gehört www-data) werden in einem Verzeichnis von root
+# geschrieben und dann per mv ersetzt, damit root keinen dort angelegten Links folgt.
+put() { # put <datei> <inhalt>
+  install -d -m 755 "$DATA"
+  local tmp; tmp="$(mktemp "$DATA/.put.XXXXXX")" || return 1
+  printf '%s' "$2" > "$tmp" && chmod 644 "$tmp" && mv -f "$tmp" "$DIR/$1"
+}
+status() { # status <state> <action>
+  local installed=false version=""
+  [[ -f "$TARGET/index.php" ]] && installed=true && version="$(cat "$DATA/version" 2>/dev/null)"
+  put status.json "$("$PHP" -r 'echo json_encode(["installed" => $argv[1] === "true", "version" => $argv[2] ?: null, "state" => $argv[3], "action" => $argv[4], "finished_at" => date("c")]);' -- "$installed" "$version" "$1" "$2")"
+}
+
+caddy_snippet() {
+  cat > "$SNIPPET" <<CADDY
+# Hydra phpMyAdmin – vom Helfer erzeugt, Änderungen gehen verloren.
+redir /phpmyadmin /phpmyadmin/
+handle /phpmyadmin/* {
+	# Innerhalb des Blocks greift respond vor php_fastcgi.
+	@hydra_pma_blocked path /phpmyadmin/libraries/* /phpmyadmin/templates/* /phpmyadmin/vendor/* /phpmyadmin/setup/* /phpmyadmin/sql/* /phpmyadmin/config.inc.php /phpmyadmin/composer.* /phpmyadmin/*.md
+	respond @hydra_pma_blocked 404
+	root * $ROOT
+	php_fastcgi unix/$FPM_SOCK
+	file_server
+}
+CADDY
+  caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null 2>&1 || { rm -f "$SNIPPET"; echo "Caddy-Konfiguration ungültig"; return 1; }
+  systemctl reload caddy
+}
+
+do_install() {
+  local work; work="$(mktemp -d)"
+  echo "==> Lade phpMyAdmin"
+  curl -fsSL -o "$work/pma.tar.gz" "$SOURCE" && curl -fsSL -o "$work/pma.sha256" "$SOURCE.sha256" || { rm -rf "$work"; return 1; }
+  echo "==> Prüfe die Prüfsumme"
+  local expected actual
+  expected="$(awk '{print $1}' "$work/pma.sha256")"
+  actual="$(sha256sum "$work/pma.tar.gz" | awk '{print $1}')"
+  [[ -n "$expected" && "$expected" == "$actual" ]] || { echo "Prüfsumme stimmt nicht"; rm -rf "$work"; return 1; }
+  tar xzf "$work/pma.tar.gz" -C "$work" || { rm -rf "$work"; return 1; }
+  local src; src="$(find "$work" -maxdepth 1 -type d -name 'phpMyAdmin-*' | head -n1)"
+  [[ -n "$src" ]] || { rm -rf "$work"; return 1; }
+  local version; version="$(basename "$src" | sed -E 's/^phpMyAdmin-([0-9.]+).*/\1/')"
+  echo "==> Richte phpMyAdmin $version ein"
+  rm -rf "$src/setup"
+
+  install -d -m 755 "$ROOT" "$DATA"
+  install -d -m 700 -o "$WEB_USER" -g "$WEB_USER" "$DATA/tmp"
+  [[ -s "$DATA/secret" ]] || { openssl rand -hex 32 > "$DATA/secret"; chmod 600 "$DATA/secret"; }
+
+  cat > "$src/config.inc.php" <<PHP
+<?php
+// Hydra: von der Panel-Installation erzeugt, Änderungen gehen bei der nächsten Installation verloren.
+\$secure = !empty(\$_SERVER['HTTPS']) && \$_SERVER['HTTPS'] !== 'off';
+\$cfg['blowfish_secret'] = sodium_hex2bin('$(cat "$DATA/secret")');
+\$cfg['TempDir'] = '$DATA/tmp';
+\$cfg['VersionCheck'] = false;
+\$cfg['UploadDir'] = '';
+\$cfg['SaveDir'] = '';
+\$cfg['Servers'][1]['auth_type'] = 'signon';
+\$cfg['Servers'][1]['host'] = 'localhost';
+\$cfg['Servers'][1]['SignonSession'] = 'HydraSignon';
+\$cfg['Servers'][1]['SignonCookieParams'] = ['lifetime' => 0, 'path' => '/phpmyadmin/', 'domain' => '', 'secure' => \$secure, 'httponly' => true, 'samesite' => 'Lax'];
+\$cfg['Servers'][1]['SignonURL'] = '$PANEL_URL';
+\$cfg['Servers'][1]['LogoutURL'] = '$PANEL_URL';
+\$cfg['Servers'][1]['AllowNoPassword'] = false;
+PHP
+
+  cat > "$src/hydra-signon.php" <<PHP
+<?php
+// Hydra: meldet Benutzer mit einem Einmal-Token des Panels an. Das Token gilt eine Minute.
+declare(strict_types=1);
+
+\$panel = '$PANEL_URL';
+\$token = (string) (\$_GET['token'] ?? '');
+\$file = '$DIR/tokens/' . hash('sha256', \$token) . '.json';
+
+\$data = preg_match('/^[A-Za-z0-9]{64}\$/', \$token) && is_file(\$file) ? json_decode((string) file_get_contents(\$file), true) : null;
+@unlink(\$file);
+if (!is_array(\$data) || (\$data['expires'] ?? 0) < time()) {
+    header('Location: ' . \$panel);
+    exit;
+}
+
+\$secure = !empty(\$_SERVER['HTTPS']) && \$_SERVER['HTTPS'] !== 'off';
+// Eine frühere phpMyAdmin-Sitzung kann zu einer anderen Datenbank gehören.
+setcookie('phpMyAdmin', '', ['expires' => 1, 'path' => '/phpmyadmin/', 'secure' => \$secure, 'httponly' => true, 'samesite' => 'Lax']);
+
+session_set_cookie_params(['lifetime' => 0, 'path' => '/phpmyadmin/', 'secure' => \$secure, 'httponly' => true, 'samesite' => 'Lax']);
+session_name('HydraSignon');
+session_start();
+session_regenerate_id(true);
+\$_SESSION['PMA_single_signon_user'] = \$data['user'];
+\$_SESSION['PMA_single_signon_password'] = \$data['password'];
+\$_SESSION['PMA_single_signon_host'] = \$data['host'];
+\$_SESSION['PMA_single_signon_port'] = (string) \$data['port'];
+\$_SESSION['PMA_single_signon_HMAC_secret'] = bin2hex(random_bytes(32));
+session_write_close();
+
+header('Location: index.php?route=/database/structure&server=1&db=' . rawurlencode((string) \$data['database']));
+PHP
+
+  chown -R root:root "$src"
+  chmod -R u=rwX,go=rX "$src"
+  chown "root:$WEB_USER" "$src/config.inc.php" && chmod 640 "$src/config.inc.php"
+
+  rm -rf "$TARGET.old"
+  [[ -d "$TARGET" ]] && mv "$TARGET" "$TARGET.old"
+  mv "$src" "$TARGET" && rm -rf "$TARGET.old"
+  echo "$version" > "$DATA/version"
+  rm -rf "$work"
+
+  echo "==> Caddy: /phpmyadmin/"
+  caddy_snippet || return 1
+  echo "==> Fertig"
+}
+
+do_uninstall() {
+  echo "==> Entferne phpMyAdmin"
+  rm -f "$SNIPPET"
+  systemctl reload caddy
+  rm -rf "$TARGET" "$TARGET.old" "$DATA/tmp" "$DATA/version"
+  find "$DIR/tokens" -type f -name '*.json' -delete 2>/dev/null
+  echo "==> Fertig"
+}
+
+# "refresh" ruft der Installer bei Updates auf (z. B. neuer PHP-FPM-Socket).
+if [[ "${1:-}" == refresh ]]; then
+  [[ -f "$TARGET/index.php" ]] && caddy_snippet
+  exit 0
+fi
+
+REQUEST="$DIR/request"
+ACTION="$(tr -cd 'a-z' < "$REQUEST" 2>/dev/null)"
+rm -f "$REQUEST"
+case "$ACTION" in
+  install|uninstall) ;;
+  *) exit 0 ;;
+esac
+
+status running "$ACTION"
+if "do_$ACTION" > "$LOG" 2>&1; then STATE=success; else STATE=failed; fi
+put phpmyadmin.log "$(cat "$LOG")"
+status "$STATE" "$ACTION"
+EOF
+chmod 755 /usr/local/lib/hydra/phpmyadmin-helper
+
+cat > /etc/systemd/system/hydra-phpmyadmin.service <<'EOF'
+[Unit]
+Description=Hydra Panel phpMyAdmin (Adminbereich > Design > Addons)
+
+[Service]
+Type=oneshot
+Environment=HOME=/root
+ExecStart=/usr/local/lib/hydra/phpmyadmin-helper
+TimeoutStartSec=900
+EOF
+cat > /etc/systemd/system/hydra-phpmyadmin.path <<EOF
+[Unit]
+Description=Hydra Panel phpMyAdmin – wartet auf Anfragen aus dem Adminbereich
+
+[Path]
+PathExists=$PMA_DIR/request
+Unit=hydra-phpmyadmin.service
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable hydra-phpmyadmin.path >/dev/null 2>&1
+systemctl restart hydra-phpmyadmin.path
+# Kennzeichen für das Panel, dass der Helfer eingerichtet ist.
+install -m 644 -o "$WEB_USER" -g "$WEB_USER" /dev/null "$PMA_DIR/helper"
+/usr/local/lib/hydra/phpmyadmin-helper refresh || warn "phpMyAdmin: Caddy-Eintrag konnte nicht erneuert werden"
+info "phpMyAdmin-Addon ok"
 
 rm -rf "$WORK"
 

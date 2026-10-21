@@ -42,7 +42,8 @@ class NavigationTest extends HttpTestCase
         $this->actingAs($admin)->get('/admin/design/navigation')->assertOk()->assertSee('hydraNavEditor', false);
 
         $navigation = ServerNavigation::defaults();
-        $files = array_splice($navigation['categories'][0]['items'], 1, 1)[0];
+        $index = array_search('files', array_column($navigation['categories'][0]['items'], 'key'), true);
+        $files = array_splice($navigation['categories'][0]['items'], $index, 1)[0];
         $files['icon'] = 'folder-open';
         $files['eggs'] = [$egg->id];
         $navigation['categories'][] = [
@@ -105,7 +106,8 @@ class NavigationTest extends HttpTestCase
         ])])->assertSessionHasNoErrors();
 
         $items = app(ServerNavigation::class)->get()['categories'][0]['items'];
-        $this->assertSame('files', $items[0]['key']);
+        // The dashboard (first default button) goes to the top, other missing buttons below.
+        $this->assertSame(['dashboard', 'files'], array_column(array_slice($items, 0, 2), 'key'));
         $this->assertEqualsCanonicalizing(array_keys(ServerNavigation::BUTTONS), array_column($items, 'key'));
 
         $this->actingAs($admin)->patch('/admin/design/navigation', ['reset' => 1])->assertRedirect();

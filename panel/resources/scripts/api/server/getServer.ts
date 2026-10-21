@@ -69,6 +69,11 @@ export interface Server {
     owner: { username: string; name: string } | null;
     // Hydra: background of the egg, null for the dashboard background.
     background: HydraBackground | null;
+    // Hydra: for the server dashboard (addon).
+    banner: string | null;
+    eggName: string;
+    location: string | null;
+    createdAt: Date | null;
 }
 
 export const rawDataToServerObject = ({ attributes: data }: FractalResponseData): Server => ({
@@ -80,6 +85,10 @@ export const rawDataToServerObject = ({ attributes: data }: FractalResponseData)
     name: data.name,
     owner: data.owner || null,
     background: data.background || null,
+    banner: data.banner || null,
+    eggName: data.egg_name || '',
+    location: data.location || null,
+    createdAt: data.created_at ? new Date(data.created_at) : null,
     node: data.node,
     isNodeUnderMaintenance: data.is_node_under_maintenance,
     status: data.status,

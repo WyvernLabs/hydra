@@ -38,6 +38,8 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function () 
     // Hydra: profile and deleting the own account.
     Route::post('/profile', [Client\ProfileController::class, 'update'])->name('api:client.account.profile');
     Route::delete('/', [Client\ProfileController::class, 'delete'])->middleware('throttle:5,1')->name('api:client.account.delete');
+    // Hydra: warnings from the admins.
+    Route::post('/warnings/{warning}/acknowledge', [Client\WarningController::class, 'acknowledge'])->whereNumber('warning');
 
     Route::get('/activity', Client\ActivityLogController::class)->name('api:client.account.activity');
 
@@ -84,6 +86,19 @@ Route::group([
             ->post('/', [Client\Servers\DatabaseController::class, 'store']);
         Route::post('/{database}/rotate-password', [Client\Servers\DatabaseController::class, 'rotatePassword']);
         Route::delete('/{database}', [Client\Servers\DatabaseController::class, 'delete']);
+
+        // Hydra: database manager, import, export and phpMyAdmin.
+        Route::get('/{database}/tables', [Client\Servers\DatabaseManagerController::class, 'tables']);
+        Route::get('/{database}/structure', [Client\Servers\DatabaseManagerController::class, 'structure']);
+        Route::get('/{database}/rows', [Client\Servers\DatabaseManagerController::class, 'rows']);
+        Route::post('/{database}/rows/show', [Client\Servers\DatabaseManagerController::class, 'row']);
+        Route::post('/{database}/rows', [Client\Servers\DatabaseManagerController::class, 'insert']);
+        Route::patch('/{database}/rows', [Client\Servers\DatabaseManagerController::class, 'update']);
+        Route::delete('/{database}/rows', [Client\Servers\DatabaseManagerController::class, 'delete']);
+        Route::post('/{database}/query', [Client\Servers\DatabaseManagerController::class, 'query']);
+        Route::post('/{database}/import', [Client\Servers\DatabaseManagerController::class, 'import']);
+        Route::post('/{database}/export', [Client\Servers\DatabaseManagerController::class, 'export']);
+        Route::post('/{database}/phpmyadmin', [Client\Servers\DatabaseManagerController::class, 'phpMyAdmin']);
     });
 
     Route::group(['prefix' => '/files'], function () {

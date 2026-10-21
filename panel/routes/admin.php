@@ -98,6 +98,9 @@ Route::group(['prefix' => 'design'], function () {
     Route::get('/backgrounds', [Admin\Design\BackgroundController::class, 'index'])->name('admin.design.backgrounds')->middleware('admin.can:design.view');
     Route::get('/navigation', [Admin\Design\NavigationController::class, 'index'])->name('admin.design.navigation')->middleware('admin.can:design.view');
     Route::get('/addons', [Admin\Design\AddonController::class, 'index'])->name('admin.design.addons')->middleware('admin.can:addons.view');
+    Route::get('/addons/phpmyadmin/status', [Admin\Design\PhpMyAdminController::class, 'status'])->name('admin.design.addons.phpmyadmin.status')->middleware('admin.can:addons.view');
+    Route::post('/addons/phpmyadmin/install', [Admin\Design\PhpMyAdminController::class, 'install'])->name('admin.design.addons.phpmyadmin.install')->middleware('admin.can:addons.update');
+    Route::post('/addons/phpmyadmin/uninstall', [Admin\Design\PhpMyAdminController::class, 'uninstall'])->name('admin.design.addons.phpmyadmin.uninstall')->middleware('admin.can:addons.update');
     Route::get('/addons/{addon}', [Admin\Design\AddonController::class, 'view'])->name('admin.design.addons.view')->middleware('admin.can:addons.view');
     Route::get('/links', [Admin\Design\LinkController::class, 'index'])->name('admin.design.links')->middleware('admin.can:design.view');
     Route::get('/links/new', [Admin\Design\LinkController::class, 'create'])->name('admin.design.links.new')->middleware('admin.can:design.update');
@@ -133,6 +136,15 @@ Route::group(['prefix' => 'users'], function () {
     Route::get('/accounts.json', [Admin\UserController::class, 'json'])->name('admin.users.json')->middleware('admin.can:users.view|servers.create|servers.details');
     Route::get('/new', [Admin\UserController::class, 'create'])->name('admin.users.new')->middleware('admin.can:users.create');
     Route::get('/view/{user:id}', [Admin\UserController::class, 'view'])->name('admin.users.view')->middleware('admin.can:users.view');
+
+    // Hydra: warnings, bans and ban templates.
+    Route::post('/view/{user:id}/warn', [Admin\Users\SanctionController::class, 'warn'])->name('admin.users.warn')->middleware('admin.can:users.warn');
+    Route::post('/view/{user:id}/ban', [Admin\Users\SanctionController::class, 'ban'])->name('admin.users.ban')->middleware('admin.can:users.ban');
+    Route::post('/view/{user:id}/sanctions/{sanction:id}/lift', [Admin\Users\SanctionController::class, 'lift'])->name('admin.users.ban.lift')->middleware('admin.can:users.ban');
+    Route::get('/ban-templates', [Admin\Users\BanTemplateController::class, 'index'])->name('admin.users.ban-templates')->middleware('admin.can:users.ban');
+    Route::post('/ban-templates', [Admin\Users\BanTemplateController::class, 'store'])->middleware('admin.can:users.ban');
+    Route::patch('/ban-templates/{template:id}', [Admin\Users\BanTemplateController::class, 'update'])->name('admin.users.ban-templates.update')->middleware('admin.can:users.ban');
+    Route::delete('/ban-templates/{template:id}', [Admin\Users\BanTemplateController::class, 'delete'])->name('admin.users.ban-templates.delete')->middleware('admin.can:users.ban');
 
     Route::post('/new', [Admin\UserController::class, 'store'])->middleware('admin.can:users.create');
 
@@ -218,6 +230,23 @@ Route::group(['prefix' => 'nodes'], function () {
     Route::get('/view/{node:id}/servers', [Admin\Nodes\NodeViewController::class, 'servers'])->name('admin.nodes.view.servers')->middleware('admin.can:nodes.view');
     Route::get('/view/{node:id}/system-information', Admin\Nodes\SystemInformationController::class)->middleware('admin.can:nodes.view');
 
+    // Hydra: database host and firewall of a node.
+    Route::group(['middleware' => 'admin.can:nodes.database'], function () {
+        Route::get('/view/{node:id}/database', [Admin\Nodes\NodeDatabaseController::class, 'index'])->name('admin.nodes.view.database');
+        Route::get('/view/{node:id}/database/status', [Admin\Nodes\NodeDatabaseController::class, 'status'])->name('admin.nodes.view.database.status');
+        Route::post('/view/{node:id}/database/setup', [Admin\Nodes\NodeDatabaseController::class, 'setup'])->name('admin.nodes.view.database.setup');
+        Route::post('/view/{node:id}/database/sync', [Admin\Nodes\NodeDatabaseController::class, 'sync'])->name('admin.nodes.view.database.sync');
+    });
+    Route::group(['middleware' => 'admin.can:nodes.firewall'], function () {
+        Route::get('/view/{node:id}/firewall', [Admin\Nodes\NodeFirewallController::class, 'index'])->name('admin.nodes.view.firewall');
+        Route::get('/view/{node:id}/firewall/state', [Admin\Nodes\NodeFirewallController::class, 'state'])->name('admin.nodes.view.firewall.state');
+        Route::post('/view/{node:id}/firewall/install', [Admin\Nodes\NodeFirewallController::class, 'install'])->name('admin.nodes.view.firewall.install');
+        Route::post('/view/{node:id}/firewall/enable', [Admin\Nodes\NodeFirewallController::class, 'enable'])->name('admin.nodes.view.firewall.enable');
+        Route::post('/view/{node:id}/firewall/disable', [Admin\Nodes\NodeFirewallController::class, 'disable'])->name('admin.nodes.view.firewall.disable');
+        Route::post('/view/{node:id}/firewall/rules', [Admin\Nodes\NodeFirewallController::class, 'store'])->name('admin.nodes.view.firewall.rules');
+        Route::delete('/view/{node:id}/firewall/rules', [Admin\Nodes\NodeFirewallController::class, 'destroy']);
+    });
+
     Route::post('/new', [Admin\NodesController::class, 'store'])->middleware('admin.can:nodes.create');
     Route::post('/view/{node:id}/allocation', [Admin\NodesController::class, 'createAllocation'])->middleware('admin.can:nodes.allocations');
     Route::post('/view/{node:id}/allocation/remove', [Admin\NodesController::class, 'allocationRemoveBlock'])->name('admin.nodes.view.allocation.removeBlock')->middleware('admin.can:nodes.allocations');
@@ -259,6 +288,7 @@ Route::group(['prefix' => 'nests'], function () {
     Route::patch('/view/{nest:id}', [Admin\Nests\NestController::class, 'update'])->middleware('admin.can:nests.update');
     Route::patch('/egg/{egg:id}', [Admin\Nests\EggController::class, 'update'])->middleware('admin.can:eggs.update');
     Route::patch('/egg/{egg:id}/background', [Admin\Nests\EggBackgroundController::class, 'update'])->name('admin.nests.egg.background')->middleware('admin.can:eggs.update');
+    Route::patch('/egg/{egg:id}/banner', [Admin\Nests\EggBackgroundController::class, 'banner'])->name('admin.nests.egg.banner')->middleware('admin.can:eggs.update');
     Route::patch('/egg/{egg:id}/scripts', [Admin\Nests\EggScriptController::class, 'update'])->middleware('admin.can:eggs.update');
     Route::patch('/egg/{egg:id}/variables/{variable:id}', [Admin\Nests\EggVariableController::class, 'update'])->name('admin.nests.egg.variables.edit')->middleware('admin.can:eggs.update');
 

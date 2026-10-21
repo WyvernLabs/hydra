@@ -28,6 +28,12 @@ return [
             'email-changed' => 'Changed email from :old to :new',
             'password-changed' => 'Changed password',
             'username-changed' => 'Changed username from :old to :new',
+            // Hydra: warnings, bans and the autodelete addon.
+            'warned' => 'Account warned: :reason',
+            'banned' => 'Account banned: :reason',
+            'unbanned' => 'Ban lifted',
+            'ban-expired' => 'Ban expired',
+            'auto-deleted' => 'Account :username deleted automatically',
         ],
         'api-key' => [
             'create' => 'Created new API key :identifier',
@@ -43,6 +49,8 @@ return [
         ],
     ],
     'server' => [
+        // Hydra: autodelete addon.
+        'auto-deleted' => 'Server :name deleted automatically',
         'reinstall' => 'Reinstalled server',
         'console' => [
             'command' => 'Executed ":command" on the server',
@@ -69,6 +77,10 @@ return [
             'create' => 'Created new database :name',
             'rotate-password' => 'Password rotated for database :name',
             'delete' => 'Deleted database :name',
+            'query' => 'Ran an SQL statement in database :name',
+            'import' => 'Imported :file into database :name',
+            'export' => 'Exported database :name',
+            'phpmyadmin' => 'Opened database :name in phpMyAdmin',
         ],
         'file' => [
             'compress_one' => 'Compressed :directory:files.0',

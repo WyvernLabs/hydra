@@ -40,7 +40,7 @@ return [
     ],
     'database' => [
         'title' => 'Databases',
-        'labels' => ['create' => 'Create', 'read' => 'View', 'update' => 'Edit', 'delete' => 'Delete', 'view_password' => 'View Password'],
+        'labels' => ['create' => 'Create', 'read' => 'View', 'update' => 'Edit', 'delete' => 'Delete', 'view_password' => 'View Password', 'browse' => 'View Data', 'edit' => 'Edit Data', 'import' => 'Import', 'export' => 'Export', 'phpmyadmin' => 'phpMyAdmin'],
     ],
     'schedule' => [
         'title' => 'Schedules',

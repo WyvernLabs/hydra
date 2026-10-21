@@ -112,6 +112,8 @@ return [
             'update' => ['title' => 'Ändern', 'description' => 'Einstellungen und Limits der Nodes bearbeiten.'],
             'allocations' => ['title' => 'Zuweisungen', 'description' => 'IPs und Ports hinzufügen, benennen und entfernen.'],
             'configuration' => ['title' => 'Konfiguration', 'description' => 'Die Wings-Konfiguration sehen und Deploy-Tokens erzeugen. Enthält das Node-Geheimnis.'],
+            'database' => ['title' => 'Datenbank einrichten', 'description' => 'MariaDB auf einer Node als Datenbank-Host einrichten. Installiert Pakete auf der Node und legt den Datenbank-Host im Panel an.'],
+            'firewall' => ['title' => 'Firewall', 'description' => 'Die UFW-Firewall der Nodes sehen und ändern: Regeln hinzufügen und entfernen, ein- und ausschalten.'],
             'delete' => ['title' => 'Löschen', 'description' => 'Nodes entfernen.'],
         ],
         'servers' => [
@@ -131,6 +133,8 @@ return [
             'view' => ['title' => 'Ansehen', 'description' => 'Benutzer und ihre Daten sehen.'],
             'create' => ['title' => 'Anlegen', 'description' => 'Benutzer anlegen.'],
             'update' => ['title' => 'Ändern', 'description' => 'Benutzer bearbeiten, auch ihr Passwort.'],
+            'warn' => ['title' => 'Verwarnen', 'description' => 'Benutzer verwarnen. Sie bekommen eine E-Mail und sehen die Verwarnung im Panel.'],
+            'ban' => ['title' => 'Sperren', 'description' => 'Benutzer sperren und entsperren, Ban-Vorlagen verwalten. Eine Sperre meldet ab und sperrt alle Server des Benutzers.'],
             'delete' => ['title' => 'Löschen', 'description' => 'Benutzer löschen.'],
         ],
         'roles' => [

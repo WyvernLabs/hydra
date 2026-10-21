@@ -78,6 +78,11 @@ class ServerTransformer extends BaseClientTransformer
             'egg_id' => $server->egg_id,
             // Hydra: background of the server pages, null for the dashboard background.
             'background' => Container::getInstance()->make(BackgroundService::class)->forEgg($server->egg),
+            // Hydra: for the server dashboard (addon).
+            'banner' => Container::getInstance()->make(BackgroundService::class)->bannerForEgg($server->egg),
+            'egg_name' => $server->egg->name,
+            'location' => $server->node->location?->short,
+            'created_at' => $server->created_at?->toAtomString(),
             'feature_limits' => [
                 'databases' => $server->database_limit,
                 'allocations' => $server->allocation_limit,

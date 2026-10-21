@@ -133,6 +133,11 @@ return [
             'update' => 'Erlaubt das Erneuern von Datenbankpasswörtern. Ohne „Passwort ansehen“ bleibt das neue Passwort verborgen.',
             'delete' => 'Erlaubt das Löschen von Datenbanken.',
             'view_password' => 'Erlaubt das Ansehen der Datenbankpasswörter.',
+            'browse' => 'Erlaubt das Ansehen der Tabellen und Daten im Panel.',
+            'edit' => 'Erlaubt das Bearbeiten von Daten und SQL-Befehle im Panel.',
+            'import' => 'Erlaubt das Einspielen von SQL-Dateien in eine Datenbank.',
+            'export' => 'Erlaubt das Herunterladen einer Datenbank als SQL-Datei.',
+            'phpmyadmin' => 'Erlaubt das Öffnen der Datenbanken in phpMyAdmin, mit vollen Rechten auf die Datenbank.',
         ],
         'labels' => [
             'create' => 'Anlegen',
@@ -140,6 +145,11 @@ return [
             'update' => 'Bearbeiten',
             'delete' => 'Löschen',
             'view_password' => 'Passwort ansehen',
+            'browse' => 'Daten ansehen',
+            'edit' => 'Daten bearbeiten',
+            'import' => 'Importieren',
+            'export' => 'Exportieren',
+            'phpmyadmin' => 'phpMyAdmin',
         ],
     ],
 

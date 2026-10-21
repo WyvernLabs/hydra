@@ -30,6 +30,11 @@ http.interceptors.response.use(
     (error) => {
         store.getActions().progress.setComplete();
 
+        // Hydra: the account was banned while logged in; the session is gone already.
+        if (error.response?.status === 403 && error.response?.data?.errors?.[0]?.code === 'AccountBanned') {
+            window.location.href = '/auth/login?banned=1';
+        }
+
         throw error;
     }
 );

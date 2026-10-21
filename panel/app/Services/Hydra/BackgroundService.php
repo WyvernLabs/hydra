@@ -162,6 +162,29 @@ class BackgroundService
     }
 
     /**
+     * URL of the banner on the server dashboard of an egg, or null.
+     */
+    public function bannerForEgg(?Egg $egg): ?string
+    {
+        return $egg && self::path($egg->hydra_banner) ? '/backgrounds/' . $egg->hydra_banner : null;
+    }
+
+    /**
+     * @throws DisplayException
+     */
+    public function saveEggBanner(Egg $egg, UploadedFile $file): void
+    {
+        $this->delete($egg->hydra_banner);
+        $egg->forceFill(['hydra_banner' => $this->store("banner-egg-$egg->id", $file)])->saveOrFail();
+    }
+
+    public function resetEggBanner(Egg $egg): void
+    {
+        $this->delete($egg->hydra_banner);
+        $egg->forceFill(['hydra_banner' => null])->saveOrFail();
+    }
+
+    /**
      * @throws DisplayException
      */
     private function store(string $prefix, UploadedFile $file): string

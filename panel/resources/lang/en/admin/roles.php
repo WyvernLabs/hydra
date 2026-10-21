@@ -112,6 +112,8 @@ return [
             'update' => ['title' => 'Change', 'description' => 'Edit node settings and limits.'],
             'allocations' => ['title' => 'Allocations', 'description' => 'Add, rename and remove IPs and ports.'],
             'configuration' => ['title' => 'Configuration', 'description' => 'See the Wings configuration and create deploy tokens. Contains the node secret.'],
+            'database' => ['title' => 'Database setup', 'description' => 'Set up MariaDB on a node as database host. Installs packages on the node and adds the database host to the panel.'],
+            'firewall' => ['title' => 'Firewall', 'description' => 'See and change the UFW firewall of the nodes: add and remove rules, switch it on and off.'],
             'delete' => ['title' => 'Delete', 'description' => 'Remove nodes.'],
         ],
         'servers' => [
@@ -131,6 +133,8 @@ return [
             'view' => ['title' => 'View', 'description' => 'See users and their details.'],
             'create' => ['title' => 'Create', 'description' => 'Create users.'],
             'update' => ['title' => 'Change', 'description' => 'Edit users, including their password.'],
+            'warn' => ['title' => 'Warn', 'description' => 'Warn users. They get an email and see the warning in the panel.'],
+            'ban' => ['title' => 'Ban', 'description' => 'Ban and unban users, manage ban templates. A ban logs the user out and suspends all of their servers.'],
             'delete' => ['title' => 'Delete', 'description' => 'Delete users.'],
         ],
         'roles' => [

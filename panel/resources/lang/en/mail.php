@@ -53,4 +53,22 @@ return [
         'lifetime' => 'The code is valid for :minutes minutes.',
         'outro' => 'If you did not try to create an account, you can ignore this email.',
     ],
+    // Hydra: warnings and bans.
+    'account_warned' => [
+        'subject' => 'You have received a warning',
+        'intro' => 'An administrator has warned your account.',
+        'reason' => 'Reason: :reason',
+        'outro' => 'Please follow the rules, further violations can lead to a ban. The warning is also shown when you log in.',
+        'action' => 'Open panel',
+    ],
+    'account_banned' => [
+        'subject' => 'Your account has been banned',
+        'intro' => 'An administrator has banned your account. You can no longer log in.',
+        'reason' => 'Reason: :reason',
+        'until' => 'The ban ends on :date.',
+        'permanent' => 'The ban is permanent.',
+        'servers' => 'All of your servers have been suspended.',
+        'deletion' => 'Your account and your servers will be deleted automatically after :days days.',
+        'outro' => 'If you think this is a mistake, please contact the support.',
+    ],
 ];

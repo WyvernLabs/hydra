@@ -77,6 +77,13 @@ return [
     |               their email with a code that is valid "code_lifetime"
     |               minutes. "allowed_domains" limits the email domains
     |               (comma separated, empty = every domain).
+    | phpmyadmin:   users open their databases in phpMyAdmin, which is
+    |               installed on the panel server from the addon page.
+    | dashboard:    overview page of every server; with "landing" servers
+    |               open on it instead of the console.
+    | autodelete:   deletes servers suspended for "server_days" and accounts
+    |               banned permanently for "user_days" (both can be switched
+    |               off with "servers" and "users").
     |
     */
     'addons' => [
@@ -92,6 +99,20 @@ return [
             'enabled' => false,
             'code_lifetime' => 15,
             'allowed_domains' => null,
+        ],
+        'phpmyadmin' => [
+            'enabled' => false,
+        ],
+        'dashboard' => [
+            'enabled' => false,
+            'landing' => true,
+        ],
+        'autodelete' => [
+            'enabled' => false,
+            'servers' => true,
+            'server_days' => 30,
+            'users' => true,
+            'user_days' => 14,
         ],
     ],
 

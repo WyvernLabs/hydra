@@ -32,6 +32,9 @@
                             <input type="text" name="filter[email]" class="form-control pull-right" value="{{ request()->input('filter.email') }}" placeholder="{{ __('admin/users.search') }}">
                             <div class="input-group-btn">
                                 <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
+                                @if(Auth::user()->hasAdminPermission('users.ban'))
+                                    <a href="{{ route('admin.users.ban-templates') }}" class="btn btn-sm btn-default" title="{{ __('admin/sanctions.templates.title') }}"><i class="fa fa-ban"></i></a>
+                                @endif
                                 @if(Auth::user()->hasAdminPermission('users.create'))
                                     <a href="{{ route('admin.users.new') }}"><button type="button" class="btn btn-sm btn-primary" style="border-radius: 0 3px 3px 0;margin-left:-1px;">{{ __('admin/common.actions.create_new') }}</button></a>
                                 @endif
@@ -62,7 +65,7 @@
                                     <div class="hydra-user-cell">
                                         @include('partials.hydra.user-avatar', ['user' => $user, 'size' => 34])
                                         <div>
-                                            <a href="{{ route('admin.users.view', $user->id) }}"><strong>{{ $user->username }}</strong></a>
+                                            <a href="{{ route('admin.users.view', $user->id) }}"><strong>{{ $user->username }}</strong></a>@if($user->hydra_banned) <span class="label label-danger">{{ __('admin/sanctions.banned_label') }}</span>@endif
                                             <div class="text-muted small">{{ $user->email }}</div>
                                         </div>
                                     </div>

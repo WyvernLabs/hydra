@@ -59,6 +59,8 @@ class UserController extends Controller
                 ->leftJoin('servers', 'servers.owner_id', '=', 'users.id')
                 ->groupBy('users.id')
                 ->with('adminRoles')
+                // Hydra: banned accounts are marked in the list.
+                ->withExists(['sanctions as hydra_banned' => fn ($query) => $query->activeBans()])
         )
             ->allowedFilters([
                 'username',

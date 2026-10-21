@@ -41,4 +41,26 @@ class EggBackgroundController extends Controller
 
         return redirect()->route('admin.nests.egg.view', $egg->id);
     }
+
+    /**
+     * Hydra: banner of the server dashboard of an egg.
+     *
+     * @throws \Pterodactyl\Exceptions\DisplayException
+     * @throws \Throwable
+     */
+    public function banner(Request $request, Egg $egg): RedirectResponse
+    {
+        if ($request->boolean('reset_banner')) {
+            $this->backgrounds->resetEggBanner($egg);
+        } else {
+            $rules = BackgroundService::rules('banner');
+            $request->validate(['banner_image' => array_merge(['required'], array_slice($rules['banner_image'], 1))]);
+
+            $this->backgrounds->saveEggBanner($egg, $request->file('banner_image'));
+        }
+
+        $this->alert->success(__('admin/design.banner.saved'))->flash();
+
+        return redirect()->route('admin.nests.egg.view', $egg->id);
+    }
 }

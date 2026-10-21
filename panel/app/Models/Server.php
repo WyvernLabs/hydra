@@ -25,6 +25,7 @@ use Pterodactyl\Exceptions\Http\Server\ServerStateConflictException;
  * @property string $name
  * @property string $description
  * @property string|null $status
+ * @property \Carbon\Carbon|null $hydra_suspended_at
  * @property bool $skip_scripts
  * @property int $owner_id
  * @property int $memory
@@ -195,6 +196,7 @@ class Server extends Model implements Identifiable
         self::UPDATED_AT => 'datetime',
         'deleted_at' => 'datetime',
         'installed_at' => 'datetime',
+        'hydra_suspended_at' => 'datetime',
     ];
 
     /**

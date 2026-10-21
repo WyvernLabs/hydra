@@ -227,7 +227,7 @@ info "Wings:  $( [[ -n "$BINARY_URL" ]] && echo "Binary von $BINARY_URL" || echo
 export DEBIAN_FRONTEND=noninteractive
 step "Pakete installieren"
 apt-get update -qq || die "apt-get update fehlgeschlagen."
-apt-get install -y -qq curl ca-certificates gnupg tar git rsync >/dev/null
+apt-get install -y -qq curl ca-certificates gnupg tar git rsync ufw >/dev/null
 info "Basis-Pakete ok"
 
 if ! command -v docker >/dev/null; then
@@ -368,10 +368,17 @@ if [[ -n "$PANEL_URL" && -n "$TOKEN" && -n "$NODE_ID" ]]; then
   info "Konfiguration nach $WINGS_CONFIG geschrieben"
 fi
 
-if command -v ufw >/dev/null && ufw status | grep -q "Status: active"; then
-  ufw allow 8080/tcp >/dev/null && ufw allow 2022/tcp >/dev/null
-  (( SSL )) && ufw allow 80/tcp >/dev/null
-  info "Firewall (ufw): Ports 8080 (API) und 2022 (SFTP) freigegeben – Spielserver-Ports bitte selbst freigeben"
+# UFW wird mitinstalliert, aber nicht eingeschaltet – das geht im Adminbereich unter
+# Nodes > Firewall. Die Regeln für SSH, Wings und SFTP stehen schon bereit. Die Ports der
+# Spielserver gibt Docker selbst frei.
+SSH_PORTS="$(sshd -T 2>/dev/null | awk '$1 == "port" {print $2}' | sort -u || true)"
+for port in ${SSH_PORTS:-22}; do ufw allow "$port/tcp" comment 'SSH' >/dev/null; done
+ufw allow 8080/tcp comment 'Hydra Wings' >/dev/null && ufw allow 2022/tcp comment 'Hydra SFTP' >/dev/null
+(( SSL )) && ufw allow 80/tcp comment 'Certbot' >/dev/null
+if ufw status | grep -q "Status: active"; then
+  info "Firewall (ufw): SSH, Ports 8080 (API) und 2022 (SFTP) freigegeben"
+else
+  info "Firewall (ufw) installiert, Regeln für SSH, 8080 und 2022 angelegt (einschalten im Adminbereich)"
 fi
 
 if [[ -f "$WINGS_CONFIG" ]]; then

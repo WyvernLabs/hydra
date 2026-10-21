@@ -13,6 +13,10 @@ export interface SiteSettings {
     };
     // Hydra: visitors can create an account themselves.
     registration: boolean;
+    // Hydra: databases can be opened in phpMyAdmin.
+    phpMyAdmin: boolean;
+    // Hydra: overview page of the servers; with landing servers open on it.
+    dashboard: { enabled: boolean; landing: boolean };
     branding: {
         accent: string;
         logo: string;

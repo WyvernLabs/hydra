@@ -29,6 +29,8 @@ class ServerNavigation
      * Every button of the server pages with its default icon, in the default order.
      */
     public const BUTTONS = [
+        // Only shown while the addon "Server Dashboard" is on.
+        'dashboard' => 'layout-dashboard',
         'console' => 'square-terminal',
         'files' => 'folder',
         'databases' => 'database',
@@ -221,10 +223,17 @@ class ServerNavigation
             return self::defaults();
         }
 
-        // Buttons that are missing (e.g. new in an update) go to the first category.
+        // Buttons that are missing (e.g. new in an update) go to the first category,
+        // the first button of the defaults (the dashboard) to its top.
         foreach (self::BUTTONS as $key => $icon) {
-            if (!in_array($key, $seen, true)) {
-                $categories[0]['items'][] = ['key' => $key, 'icon' => $icon, 'eggs' => null];
+            if (in_array($key, $seen, true)) {
+                continue;
+            }
+            $item = ['key' => $key, 'icon' => $icon, 'eggs' => null];
+            if ($key === array_key_first(self::BUTTONS)) {
+                array_unshift($categories[0]['items'], $item);
+            } else {
+                $categories[0]['items'][] = $item;
             }
         }
 

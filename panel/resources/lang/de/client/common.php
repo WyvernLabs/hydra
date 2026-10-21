@@ -33,6 +33,13 @@ return [
         'submit' => 'Absenden',
     ],
 
+    // Hydra: Verwarnungen der Admins.
+    'warnings' => [
+        'title' => 'Verwarnung',
+        'hint' => 'Bitte halte dich an die Regeln, weitere Verstöße können zu einer Sperre führen.',
+        'acknowledge' => 'Verstanden',
+    ],
+
     'nav' => [
         'menu' => 'Menü',
         'workspace' => 'Arbeitsbereich',
@@ -51,6 +58,7 @@ return [
         'api' => 'API-Zugangsdaten',
         'ssh' => 'SSH-Schlüssel',
         'activity' => 'Aktivität',
+        'dashboard' => 'Dashboard',
         'console' => 'Konsole',
         'files' => 'Dateien',
         'databases' => 'Datenbanken',

@@ -32,6 +32,15 @@ return [
         'updated' => 'Das Erscheinungsbild des Panels wurde aktualisiert.',
         ],
 
+    // Hydra: Banner des Server-Dashboards pro Egg.
+    'banner' => [
+        'title' => 'Dashboard-Banner',
+        'help' => 'Wird oben im Server-Dashboard jedes Servers mit diesem Egg angezeigt (Addon „Server-Dashboard“). Ohne Banner erscheint ein Verlauf in der Akzentfarbe.',
+        'format' => 'PNG, JPG, GIF oder WebP, bis 20 MB. Am besten wirkt ein breites Bild, z. B. 1600 × 400.',
+        'reset' => 'Banner entfernen',
+        'saved' => 'Das Banner wurde gespeichert.',
+    ],
+
     'backgrounds' => [
         'login' => 'Hintergrund Login',
         'login_help' => 'Hintergrund der Login-Seite und der anderen Seiten für nicht angemeldete Besucher.',

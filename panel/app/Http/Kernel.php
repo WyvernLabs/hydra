@@ -8,6 +8,7 @@ use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Http\Middleware\TrustProxies;
 use Pterodactyl\Http\Middleware\TrimStrings;
 use Pterodactyl\Http\Middleware\TrackLastSeen;
+use Pterodactyl\Http\Middleware\Hydra\EnsureUserIsNotBanned;
 use Illuminate\Session\Middleware\StartSession;
 use Pterodactyl\Http\Middleware\EncryptCookies;
 use Pterodactyl\Http\Middleware\Api\IsValidJson;
@@ -68,11 +69,13 @@ class Kernel extends HttpKernel
             VerifyCsrfToken::class,
             SubstituteBindings::class,
             LanguageMiddleware::class,
+            EnsureUserIsNotBanned::class,
             TrackLastSeen::class,
         ],
         'api' => [
             EnsureStatefulRequests::class,
             'auth:sanctum',
+            EnsureUserIsNotBanned::class,
             IsValidJson::class,
             TrackAPIKey::class,
             RequireTwoFactorAuthentication::class,

@@ -27,6 +27,8 @@ import {
 // for the server dashboard when they're only needed for specific instances.
 const FileEditContainer = lazy(() => import('@/components/server/files/FileEditContainer'));
 const ScheduleEditContainer = lazy(() => import('@/components/server/schedules/ScheduleEditContainer'));
+const DatabaseManagerContainer = lazy(() => import('@/components/server/databases/DatabaseManagerContainer'));
+const ServerDashboardContainer = lazy(() => import('@/components/server/dashboard/ServerDashboardContainer'));
 
 interface RouteDefinition {
     path: string;
@@ -83,6 +85,14 @@ export default {
     ],
     server: [
         {
+            // Hydra: only reachable while the addon "Server Dashboard" is on.
+            path: '/dashboard',
+            navKey: 'dashboard',
+            permission: null,
+            name: 'routes.dashboard',
+            component: ServerDashboardContainer,
+        },
+        {
             path: '/',
             navKey: 'console',
             permission: null,
@@ -110,6 +120,13 @@ export default {
             permission: 'database.*',
             name: 'routes.databases',
             component: DatabasesContainer,
+        },
+        {
+            path: '/databases/:database',
+            navKey: 'databases',
+            permission: 'database.browse',
+            name: undefined,
+            component: DatabaseManagerContainer,
         },
         {
             path: '/schedules',

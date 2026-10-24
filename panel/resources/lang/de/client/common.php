@@ -51,6 +51,14 @@ return [
         'server' => 'Server',
         'manage_as_admin' => 'Als Admin verwalten',
         'sign_out' => 'Abmelden',
+        'install_app' => 'App installieren',
+    ],
+
+    // Hydra: Tabs im Fenster der installierten App.
+    'tabs' => [
+        'new' => 'Neuer Tab',
+        'close' => 'Tab schließen',
+        'loading' => 'Wird geladen …',
     ],
 
     'routes' => [

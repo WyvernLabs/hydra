@@ -34,6 +34,11 @@ class AddonManager
         TrashAddon::class,
         EnvAddon::class,
         VersionsAddon::class,
+        MotdAddon::class,
+        ResourcePoolAddon::class,
+        PwaAddon::class,
+        PlayerStatsAddon::class,
+        ImporterAddon::class,
     ];
 
     public function __construct(private SettingsRepositoryInterface $settings, private Encrypter $encrypter)
@@ -114,6 +119,7 @@ class AddonManager
     public function setEnabled(Addon $addon, bool $enabled): void
     {
         $this->store($addon, 'enabled', $enabled ? 'true' : 'false', $enabled);
+        $addon->saved();
     }
 
     private function store(Addon $addon, string $setting, string $stored, mixed $value): void

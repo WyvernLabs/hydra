@@ -487,6 +487,14 @@ class User extends Model implements
     }
 
     /**
+     * Hydra: resources the user may share out to own servers (addon "resource_pool").
+     */
+    public function resourcePool(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(HydraResourcePool::class);
+    }
+
+    /**
      * Hydra: the ban that applies right now, if any.
      */
     public function activeBan(): ?UserSanction

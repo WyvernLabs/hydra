@@ -43,6 +43,14 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function () 
 
     Route::get('/activity', Client\ActivityLogController::class)->name('api:client.account.activity');
 
+    // Hydra: resource pool with the user's own servers (resource_pool addon).
+    Route::prefix('/pool')->middleware('addon:resource_pool')->group(function () {
+        Route::get('/', [Client\ResourcePoolController::class, 'index'])->name('api:client.account.pool');
+        Route::post('/servers', [Client\ResourcePoolController::class, 'store'])->middleware('throttle:10,1');
+        Route::patch('/servers/{identifier}', [Client\ResourcePoolController::class, 'update'])->middleware('throttle:30,1');
+        Route::delete('/servers/{identifier}', [Client\ResourcePoolController::class, 'delete'])->middleware('throttle:10,1');
+    });
+
     // Hydra: support tickets (tickets addon).
     Route::prefix('/tickets')->middleware('addon:tickets')->group(function () {
         Route::get('/', [Client\TicketController::class, 'index'])->name('api:client.account.tickets');
@@ -87,6 +95,8 @@ Route::group([
         ->name('api:client:server.ws');
     Route::get('/resources', Client\Servers\ResourceUtilizationController::class)->name('api:client:server.resources');
     Route::get('/activity', Client\Servers\ActivityLogController::class)->name('api:client:server.activity');
+    // Hydra: players online over time (addon "player_stats").
+    Route::get('/players', Client\Servers\PlayerStatsController::class)->middleware('addon:player_stats');
 
     Route::post('/command', [Client\Servers\CommandController::class, 'index']);
     Route::post('/power', [Client\Servers\PowerController::class, 'index']);
@@ -99,6 +109,7 @@ Route::group([
         Route::delete('/{database}', [Client\Servers\DatabaseController::class, 'delete']);
 
         // Hydra: database manager, import, export and phpMyAdmin.
+        Route::get('/{database}/stats', [Client\Servers\DatabaseManagerController::class, 'stats']);
         Route::get('/{database}/tables', [Client\Servers\DatabaseManagerController::class, 'tables']);
         Route::get('/{database}/structure', [Client\Servers\DatabaseManagerController::class, 'structure']);
         Route::get('/{database}/rows', [Client\Servers\DatabaseManagerController::class, 'rows']);
@@ -166,6 +177,14 @@ Route::group([
         Route::delete('/proxies/{proxy}', [Client\Servers\NetworkHydraController::class, 'deleteProxy'])->whereNumber('proxy');
     });
 
+    // Hydra: roles of the server for its subusers.
+    Route::group(['prefix' => '/roles'], function () {
+        Route::get('/', [Client\Servers\ServerRoleController::class, 'index']);
+        Route::post('/', [Client\Servers\ServerRoleController::class, 'store']);
+        Route::patch('/{role}', [Client\Servers\ServerRoleController::class, 'update'])->whereNumber('role');
+        Route::delete('/{role}', [Client\Servers\ServerRoleController::class, 'delete'])->whereNumber('role');
+    });
+
     Route::group(['prefix' => '/users'], function () {
         Route::get('/', [Client\Servers\SubuserController::class, 'index']);
         Route::middleware([ResourceLimit::Subuser->middleware()])
@@ -192,6 +211,14 @@ Route::group([
         Route::middleware([ResourceLimit::Backup->middleware()])
             ->post('/{backup}/restore', [Client\Servers\BackupController::class, 'restore']);
         Route::delete('/{backup}', [Client\Servers\BackupController::class, 'delete']);
+    });
+
+    // Hydra: import of another server over SFTP (addon "importer").
+    Route::prefix('/import')->middleware('addon:importer')->group(function () {
+        Route::get('/', [Client\Servers\ImportController::class, 'status']);
+        Route::post('/test', [Client\Servers\ImportController::class, 'test'])->middleware('throttle:10,1');
+        Route::post('/', [Client\Servers\ImportController::class, 'start'])->middleware('throttle:5,1');
+        Route::delete('/', [Client\Servers\ImportController::class, 'cancel']);
     });
 
     // Hydra: game library (addon "games").

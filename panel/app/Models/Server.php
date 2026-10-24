@@ -50,6 +50,7 @@ use Pterodactyl\Exceptions\Http\Server\ServerStateConflictException;
  * @property bool $hydra_dedicated
  * @property int|null $hydra_subdomain_limit
  * @property int|null $hydra_proxy_limit
+ * @property bool $hydra_pool
  * @property SftpBackupTarget|null $sftpBackupTarget
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -185,6 +186,8 @@ class Server extends Model implements Identifiable
         'hydra_dedicated' => 'sometimes|boolean',
         'hydra_subdomain_limit' => 'sometimes|nullable|integer|min:0',
         'hydra_proxy_limit' => 'sometimes|nullable|integer|min:0',
+        // Hydra: counts against the resource pool of the owner.
+        'hydra_pool' => 'sometimes|boolean',
     ];
 
     /**
@@ -208,6 +211,7 @@ class Server extends Model implements Identifiable
         'backup_limit' => 'integer',
         'backup_storage_limit' => 'integer',
         'hydra_dedicated' => 'boolean',
+        'hydra_pool' => 'boolean',
         self::CREATED_AT => 'datetime',
         self::UPDATED_AT => 'datetime',
         'deleted_at' => 'datetime',

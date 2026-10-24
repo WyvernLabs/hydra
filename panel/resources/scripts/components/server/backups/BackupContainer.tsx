@@ -46,7 +46,7 @@ const BackupContainer = () => {
     const { page, setPage } = useContext(ServerBackupContext);
     const { t } = useTranslation('client/server');
     const { clearFlashes, clearAndAddHttpError } = useFlash();
-    const { data: backups, error, isValidating } = getServerBackups();
+    const { data: backups, error, isValidating, mutate } = getServerBackups();
     const sftpAddon = useStoreState((state) => state.settings.data!.sftpBackups);
     const [dialog, setDialog] = useState<'sftp' | 'import' | null>(null);
 
@@ -59,6 +59,15 @@ const BackupContainer = () => {
 
         clearAndAddHttpError({ error, key: 'backups' });
     }, [error]);
+
+    // Hydra: while a backup is being made the list is reloaded every few
+    // seconds, so a finished backup shows up even if the websocket event was missed.
+    const running = !!backups && backups.items.some((backup) => backup.completedAt === null);
+    useEffect(() => {
+        if (!running) return;
+        const timer = setInterval(() => mutate(), 3000);
+        return () => clearInterval(timer);
+    }, [running]);
 
     if (!backups || (error && isValidating)) {
         return <Spinner size={'large'} centered />;

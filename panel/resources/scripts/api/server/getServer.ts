@@ -83,6 +83,8 @@ export interface Server {
     // Hydra: picture in the server list (Design > Eggs).
     listImage: string | null;
     eggName: string;
+    // Hydra: players online are counted (addon "player_stats").
+    playerStats: boolean;
     location: string | null;
     createdAt: Date | null;
 }
@@ -99,6 +101,7 @@ export const rawDataToServerObject = ({ attributes: data }: FractalResponseData)
     banner: data.banner || null,
     listImage: data.list_image || null,
     eggName: data.egg_name || '',
+    playerStats: !!data.player_stats,
     location: data.location || null,
     createdAt: data.created_at ? new Date(data.created_at) : null,
     node: data.node,

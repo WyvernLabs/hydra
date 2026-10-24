@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Offline</title>
+    <style>
+        html, body { height: 100%; margin: 0; }
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #121212;
+            color: #e5e5e5;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+        }
+        main { max-width: 26rem; padding: 24px; text-align: center; }
+        h1 { margin: 0 0 8px; font-size: 20px; }
+        p { margin: 0 0 20px; color: #a3a3a3; font-size: 14px; line-height: 1.5; }
+        button {
+            padding: 10px 18px;
+            border: 0;
+            border-radius: 8px;
+            background: #74c236;
+            color: #0f1a06;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1 id="title">No connection</h1>
+    <p id="text">The panel cannot be reached right now. Check your internet connection and try again.</p>
+    <button type="button" id="retry" onclick="location.reload()">Try again</button>
+</main>
+<script>
+    // Hydra: shown by the service worker while the panel cannot be reached.
+    if ((navigator.language || '').toLowerCase().indexOf('de') === 0) {
+        document.documentElement.lang = 'de';
+        document.getElementById('title').textContent = 'Keine Verbindung';
+        document.getElementById('text').textContent = 'Das Panel ist gerade nicht erreichbar. Prüfe deine Internetverbindung und versuche es erneut.';
+        document.getElementById('retry').textContent = 'Erneut versuchen';
+    }
+    window.addEventListener('online', function () { location.reload(); });
+</script>
+</body>
+</html>

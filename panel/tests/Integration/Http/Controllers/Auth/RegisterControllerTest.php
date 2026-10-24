@@ -5,7 +5,6 @@ namespace Pterodactyl\Tests\Integration\Http\Controllers\Auth;
 use Illuminate\Support\Str;
 use Pterodactyl\Models\User;
 use Illuminate\Support\Facades\Notification;
-use Pterodactyl\Notifications\AccountCreated;
 use Pterodactyl\Notifications\RegistrationCode;
 use Pterodactyl\Tests\Integration\Http\HttpTestCase;
 use Illuminate\Notifications\AnonymousNotifiable;
@@ -60,7 +59,7 @@ class RegisterControllerTest extends HttpTestCase
         $this->assertAuthenticatedAs($user);
 
         // No "account created" email for accounts people create themselves.
-        Notification::assertNotSentTo($user, AccountCreated::class);
+        Notification::assertNothingSentTo($user);
     }
 
     public function testAccountNeedsConfirmedEmail(): void

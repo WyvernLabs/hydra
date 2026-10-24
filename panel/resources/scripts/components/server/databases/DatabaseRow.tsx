@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDatabase, faEye, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import { faDatabase } from '@fortawesome/free-solid-svg-icons';
+import { Eye, Trash2 } from 'lucide-react';
+import useSWR from 'swr';
+import { Button as NewButton } from '@/components/elements/button/index';
+import { getDatabaseStats } from '@/api/server/databases/manager';
+import { bytesToString } from '@/lib/formatters';
 import Modal from '@/components/elements/Modal';
 import { Form, Formik, FormikHelpers } from 'formik';
 import Field from '@/components/elements/Field';
@@ -17,7 +22,6 @@ import tw from 'twin.macro';
 import Button from '@/components/elements/Button';
 import Label from '@/components/elements/Label';
 import Input from '@/components/elements/Input';
-import GreyRowBox from '@/components/elements/GreyRowBox';
 import CopyOnClick from '@/components/elements/CopyOnClick';
 import { Trans, useTranslation } from 'react-i18next';
 import DatabaseTools from '@/components/server/databases/DatabaseTools';
@@ -33,6 +37,11 @@ export default ({ database, className }: Props) => {
     const { addError, clearFlashes } = useFlash();
     const [visible, setVisible] = useState(false);
     const [connectionVisible, setConnectionVisible] = useState(false);
+
+    const { data: stats } = useSWR(['database-stats', uuid, database.id], () => getDatabaseStats(uuid, database.id), {
+        revalidateOnFocus: false,
+    });
+    const ButtonText = NewButton.Text;
 
     const appendDatabase = ServerContext.useStoreActions((actions) => actions.databases.appendDatabase);
     const removeDatabase = ServerContext.useStoreActions((actions) => actions.databases.removeDatabase);
@@ -146,45 +155,42 @@ export default ({ database, className }: Props) => {
                     </Button>
                 </div>
             </Modal>
-            <GreyRowBox $hoverable={false} className={className} css={tw`mb-2`}>
-                <div css={tw`hidden md:block`}>
-                    <FontAwesomeIcon icon={faDatabase} fixedWidth />
-                </div>
-                <div css={tw`flex-1 ml-4`}>
-                    <CopyOnClick text={database.name}>
-                        <p css={tw`text-lg`}>{database.name}</p>
-                    </CopyOnClick>
-                </div>
-                <div css={tw`ml-8 text-center hidden md:block`}>
-                    <CopyOnClick text={database.connectionString}>
-                        <p css={tw`text-sm`}>{database.connectionString}</p>
-                    </CopyOnClick>
-                    <p css={tw`mt-1 text-2xs text-neutral-500 uppercase select-none`}>{t('databases.endpoint')}</p>
-                </div>
-                <div css={tw`ml-8 text-center hidden md:block`}>
-                    <p css={tw`text-sm`}>{database.allowConnectionsFrom}</p>
-                    <p css={tw`mt-1 text-2xs text-neutral-500 uppercase select-none`}>
-                        {t('databases.connections_from')}
-                    </p>
-                </div>
-                <div css={tw`ml-8 text-center hidden md:block`}>
-                    <CopyOnClick text={database.username}>
-                        <p css={tw`text-sm`}>{database.username}</p>
-                    </CopyOnClick>
-                    <p css={tw`mt-1 text-2xs text-neutral-500 uppercase select-none`}>{t('databases.username')}</p>
-                </div>
-                <div css={tw`ml-8 flex items-center`}>
-                    <DatabaseTools database={database} showManage flashKey={'databases'} />
-                    <Button isSecondary css={tw`mx-2`} onClick={() => setConnectionVisible(true)}>
-                        <FontAwesomeIcon icon={faEye} fixedWidth />
-                    </Button>
+            {/* Hydra: one card per database, the name in the middle, size and tables below. */}
+            <div
+                className={`flex flex-col items-center rounded-lg border border-gray-700 bg-gray-800/80 p-5 text-center backdrop-blur ${
+                    className || ''
+                }`}
+            >
+                <span className={'mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-900/70'}>
+                    <FontAwesomeIcon icon={faDatabase} className={'text-primary-400'} size={'lg'} />
+                </span>
+                <CopyOnClick text={database.name}>
+                    <p className={'max-w-full truncate text-lg font-semibold text-gray-50'}>{database.name}</p>
+                </CopyOnClick>
+                <p className={'mt-1 text-sm text-gray-400'}>
+                    {!stats
+                        ? '…'
+                        : stats.size === null
+                        ? t('databases.stats_unknown')
+                        : `${bytesToString(stats.size)} · ${t('databases.tables_count', { count: stats.tables || 0 })}`}
+                </p>
+                <div className={'mt-4 grid w-full grid-cols-2 gap-2'}>
+                    <ButtonText className={'w-full gap-1.5 px-3 py-2'} onClick={() => setConnectionVisible(true)}>
+                        <Eye className={'h-4 w-4'} />
+                        <span>{t('databases.details_button')}</span>
+                    </ButtonText>
+                    <DatabaseTools database={database} showManage flashKey={'databases'} labels />
                     <Can action={'database.delete'}>
-                        <Button color={'red'} isSecondary onClick={() => setVisible(true)}>
-                            <FontAwesomeIcon icon={faTrashAlt} fixedWidth />
-                        </Button>
+                        <ButtonText
+                            className={'w-full gap-1.5 px-3 py-2 !text-red-400 hover:!text-red-300'}
+                            onClick={() => setVisible(true)}
+                        >
+                            <Trash2 className={'h-4 w-4'} />
+                            <span>{t('databases.delete_button')}</span>
+                        </ButtonText>
                     </Can>
                 </div>
-            </GreyRowBox>
+            </div>
         </>
     );
 };

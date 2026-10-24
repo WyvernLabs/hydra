@@ -30,4 +30,8 @@ return [
         'schedule_update' => 'Allows a user permission to make modifications to an existing server schedule.',
         'schedule_delete' => 'Allows a user to delete a schedule for the server.',
     ],
+    // Hydra: roles of the server.
+    'role_not_grantable' => 'You cannot give or change a role with permissions you do not have yourself.',
+    'role_limit' => 'A server can have 50 roles at most.',
+    'role_not_found' => 'This role does not exist on the server.',
 ];

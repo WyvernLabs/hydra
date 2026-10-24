@@ -534,7 +534,7 @@ $SITE_ADDRESS {
 	header {
 		-Server
 		X-Content-Type-Options nosniff
-		X-Frame-Options DENY
+		X-Frame-Options SAMEORIGIN
 		Referrer-Policy same-origin
 		Strict-Transport-Security "max-age=31536000"
 	}

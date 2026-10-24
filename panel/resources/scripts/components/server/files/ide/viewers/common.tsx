@@ -4,6 +4,7 @@ import classNames from 'classnames';
 import { Download, FileWarning, RotateCcw } from 'lucide-react';
 import { EditorTab, useIde } from '@/components/server/files/ide/context';
 import { basename } from '@/components/server/files/ide/paths';
+import { useAppTab } from '@/components/hydra/tabs/context';
 import useFileTransfers from '@/plugins/useFileTransfers';
 
 // Hydra: parts shared by the viewers of the file manager.
@@ -20,9 +21,11 @@ export interface ViewerProps {
 export const useSaveShortcut = (active: boolean, save: () => void) => {
     const latest = useRef(save);
     latest.current = save;
+    // Hydra: only the app tab in front saves.
+    const tab = useAppTab();
 
     useEffect(() => {
-        if (!active) return;
+        if (!active || !tab.active) return;
         const onKeyDown = (event: KeyboardEvent) => {
             if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 's') {
                 event.preventDefault();
@@ -32,7 +35,7 @@ export const useSaveShortcut = (active: boolean, save: () => void) => {
         window.addEventListener('keydown', onKeyDown);
 
         return () => window.removeEventListener('keydown', onKeyDown);
-    }, [active]);
+    }, [active, tab.active]);
 };
 
 export const StatusButton = ({

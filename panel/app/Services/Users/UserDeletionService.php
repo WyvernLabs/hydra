@@ -4,6 +4,8 @@ namespace Pterodactyl\Services\Users;
 
 use Pterodactyl\Models\User;
 use Pterodactyl\Models\Server;
+use Pterodactyl\Notifications\AccountDeleted;
+use Illuminate\Support\Facades\Notification;
 use Pterodactyl\Exceptions\DisplayException;
 
 class UserDeletionService
@@ -25,6 +27,14 @@ class UserDeletionService
         // Hydra: profile pictures and banners go with the account.
         ProfileMediaService::removeFiles($user);
 
-        return $user->delete();
+        $deleted = $user->delete();
+
+        // Hydra: the user is told once the account is gone.
+        if ($deleted) {
+            Notification::route('mail', $user->email)
+                ->notify((new AccountDeleted($user->name_first ?: $user->username))->locale($user->preferredLocale()));
+        }
+
+        return $deleted;
     }
 }

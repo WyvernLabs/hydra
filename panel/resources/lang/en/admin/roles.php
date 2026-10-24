@@ -138,6 +138,7 @@ return [
             'update' => ['title' => 'Change', 'description' => 'Edit users, including their password.'],
             'warn' => ['title' => 'Warn', 'description' => 'Warn users. They get an email and see the warning in the panel.'],
             'ban' => ['title' => 'Ban', 'description' => 'Ban and unban users, manage ban templates. A ban logs the user out and suspends all of their servers.'],
+            'pool' => ['title' => 'Resource pool', 'description' => 'Set the resource pool of a user and which of their servers count against it (addon "Resource pool").'],
             'delete' => ['title' => 'Delete', 'description' => 'Delete users.'],
         ],
         'roles' => [

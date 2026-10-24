@@ -52,6 +52,14 @@ return [
         'server' => 'Server',
         'manage_as_admin' => 'Manage as Admin',
         'sign_out' => 'Sign Out',
+        'install_app' => 'Install app',
+    ],
+
+    // Hydra: tabs inside the window of the installed app.
+    'tabs' => [
+        'new' => 'New tab',
+        'close' => 'Close tab',
+        'loading' => 'Loading …',
     ],
 
     // Names of the pages in the sidebar (routers/routes.ts).

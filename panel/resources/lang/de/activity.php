@@ -33,6 +33,12 @@ return [
             'ban-expired' => 'Sperre abgelaufen',
             'auto-deleted' => 'Konto :username automatisch gelöscht',
         ],
+        // Hydra: Ressourcenpool.
+        'pool' => [
+            'server-created' => 'Server :name aus dem Ressourcenpool erstellt',
+            'server-updated' => 'Ressourcen von Server :name geändert',
+            'server-deleted' => 'Server :name aus dem Ressourcenpool gelöscht',
+        ],
         'api-key' => [
             'create' => 'Neuen API-Schlüssel :identifier erstellt',
             'delete' => 'API-Schlüssel :identifier gelöscht',
@@ -129,6 +135,14 @@ return [
             'notes' => 'Notiz für :allocation von ":old" in ":new" geändert',
             'primary' => ':allocation als primäre Adresse des Servers festgelegt',
             'delete' => 'Adresse :allocation gelöscht',
+        ],
+        'role' => [
+            'create' => 'Rolle :name angelegt',
+            'update' => 'Rolle :name geändert',
+            'delete' => 'Rolle :name gelöscht',
+        ],
+        'import' => [
+            'start' => 'Import von :host (:source) nach :target gestartet (Modus: :mode)',
         ],
         'game' => [
             'switch' => 'Spiel von :from zu :to gewechselt (Dateien behalten: :kept)',

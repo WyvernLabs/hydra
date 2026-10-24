@@ -2,6 +2,7 @@
 
 namespace Pterodactyl\Transformers\Api\Client;
 
+use Pterodactyl\Services\Hydra\Addons\PlayerStatsAddon;
 use Pterodactyl\Models\Egg;
 use Pterodactyl\Models\Server;
 use Pterodactyl\Models\Subuser;
@@ -83,6 +84,8 @@ class ServerTransformer extends BaseClientTransformer
             // Hydra: picture in the server list (Design > Eggs).
             'list_image' => Container::getInstance()->make(BackgroundService::class)->imageForEgg($server->egg, 'list'),
             'egg_name' => $server->egg->name,
+            // Hydra: players online are counted (addon "player_stats").
+            'player_stats' => Container::getInstance()->make(PlayerStatsAddon::class)->tracks($server),
             'location' => $server->node->location?->short,
             'created_at' => $server->created_at?->toAtomString(),
             'feature_limits' => [

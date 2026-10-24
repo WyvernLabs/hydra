@@ -47,13 +47,11 @@ export default () => {
                 <Fade timeout={150}>
                     <>
                         {databases.length > 0 ? (
-                            databases.map((database, index) => (
-                                <DatabaseRow
-                                    key={database.id}
-                                    database={database}
-                                    className={index > 0 ? 'mt-1' : undefined}
-                                />
-                            ))
+                            <div className={'hydra-tiles'}>
+                                {databases.map((database) => (
+                                    <DatabaseRow key={database.id} database={database} />
+                                ))}
+                            </div>
                         ) : (
                             <p css={tw`text-center text-sm text-neutral-300`}>
                                 {databaseLimit > 0 ? t('databases.none') : t('databases.disabled')}

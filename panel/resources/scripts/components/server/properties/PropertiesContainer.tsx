@@ -70,7 +70,10 @@ export default () => {
 
     const properties = useMemo(() => (lines || []).filter((line) => line.key !== null), [lines]);
     const changed = properties.filter((line) => values[line.key!] !== line.value).length;
-    const shown = properties.filter((line) => line.key!.toLowerCase().includes(search.trim().toLowerCase()));
+    // Shown alphabetically; the file keeps its order when saved.
+    const shown = properties
+        .filter((line) => line.key!.toLowerCase().includes(search.trim().toLowerCase()))
+        .sort((a, b) => a.key!.localeCompare(b.key!));
 
     const save = () => {
         if (!lines) return;
@@ -140,7 +143,7 @@ export default () => {
             ) : !lines ? (
                 <Spinner centered size={'large'} />
             ) : (
-                <>
+                <div className={'rounded-lg border border-gray-700 bg-gray-800/80 p-4 backdrop-blur'}>
                     <div className={'relative mb-4'}>
                         <Search className={'absolute left-3 top-2.5 h-4 w-4 text-gray-400'} />
                         <input
@@ -156,7 +159,7 @@ export default () => {
                     {shown.length === 0 ? (
                         <p className={'py-6 text-center text-sm text-gray-400'}>{t('properties.empty')}</p>
                     ) : (
-                        <div className={'grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3'}>
+                        <div className={'grid grid-cols-1 gap-3 md:grid-cols-2'}>
                             {shown.map((line) => {
                                 const key = line.key!;
                                 const type = propertyType(line.value);
@@ -166,7 +169,7 @@ export default () => {
                                 return (
                                     <div
                                         key={key}
-                                        className={`flex items-center gap-3 rounded-lg border bg-gray-800/80 px-3 py-2.5 backdrop-blur ${
+                                        className={`flex items-center gap-3 rounded-lg border bg-gray-900/50 px-3 py-2.5 ${
                                             dirty ? 'border-primary-500' : 'border-gray-700'
                                         }`}
                                     >
@@ -200,7 +203,7 @@ export default () => {
                             })}
                         </div>
                     )}
-                </>
+                </div>
             )}
         </ServerContentBlock>
     );

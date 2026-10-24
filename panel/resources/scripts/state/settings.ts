@@ -37,6 +37,12 @@ export interface SiteSettings {
     trash: { enabled: boolean; days: number };
     // Hydra: game library (addon).
     games: boolean;
+    // Hydra: import of another server over SFTP; "profiles": current files can be kept as game profile.
+    importer: { enabled: boolean; profiles: boolean };
+    // Hydra: installable app; "tabs" opens pages in tabs inside the app window.
+    pwa: { enabled: boolean; tabs: boolean };
+    // Hydra: resource pool with the user's own servers (addon).
+    resourcePool: boolean;
     // Hydra: console texts (Design > Console) and console addons.
     console: {
         offlineMessage: string | null;

@@ -21,6 +21,8 @@ interface Props {
     showManage?: boolean;
     // Called after an import, e.g. to reload the tables.
     onImported?: () => void;
+    // Buttons with text next to the icon, e.g. on the database cards.
+    labels?: boolean;
     flashKey: string;
 }
 
@@ -109,7 +111,7 @@ const ImportDialog = ({
     );
 };
 
-export default ({ database, showManage, onImported, flashKey }: Props) => {
+export default ({ database, showManage, onImported, flashKey, labels }: Props) => {
     const { t } = useTranslation('client/server');
     const match = useRouteMatch();
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
@@ -154,7 +156,9 @@ export default ({ database, showManage, onImported, flashKey }: Props) => {
             });
     };
 
-    const iconButton = 'p-2';
+    // With labels the buttons fill the cells of the grid on the database cards.
+    const iconButton = labels ? 'w-full gap-1.5 px-3 py-2' : 'p-2';
+    const label = (text: string) => (labels ? <span>{text}</span> : null);
 
     return (
         <>
@@ -167,25 +171,33 @@ export default ({ database, showManage, onImported, flashKey }: Props) => {
                 />
             )}
             {showManage && canBrowse && (
-                <Link to={`${match.url.replace(/\/+$/, '')}/${database.id}`} title={t('databases.manage')}>
+                <Link
+                    to={`${match.url.replace(/\/+$/, '')}/${database.id}`}
+                    title={t('databases.manage')}
+                    className={labels ? 'block' : undefined}
+                >
                     <Button.Text className={iconButton} type={'button'}>
                         <Table className={'h-4 w-4'} />
+                        {label(t('databases.manage'))}
                     </Button.Text>
                 </Link>
             )}
             {canImport && (
                 <Button.Text className={iconButton} title={t('databases.import')} onClick={() => setImporting(true)}>
                     <Upload className={'h-4 w-4'} />
+                    {label(t('databases.import'))}
                 </Button.Text>
             )}
             {canExport && (
                 <Button.Text className={iconButton} title={t('databases.export')} onClick={onExport} disabled={busy}>
                     <Download className={'h-4 w-4'} />
+                    {label(t('databases.export'))}
                 </Button.Text>
             )}
             {phpMyAdmin && canPhpMyAdmin && (
                 <Button.Text className={iconButton} title={t('databases.phpmyadmin')} onClick={onPhpMyAdmin}>
                     <ExternalLink className={'h-4 w-4'} />
+                    {label(t('databases.phpmyadmin'))}
                 </Button.Text>
             )}
         </>

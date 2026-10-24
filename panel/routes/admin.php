@@ -152,7 +152,8 @@ Route::group(['prefix' => 'users'], function () {
     Route::post('/view/{user:id}/warn', [Admin\Users\SanctionController::class, 'warn'])->name('admin.users.warn')->middleware('admin.can:users.warn');
     Route::post('/view/{user:id}/ban', [Admin\Users\SanctionController::class, 'ban'])->name('admin.users.ban')->middleware('admin.can:users.ban');
     Route::post('/view/{user:id}/sanctions/{sanction:id}/lift', [Admin\Users\SanctionController::class, 'lift'])->name('admin.users.ban.lift')->middleware('admin.can:users.ban');
-    Route::get('/ban-templates', [Admin\Users\BanTemplateController::class, 'index'])->name('admin.users.ban-templates')->middleware('admin.can:users.ban');
+    Route::patch('/view/{user:id}/pool', [Admin\Users\ResourcePoolController::class, 'update'])->name('admin.users.pool')->middleware(['admin.can:users.pool', 'addon:resource_pool']);
+    Route::get('/ban-templates',[Admin\Users\BanTemplateController::class, 'index'])->name('admin.users.ban-templates')->middleware('admin.can:users.ban');
     Route::post('/ban-templates', [Admin\Users\BanTemplateController::class, 'store'])->middleware('admin.can:users.ban');
     Route::patch('/ban-templates/{template:id}', [Admin\Users\BanTemplateController::class, 'update'])->name('admin.users.ban-templates.update')->middleware('admin.can:users.ban');
     Route::delete('/ban-templates/{template:id}', [Admin\Users\BanTemplateController::class, 'delete'])->name('admin.users.ban-templates.delete')->middleware('admin.can:users.ban');

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Bus;
 use Pterodactyl\Models\UserSanction;
 use Pterodactyl\Jobs\RevokeSftpAccessJob;
 use Pterodactyl\Notifications\AccountBanned;
-use Pterodactyl\Notifications\AccountWarned;
+use Pterodactyl\Notifications\ServerSuspended;
 use Illuminate\Support\Facades\Notification;
 use Pterodactyl\Services\Hydra\AutoDeleteService;
 use Pterodactyl\Tests\Integration\Http\HttpTestCase;
@@ -59,14 +59,15 @@ class SanctionTest extends HttpTestCase
         return $user;
     }
 
-    public function testWarningIsMailedAndShownUntilConfirmed(): void
+    public function testWarningIsShownUntilConfirmed(): void
     {
         $mod = $this->moderator();
         $user = User::factory()->create();
 
         $this->actingAs($mod)->post("/admin/users/view/$user->id/warn", ['reason' => 'Please stop spamming.'])->assertRedirect();
 
-        Notification::assertSentTo($user, AccountWarned::class, fn (AccountWarned $n) => $n->reason === 'Please stop spamming.');
+        // Warnings are shown in the panel only, never mailed.
+        Notification::assertNothingSentTo($user);
         $warnings = $user->toVueObject()['warnings'];
         $this->assertCount(1, $warnings);
         $this->assertSame('Please stop spamming.', $warnings[0]['reason']);
@@ -95,6 +96,8 @@ class SanctionTest extends HttpTestCase
         $this->assertTrue($server->refresh()->isSuspended());
         $this->assertNotNull($server->hydra_suspended_at);
         Notification::assertSentTo($user, AccountBanned::class);
+        // The ban mail covers the suspended servers.
+        Notification::assertNotSentTo($user, ServerSuspended::class);
         Bus::assertDispatched(RevokeSftpAccessJob::class, fn ($job) => $job->user === $user->uuid);
 
         // Requests of a running session are refused.

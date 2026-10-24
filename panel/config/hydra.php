@@ -91,11 +91,24 @@ return [
     | properties:   server page with the .properties file at "path" as a form.
     | env:          server page with the .env file at "path" as a form.
     | versions:     Minecraft version changer with the software of mcjars.app.
+    | motd:         MOTD with a picture for Minecraft servers of the "eggs" that
+    |               are offline, starting, stopping or suspended ("states", JSON).
+    | importer:     users copy the files of another server over SFTP onto
+    |               theirs (settings page of the server).
+    | player_stats: players online on Minecraft Java servers of the "eggs"
+    |               (JSON), kept for "keep_days".
+    | pwa:          the panel can be installed as an app ("name", "short_name",
+    |               "theme_color", "background_color", icon in storage); "tabs"
+    |               opens pages in tabs inside the app window.
+    | resource_pool: users share out a pool of resources (set on their page in
+    |               the admin area) to own servers; they pick from the "eggs" and
+    |               "locations" (JSON, empty = all), "user_edit" / "user_delete"
+    |               let them resize and delete those servers.
     | trash:        deleted files are kept in a trash for "days" (on by default).
     | tickets:      support tickets in the "languages" (ISO codes, JSON) with
     |               "categories" named in each of them (JSON), images up to
     |               "upload_limit" MB, "max_open" unclosed tickets per user
-    |               (0 = any number), "notify" mails users about answers.
+    |               (0 = any number).
     |
     */
     'addons' => [
@@ -168,6 +181,34 @@ return [
         'versions' => [
             'enabled' => false,
         ],
+        'motd' => [
+            'enabled' => false,
+            'eggs' => [],
+            'states' => null,
+        ],
+        'importer' => [
+            'enabled' => true,
+        ],
+        'player_stats' => [
+            'enabled' => false,
+            'eggs' => [],
+            'keep_days' => 30,
+        ],
+        'pwa' => [
+            'enabled' => true,
+            'name' => null,
+            'short_name' => null,
+            'theme_color' => '#141414',
+            'background_color' => '#121212',
+            'tabs' => true,
+        ],
+        'resource_pool' => [
+            'enabled' => false,
+            'eggs' => [],
+            'locations' => [],
+            'user_edit' => true,
+            'user_delete' => true,
+        ],
         'trash' => [
             'enabled' => true,
             'days' => 7,
@@ -178,7 +219,6 @@ return [
             'categories' => null,
             'upload_limit' => 5,
             'max_open' => 5,
-            'notify' => true,
         ],
     ],
 

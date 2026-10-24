@@ -21,6 +21,8 @@ export interface RenderDialogProps extends DialogProps {
     preventExternalClose?: boolean;
     // Hydra: wider panel, e.g. for tables.
     wide?: boolean;
+    // Hydra: even wider, e.g. for a whole management page.
+    huge?: boolean;
     title?: string;
     description?: string | undefined;
     children?: React.ReactNode;

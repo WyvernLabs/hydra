@@ -13,6 +13,7 @@ use Pterodactyl\Services\Hydra\PhpMyAdminService;
 use Pterodactyl\Services\Hydra\Databases\DatabaseBrowser;
 use Pterodactyl\Services\Hydra\Databases\DatabaseTransfer;
 use Pterodactyl\Http\Controllers\Api\Client\ClientApiController;
+use Pterodactyl\Http\Requests\Api\Client\Servers\Databases\GetDatabasesRequest;
 use Pterodactyl\Http\Requests\Api\Client\Servers\Databases\Hydra\EditDatabaseRequest;
 use Pterodactyl\Http\Requests\Api\Client\Servers\Databases\Hydra\BrowseDatabaseRequest;
 use Pterodactyl\Http\Requests\Api\Client\Servers\Databases\Hydra\ExportDatabaseRequest;
@@ -33,6 +34,19 @@ class DatabaseManagerController extends ClientApiController
         private PhpMyAdminService $phpMyAdmin,
     ) {
         parent::__construct();
+    }
+
+    /**
+     * Size and number of tables for the list of databases; null when the
+     * database server cannot be reached.
+     */
+    public function stats(GetDatabasesRequest $request, Server $server, Database $database): array
+    {
+        try {
+            return $this->browser->for($database)->stats();
+        } catch (\Throwable) {
+            return ['tables' => null, 'size' => null];
+        }
     }
 
     public function tables(BrowseDatabaseRequest $request, Server $server, Database $database): array

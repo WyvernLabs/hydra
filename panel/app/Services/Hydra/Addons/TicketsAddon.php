@@ -41,11 +41,6 @@ class TicketsAddon extends Addon
         ];
     }
 
-    public function booleans(): array
-    {
-        return ['notify'];
-    }
-
     /**
      * Keeps the names of the chosen languages only, drops categories without
      * any name and gives new ones an ID, which tickets store.
@@ -187,14 +182,6 @@ class TicketsAddon extends Addon
     public function maxOpen(): int
     {
         return (int) $this->get('max_open', 5);
-    }
-
-    /**
-     * Users get an email when the team answers.
-     */
-    public function notifies(): bool
-    {
-        return (bool) $this->get('notify', true);
     }
 
     /**

@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Schedule, Task } from '@/api/server/schedules/getServerSchedules';
 import { ServerContext } from '@/state/server';
 import createOrUpdateScheduleTask from '@/api/server/schedules/createOrUpdateScheduleTask';
+import getServerSchedule from '@/api/server/schedules/getServerSchedule';
 import { httpErrorToHuman } from '@/api/http';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import useFlash from '@/plugins/useFlash';
@@ -28,6 +29,8 @@ interface Props {
     // If a task is provided we can assume we're editing it. If not provided,
     // we are creating a new one.
     task?: Task;
+    // Hydra: position of a new task, e.g. inside a branch of an "if" block; at the end without.
+    sequenceId?: number;
 }
 
 const STATES = ['running', 'offline', 'starting', 'stopping'];
@@ -150,7 +153,7 @@ const ConditionFields = ({ value, onChange }: { value: Condition; onChange: (c: 
     );
 };
 
-const TaskDetailsModal = ({ schedule, task }: Props) => {
+const TaskDetailsModal = ({ schedule, task, sequenceId }: Props) => {
     const { dismiss } = useContext(ModalContext);
     const { t } = useTranslation('client/server');
     const { clearFlashes, addError } = useFlash();
@@ -216,19 +219,29 @@ const TaskDetailsModal = ({ schedule, task }: Props) => {
         }
 
         setSubmitting(true);
-        createOrUpdateScheduleTask(uuid, schedule.id, task?.id, {
-            action,
-            payload: buildPayload(),
-            timeOffset: isControl ? 0 : timeOffset,
-            continueOnFailure: isControl ? false : continueOnFailure,
-        })
-            .then((task) => {
-                let tasks = schedule.tasks.map((t) => (t.id === task.id ? task : t));
-                if (!schedule.tasks.find((t) => t.id === task.id)) {
-                    tasks = [...tasks, task];
-                }
+        const save = (data: { action: string; payload: string }, id?: number, position?: number) =>
+            createOrUpdateScheduleTask(uuid, schedule.id, id, {
+                ...data,
+                timeOffset: CONTROL_ACTIONS.includes(data.action as TaskAction) ? 0 : timeOffset,
+                continueOnFailure: CONTROL_ACTIONS.includes(data.action as TaskAction) ? false : continueOnFailure,
+                sequenceId: position,
+            });
 
-                appendSchedule({ ...schedule, tasks });
+        // Hydra: a new "if" gets its "otherwise" and its end right away, so it
+        // shows up as a block with both branches.
+        const steps = async () => {
+            await save({ action, payload: buildPayload() }, task?.id, task ? undefined : sequenceId);
+            if (!task && action === 'if') {
+                await save({ action: 'else', payload: '' }, undefined, sequenceId ? sequenceId + 1 : undefined);
+                await save({ action: 'endif', payload: '' }, undefined, sequenceId ? sequenceId + 2 : undefined);
+            }
+            // Other tasks may have moved, so the schedule is loaded again.
+            return getServerSchedule(uuid, schedule.id);
+        };
+
+        steps()
+            .then((updated) => {
+                appendSchedule(updated);
                 dismiss();
             })
             .catch((error) => {
@@ -250,11 +263,14 @@ const TaskDetailsModal = ({ schedule, task }: Props) => {
                     <Select value={action} onChange={(e) => changeAction(e.currentTarget.value as TaskAction)}>
                         {ACTION_GROUPS.map((group) => (
                             <optgroup key={group.key} label={t(`schedules.tasks.groups.${group.key}`)}>
-                                {group.actions.map((a) => (
-                                    <option key={a} value={a}>
-                                        {t(`schedules.tasks.actions.${a}`)}
-                                    </option>
-                                ))}
+                                {group.actions
+                                    // Hydra: "otherwise" and "end" come with every new "if".
+                                    .filter((a) => (a !== 'else' && a !== 'endif') || task?.action === a)
+                                    .map((a) => (
+                                        <option key={a} value={a}>
+                                            {t(`schedules.tasks.actions.${a}`)}
+                                        </option>
+                                    ))}
                             </optgroup>
                         ))}
                     </Select>

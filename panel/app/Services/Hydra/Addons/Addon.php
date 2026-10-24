@@ -43,6 +43,14 @@ abstract class Addon
     }
 
     /**
+     * Runs after the settings and the switch were saved, e.g. to send them to
+     * the nodes.
+     */
+    public function saved(): void
+    {
+    }
+
+    /**
      * Settings that are stored encrypted, e.g. secret keys. They are only
      * replaced when the admin enters a new value.
      */

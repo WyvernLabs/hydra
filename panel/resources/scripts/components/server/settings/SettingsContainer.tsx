@@ -2,11 +2,13 @@ import React from 'react';
 import TitledGreyBox from '@/components/elements/TitledGreyBox';
 import { ServerContext } from '@/state/server';
 import { useStoreState } from 'easy-peasy';
+import { ApplicationStore } from '@/state';
 import RenameServerBox from '@/components/server/settings/RenameServerBox';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import Can from '@/components/elements/Can';
 import ReinstallServerBox from '@/components/server/settings/ReinstallServerBox';
 import LockdownServerBox from '@/components/server/settings/LockdownServerBox';
+import ImportServerBox from '@/components/server/settings/ImportServerBox';
 import tw from 'twin.macro';
 import Input from '@/components/elements/Input';
 import Label from '@/components/elements/Label';
@@ -23,11 +25,15 @@ export default () => {
     const id = ServerContext.useStoreState((state) => state.server.data!.id);
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
     const node = ServerContext.useStoreState((state) => state.server.data!.node);
+    const importer = useStoreState((state: ApplicationStore) => state.settings.data!.importer.enabled);
+    // An import writes into every folder, which subusers limited to some folders may not.
+    const restricted = ServerContext.useStoreState((state) => state.server.allowedPaths.length > 0);
     const sftp = ServerContext.useStoreState((state) => state.server.data!.sftpDetails, isEqual);
 
     return (
         <ServerContentBlock title={t('settings.title')}>
             <FlashMessageRender byKey={'settings'} css={tw`mb-4`} />
+            {/* Hydra: left access and files (SFTP, import, reinstall), right the server itself. */}
             <div css={tw`md:flex`}>
                 <div css={tw`w-full md:flex-1 md:mr-10`}>
                     <Can action={'file.sftp'}>
@@ -60,6 +66,22 @@ export default () => {
                             </div>
                         </TitledGreyBox>
                     </Can>
+                    {/* Hydra: import of another server over SFTP (addon "importer"). */}
+                    {importer && !restricted && (
+                        <Can action={'settings.import'}>
+                            <ImportServerBox />
+                        </Can>
+                    )}
+                    <Can action={'settings.reinstall'}>
+                        <ReinstallServerBox />
+                    </Can>
+                </div>
+                <div css={tw`w-full mt-6 md:flex-1 md:mt-0`}>
+                    <Can action={'settings.rename'}>
+                        <div css={tw`mb-6 md:mb-10`}>
+                            <RenameServerBox />
+                        </div>
+                    </Can>
                     <TitledGreyBox title={t('settings.debug_title')} css={tw`mb-6 md:mb-10`}>
                         <div css={tw`flex items-center justify-between text-sm`}>
                             <p>{t('settings.node')}</p>
@@ -72,17 +94,7 @@ export default () => {
                             </div>
                         </CopyOnClick>
                     </TitledGreyBox>
-                </div>
-                <div css={tw`w-full mt-6 md:flex-1 md:mt-0`}>
                     <LockdownServerBox />
-                    <Can action={'settings.rename'}>
-                        <div css={tw`mb-6 md:mb-10`}>
-                            <RenameServerBox />
-                        </div>
-                    </Can>
-                    <Can action={'settings.reinstall'}>
-                        <ReinstallServerBox />
-                    </Can>
                 </div>
             </div>
         </ServerContentBlock>

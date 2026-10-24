@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef } from 'react';
 import { Subuser } from '@/state/server/subusers';
-import { Form, Formik } from 'formik';
+import { Form, Formik, useFormikContext } from 'formik';
 import { array, boolean, object, string } from 'yup';
 import Field from '@/components/elements/Field';
 import { Actions, useStoreActions, useStoreState } from 'easy-peasy';
@@ -10,12 +10,13 @@ import { ServerContext } from '@/state/server';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import Can from '@/components/elements/Can';
 import { usePermissions } from '@/plugins/usePermissions';
-import { useDeepCompareMemo } from '@/plugins/useDeepCompareMemo';
 import tw from 'twin.macro';
 import Button from '@/components/elements/Button';
-import PermissionTitleBox from '@/components/server/users/PermissionTitleBox';
 import asModal from '@/hoc/asModal';
-import PermissionRow from '@/components/server/users/PermissionRow';
+import PermissionList from '@/components/server/users/PermissionList';
+import Label from '@/components/elements/Label';
+import Select from '@/components/elements/Select';
+import { useServerRoles } from '@/api/server/users/roles';
 import ModalContext from '@/context/ModalContext';
 import { useTranslation } from 'react-i18next';
 import FolderAccessBox from '@/components/server/users/FolderAccessBox';
@@ -27,6 +28,8 @@ type Props = {
 
 interface Values {
     username: string;
+    // Hydra: id of the role, empty for own permissions.
+    role: string;
     permissions: string[];
     restrictFolders: boolean;
     allowedPaths: string[];
@@ -37,6 +40,45 @@ const cleanPaths = (paths: string[]): string[] =>
     Array.from(new Set(paths.filter((p) => p.trim().length > 0).map((p) => normalizePath(p.trim())))).filter(
         (p) => p !== '/'
     );
+
+// Hydra: a role brings its permissions; own permissions are ticked one by one.
+const RolePicker = ({ isEditable }: { isEditable: boolean }) => {
+    const { t } = useTranslation('client/server');
+    const { data: roles } = useServerRoles();
+    const { values, setFieldValue } = useFormikContext<Values>();
+
+    if (!roles || roles.length === 0) return null;
+
+    return (
+        <div css={tw`mt-6`}>
+            <Label htmlFor={'subuserRole'}>{t('users.roles.pick')}</Label>
+            <Select
+                id={'subuserRole'}
+                value={values.role}
+                disabled={!isEditable}
+                onChange={(event) => {
+                    const role = roles.find((item) => String(item.id) === event.currentTarget.value);
+                    setFieldValue('role', event.currentTarget.value);
+                    if (role) setFieldValue('permissions', role.permissions);
+                }}
+            >
+                <option value={''}>{t('users.roles.own')}</option>
+                {roles.map((role) => (
+                    <option key={role.id} value={String(role.id)}>
+                        {role.name}
+                    </option>
+                ))}
+            </Select>
+            <p css={tw`mt-1 text-xs text-neutral-400`}>{t('users.roles.pick_help')}</p>
+        </div>
+    );
+};
+
+const RolePermissions = ({ isEditable }: { isEditable: boolean }) => {
+    const { values } = useFormikContext<Values>();
+
+    return <PermissionList isEditable={isEditable && !values.role} />;
+};
 
 const EditSubuserModal = ({ subuser }: Props) => {
     const ref = useRef<HTMLHeadingElement>(null);
@@ -49,27 +91,11 @@ const EditSubuserModal = ({ subuser }: Props) => {
     const { dismiss, setPropOverrides } = useContext(ModalContext);
 
     const isRootAdmin = useStoreState((state) => state.user.data!.serverAccess);
-    const permissions = useStoreState((state) => state.permissions.data);
     // The currently logged in user's permissions. We're going to filter out any permissions
     // that they should not need.
     const loggedInPermissions = ServerContext.useStoreState((state) => state.server.permissions);
     const ownPaths = ServerContext.useStoreState((state) => state.server.allowedPaths);
     const [canEditUser] = usePermissions(subuser ? ['user.update'] : ['user.create']);
-
-    // The permissions that can be modified by this user.
-    const editablePermissions = useDeepCompareMemo(() => {
-        const cleaned = Object.keys(permissions).map((key) =>
-            Object.keys(permissions[key].keys).map((pkey) => `${key}.${pkey}`)
-        );
-
-        const list: string[] = ([] as string[]).concat.apply([], Object.values(cleaned));
-
-        if (isRootAdmin || (loggedInPermissions.length === 1 && loggedInPermissions[0] === '*')) {
-            return list;
-        }
-
-        return list.filter((key) => loggedInPermissions.indexOf(key) >= 0);
-    }, [isRootAdmin, permissions, loggedInPermissions]);
 
     const submit = (values: Values) => {
         setPropOverrides({ showSpinnerOverlay: true });
@@ -80,6 +106,7 @@ const EditSubuserModal = ({ subuser }: Props) => {
             {
                 username: values.username,
                 permissions: values.permissions,
+                role: values.role ? Number(values.role) : null,
                 allowedPaths: values.restrictFolders ? cleanPaths(values.allowedPaths) : [],
             },
             subuser
@@ -112,6 +139,7 @@ const EditSubuserModal = ({ subuser }: Props) => {
             initialValues={
                 {
                     username: subuser?.username || '',
+                    role: subuser?.roleId ? String(subuser.roleId) : '',
                     permissions: subuser?.permissions || [],
                     restrictFolders: (subuser?.allowedPaths.length || 0) > 0 || ownPaths.length > 0,
                     allowedPaths: subuser?.allowedPaths.length ? subuser.allowedPaths : ownPaths,
@@ -168,27 +196,9 @@ const EditSubuserModal = ({ subuser }: Props) => {
                     </div>
                 )}
                 <FolderAccessBox isEditable={canEditUser} ownPaths={ownPaths} css={tw`mt-6`} />
+                <RolePicker isEditable={canEditUser} />
                 <div css={tw`my-6`}>
-                    {Object.keys(permissions)
-                        .filter((key) => key !== 'websocket')
-                        .map((key, index) => (
-                            <PermissionTitleBox
-                                key={`permission_${key}`}
-                                title={permissions[key].title || key}
-                                isEditable={canEditUser}
-                                permissions={Object.keys(permissions[key].keys).map((pkey) => `${key}.${pkey}`)}
-                                css={index > 0 ? tw`mt-4` : undefined}
-                            >
-                                <p css={tw`text-sm text-neutral-400 mb-4`}>{permissions[key].description}</p>
-                                {Object.keys(permissions[key].keys).map((pkey) => (
-                                    <PermissionRow
-                                        key={`permission_${key}.${pkey}`}
-                                        permission={`${key}.${pkey}`}
-                                        disabled={!canEditUser || editablePermissions.indexOf(`${key}.${pkey}`) < 0}
-                                    />
-                                ))}
-                            </PermissionTitleBox>
-                        ))}
+                    <RolePermissions isEditable={canEditUser} />
                 </div>
                 <Can action={subuser ? 'user.update' : 'user.create'}>
                     <div css={tw`pb-6 flex justify-end`}>

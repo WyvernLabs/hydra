@@ -95,6 +95,22 @@ class DatabaseBrowser
     }
 
     /**
+     * Number of tables and size of the whole database in bytes.
+     *
+     * @return array{tables: int, size: int}
+     */
+    public function stats(): array
+    {
+        $row = $this->run(
+            'SELECT COUNT(*) AS tables, COALESCE(SUM(COALESCE(DATA_LENGTH, 0) + COALESCE(INDEX_LENGTH, 0)), 0) AS size
+             FROM information_schema.TABLES WHERE TABLE_SCHEMA = ?',
+            [$this->database->database]
+        )->fetch();
+
+        return ['tables' => (int) ($row['tables'] ?? 0), 'size' => (int) ($row['size'] ?? 0)];
+    }
+
+    /**
      * Columns of a table, in their order.
      */
     public function columns(string $table): array

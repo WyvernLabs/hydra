@@ -10,6 +10,7 @@ export const rawDataToServerSubuser = (data: FractalResponseData): Subuser => ({
     createdAt: new Date(data.attributes.created_at),
     permissions: data.attributes.permissions || [],
     allowedPaths: data.attributes.allowed_paths || [],
+    roleId: data.attributes.role_id || null,
     can: (permission) => (data.attributes.permissions || []).indexOf(permission) >= 0,
 });
 

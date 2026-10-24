@@ -51,13 +51,11 @@ const Icon = ({ type, size }: { type: string; size: 'large' | 'small' }) => {
     );
 };
 
+// Hydra: headings and centred tiles like the game library.
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <section className={'mb-6'}>
-        <div className={'mb-2 flex items-center gap-3'}>
-            <h3 className={'shrink-0 text-xs font-medium text-gray-400'}>{title}</h3>
-            <div className={'h-px flex-1 bg-gray-600'} />
-        </div>
-        <div className={'grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'}>{children}</div>
+    <section className={'mb-10'}>
+        <h2 className={'mb-4 border-b border-gray-600 pb-2 text-center font-header text-lg text-gray-200'}>{title}</h2>
+        <div className={'hydra-tiles'}>{children}</div>
     </section>
 );
 

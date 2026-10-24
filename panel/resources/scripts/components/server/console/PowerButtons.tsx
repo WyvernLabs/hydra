@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/elements/button/index';
+import { Play, RotateCw, Square, Zap } from 'lucide-react';
 import Can from '@/components/elements/Can';
 import { ServerContext } from '@/state/server';
 import { PowerAction } from '@/components/server/console/ServerConsoleContainer';
@@ -9,6 +9,35 @@ import { useTranslation } from 'react-i18next';
 interface PowerButtonProps {
     className?: string;
 }
+
+type Icon = React.ComponentType<{ className?: string }>;
+
+// Hydra: grey buttons with a thin coloured border and a coloured icon: start
+// green, restart yellow, stop and kill red. Disabled ones are grey all over.
+const PowerButton = ({
+    color,
+    icon: Icon,
+    disabled,
+    onClick,
+    children,
+}: {
+    color: string;
+    icon: Icon;
+    disabled: boolean;
+    onClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+    children: React.ReactNode;
+}) => (
+    <button
+        type={'button'}
+        className={'hydra-power-btn flex-1'}
+        style={{ '--power-color': color } as React.CSSProperties}
+        disabled={disabled}
+        onClick={onClick}
+    >
+        <Icon className={'hydra-power-btn-icon'} />
+        {children}
+    </button>
+);
 
 export default ({ className }: PowerButtonProps) => {
     const [open, setOpen] = useState(false);
@@ -51,27 +80,34 @@ export default ({ className }: PowerButtonProps) => {
                 {t('console.kill_text')}
             </Dialog.Confirm>
             <Can action={'control.start'}>
-                <Button
-                    className={'flex-1'}
+                <PowerButton
+                    color={'#00ff00'}
+                    icon={Play}
                     disabled={status !== 'offline'}
                     onClick={onButtonClick.bind(this, 'start')}
                 >
                     {t('console.start')}
-                </Button>
+                </PowerButton>
             </Can>
             <Can action={'control.restart'}>
-                <Button.Text className={'flex-1'} disabled={!status} onClick={onButtonClick.bind(this, 'restart')}>
+                <PowerButton
+                    color={'#ffff00'}
+                    icon={RotateCw}
+                    disabled={!status}
+                    onClick={onButtonClick.bind(this, 'restart')}
+                >
                     {t('console.restart')}
-                </Button.Text>
+                </PowerButton>
             </Can>
             <Can action={'control.stop'}>
-                <Button.Danger
-                    className={'flex-1'}
+                <PowerButton
+                    color={'#ff0000'}
+                    icon={killable ? Zap : Square}
                     disabled={status === 'offline'}
                     onClick={onButtonClick.bind(this, killable ? 'kill' : 'stop')}
                 >
                     {killable ? t('console.kill') : t('console.stop')}
-                </Button.Danger>
+                </PowerButton>
             </Can>
         </div>
     );

@@ -117,6 +117,8 @@ func Configure(m *wserver.Manager, client remote.Client) *gin.Engine {
 	protected.POST("/api/system/database/setup", postDatabaseSetup)
 	protected.GET("/api/system/proxies", getProxies)
 	protected.PUT("/api/system/proxies", putProxies)
+	// Hydra: custom MOTD of Minecraft servers (addon "motd").
+	protected.PUT("/api/system/motd", putMotd)
 	protected.POST("/api/hydra/sftp/test", postSftpTest)
 	protected.POST("/api/hydra/sftp/list", postSftpList)
 	protected.POST("/api/hydra/sftp/delete", postSftpDelete)
@@ -174,6 +176,11 @@ func Configure(m *wserver.Manager, client remote.Client) *gin.Engine {
 
 		// Hydra: game profiles (addon "games").
 		server.POST("/hydra/profiles", postServerProfile)
+		// Hydra: import of another server over SFTP.
+		server.POST("/hydra/import/test", postServerImportTest)
+		server.POST("/hydra/import", postServerImport)
+		server.GET("/hydra/import", getServerImport)
+		server.DELETE("/hydra/import", deleteServerImport)
 		// Hydra: trash of the file manager.
 		server.GET("/hydra/trash", getServerTrash)
 		server.POST("/hydra/trash/restore", postServerTrashRestore)

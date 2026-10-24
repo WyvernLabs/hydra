@@ -76,6 +76,12 @@ class AssetComposer
             'trash' => app(\Pterodactyl\Services\Hydra\Addons\TrashAddon::class)->toArray(),
             // Hydra: game library (Design > Addons).
             'games' => app(\Pterodactyl\Services\Hydra\Addons\GamesAddon::class)->enabled(),
+            // Hydra: import of another server over SFTP (Design > Addons).
+            'importer' => app(\Pterodactyl\Services\Hydra\Addons\ImporterAddon::class)->toArray(),
+            // Hydra: installable app with tabs (Design > Addons).
+            'pwa' => app(\Pterodactyl\Services\Hydra\Addons\PwaAddon::class)->toArray(),
+            // Hydra: resource pool with the user's own servers (Design > Addons).
+            'resourcePool' => app(\Pterodactyl\Services\Hydra\Addons\ResourcePoolAddon::class)->enabled(),
             // Hydra: console texts (Design > Console) and console addons.
             'console' => app(ConsoleSettings::class)->toFrontend(app()->getLocale()) + [
                 'cpuNormalized' => app(CpuAddon::class)->enabled(),

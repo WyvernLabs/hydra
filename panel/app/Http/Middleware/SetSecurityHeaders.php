@@ -15,7 +15,8 @@ class SetSecurityHeaders
      * by the admin to support those cases without too much trouble.
      */
     private static array $headers = [
-        'X-Frame-Options' => 'DENY',
+        // Hydra: the installed app shows the admin area in a frame of its own tab.
+        'X-Frame-Options' => 'SAMEORIGIN',
         'X-Content-Type-Options' => 'nosniff',
         'X-XSS-Protection' => '1; mode=block',
         'Referrer-Policy' => 'no-referrer-when-downgrade',

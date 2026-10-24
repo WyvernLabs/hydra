@@ -11,7 +11,6 @@ use Illuminate\Http\UploadedFile;
 use Pterodactyl\Models\TicketMessage;
 use Illuminate\Support\Facades\Storage;
 use Pterodactyl\Models\TicketAttachment;
-use Pterodactyl\Notifications\TicketAnswered;
 use Illuminate\Database\ConnectionInterface;
 use Pterodactyl\Services\Hydra\Addons\TicketsAddon;
 use Pterodactyl\Services\Hydra\Markdown\MarkdownService;
@@ -89,10 +88,6 @@ class TicketService
 
             return $message;
         });
-
-        if ($staff && !$internal && $this->addon->notifies() && $ticket->user_id !== $author->id) {
-            $ticket->user->notify(new TicketAnswered($ticket));
-        }
 
         return $message;
     }

@@ -205,5 +205,5 @@
 
 @section('footer-scripts')
     @parent
-    <script src="/hydra/ticket-editor.js?v={{ config('app.version') }}"></script>
+    <script src="/hydra/ticket-editor.js?v={{ substr(md5_file(public_path('hydra/ticket-editor.js')), 0, 8) }}"></script>
 @endsection

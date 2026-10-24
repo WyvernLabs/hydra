@@ -13,6 +13,8 @@ import { PaginatedResult } from '@/api/http';
 import Pagination from '@/components/elements/Pagination';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { getResourcePool, ResourcePool } from '@/api/account/pool';
+import ResourcePoolCard from '@/components/dashboard/pool/ResourcePoolCard';
 
 // Hydra: the greeting depends on the time of day.
 const greetingKey = (): string => {
@@ -51,9 +53,22 @@ export default () => {
     const [showOnlyAdmin, setShowOnlyAdmin] = usePersistedState(`${uuid}:show_all_servers`, false);
     const showOthers = showOnlyAdmin && rootAdmin;
 
-    const { data: servers, error } = useSWR<PaginatedResult<Server>>(['/api/client/servers', showOthers, page], () =>
+    const {
+        data: servers,
+        error,
+        mutate,
+    } = useSWR<PaginatedResult<Server>>(['/api/client/servers', showOthers, page], () =>
         getServers({ page, type: showOthers ? 'admin' : undefined })
     );
+
+    // Hydra: resource pool of the user (addon), next to the own servers.
+    const poolEnabled = useStoreState((state) => state.settings.data!.resourcePool);
+    const { data: pool, mutate: mutatePool } = useSWR<ResourcePool | null>(
+        poolEnabled ? '/api/client/account/pool' : null,
+        getResourcePool,
+        { revalidateOnFocus: false }
+    );
+    const showPool = !!pool && !showOthers;
 
     useEffect(() => {
         setPage(1);
@@ -82,36 +97,48 @@ export default () => {
 
     return (
         <PageContentBlock title={t('title')} showFlashKey={'dashboard'}>
-            <div className={'hydra-dashboard-hero'}>
-                <div css={tw`min-w-0`}>
-                    <h1 className={'hydra-dashboard-greeting'}>{t(greetingKey(), { name })}</h1>
-                    <p className={'hydra-dashboard-subtitle'}>
-                        {total === undefined
-                            ? ' '
-                            : t(total === 1 ? 'server_count_one' : 'server_count', { count: total })}
-                    </p>
-                </div>
-                {rootAdmin && (
-                    <div className={'hydra-segmented'} role={'tablist'}>
-                        <button
-                            type={'button'}
-                            role={'tab'}
-                            aria-selected={!showOnlyAdmin}
-                            className={!showOnlyAdmin ? 'active' : undefined}
-                            onClick={() => setShowOnlyAdmin(false)}
-                        >
-                            {t('my_servers')}
-                        </button>
-                        <button
-                            type={'button'}
-                            role={'tab'}
-                            aria-selected={showOnlyAdmin}
-                            className={showOnlyAdmin ? 'active' : undefined}
-                            onClick={() => setShowOnlyAdmin(true)}
-                        >
-                            {t('others_servers')}
-                        </button>
+            {/* Hydra: the resource pool sits right of the greeting. */}
+            <div className={'hydra-dashboard-head'}>
+                <div className={'hydra-dashboard-hero'}>
+                    <div css={tw`min-w-0`}>
+                        <h1 className={'hydra-dashboard-greeting'}>{t(greetingKey(), { name })}</h1>
+                        <p className={'hydra-dashboard-subtitle'}>
+                            {total === undefined
+                                ? ' '
+                                : t(total === 1 ? 'server_count_one' : 'server_count', { count: total })}
+                        </p>
                     </div>
+                    {rootAdmin && (
+                        <div className={'hydra-segmented'} role={'tablist'}>
+                            <button
+                                type={'button'}
+                                role={'tab'}
+                                aria-selected={!showOnlyAdmin}
+                                className={!showOnlyAdmin ? 'active' : undefined}
+                                onClick={() => setShowOnlyAdmin(false)}
+                            >
+                                {t('my_servers')}
+                            </button>
+                            <button
+                                type={'button'}
+                                role={'tab'}
+                                aria-selected={showOnlyAdmin}
+                                className={showOnlyAdmin ? 'active' : undefined}
+                                onClick={() => setShowOnlyAdmin(true)}
+                            >
+                                {t('others_servers')}
+                            </button>
+                        </div>
+                    )}
+                </div>
+                {showPool && (
+                    <ResourcePoolCard
+                        pool={pool!}
+                        onChanged={() => {
+                            mutatePool();
+                            mutate();
+                        }}
+                    />
                 )}
             </div>
             {!servers ? (

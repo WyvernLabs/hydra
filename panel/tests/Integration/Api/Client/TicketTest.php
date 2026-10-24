@@ -10,7 +10,6 @@ use Illuminate\Http\UploadedFile;
 use Pterodactyl\Models\TicketAttachment;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Notification;
-use Pterodactyl\Notifications\TicketAnswered;
 
 /**
  * Hydra: support tickets (tickets addon) in the account and in the admin area.
@@ -35,7 +34,6 @@ class TicketTest extends ClientApiIntegrationTestCase
             ]),
             'upload_limit' => 5,
             'max_open' => 2,
-            'notify' => true,
         ]);
         Storage::fake('local');
         Notification::fake();
@@ -105,7 +103,7 @@ class TicketTest extends ClientApiIntegrationTestCase
         $this->login($admin)->post("/admin/tickets/view/{$ticket->id}/reply", ['body' => 'Secret note', 'internal' => 1])->assertRedirect();
 
         $this->assertSame(Ticket::STATUS_ANSWERED, $ticket->refresh()->status);
-        Notification::assertSentToTimes($user, TicketAnswered::class, 1);
+        Notification::assertNothingSentTo($user);
 
         $messages = $this->login($user)->getJson("/api/client/account/tickets/{$ticket->id}")->json('messages');
         $this->assertCount(2, $messages);
@@ -148,7 +146,6 @@ class TicketTest extends ClientApiIntegrationTestCase
             ],
             'upload_limit' => 5,
             'max_open' => 3,
-            'notify' => 1,
         ])->assertSessionHasNoErrors()->assertRedirect();
 
         $addon = app(\Pterodactyl\Services\Hydra\Addons\TicketsAddon::class);

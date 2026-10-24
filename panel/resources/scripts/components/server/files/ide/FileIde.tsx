@@ -815,7 +815,7 @@ export default () => {
                 </div>
                 <div
                     className={
-                        'flex h-[calc(100vh-15rem)] min-h-[28rem] overflow-hidden rounded-lg border border-gray-700 bg-gray-800/90 backdrop-blur'
+                        'flex h-[calc(var(--hydra-vh)-15rem)] min-h-[28rem] overflow-hidden rounded-lg border border-gray-700 bg-gray-800/90 backdrop-blur'
                     }
                     onDragOver={(event) => {
                         // Files dropped anywhere else go into the open folder.

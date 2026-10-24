@@ -10,7 +10,6 @@ use Pterodactyl\Facades\Activity;
 use Pterodactyl\Models\UserSanction;
 use Pterodactyl\Jobs\RevokeSftpAccessJob;
 use Pterodactyl\Notifications\AccountBanned;
-use Pterodactyl\Notifications\AccountWarned;
 use Pterodactyl\Services\Servers\SuspensionService;
 
 /**
@@ -38,7 +37,6 @@ class SanctionService
         ]);
 
         Activity::event('user:account.warned')->subject($user)->property('reason', $reason)->log();
-        $user->notify(new AccountWarned($reason));
 
         return $warning;
     }
@@ -125,7 +123,7 @@ class SanctionService
             }
 
             try {
-                $this->suspension->toggle($server, SuspensionService::ACTION_SUSPEND);
+                $this->suspension->toggle($server, SuspensionService::ACTION_SUSPEND, notify: false);
             } catch (\Throwable $exception) {
                 // The node is offline or the server is being transferred: suspend
                 // it in the panel anyway, Wings follows when it syncs.

@@ -9,6 +9,9 @@ use Pterodactyl\Facades\Activity;
 use Pterodactyl\Models\Permission;
 use Pterodactyl\Jobs\RevokeSftpAccessJob;
 use Pterodactyl\Services\Files\AllowedPaths;
+use Pterodactyl\Models\HydraServerRole;
+use Pterodactyl\Services\Hydra\Users\ServerRoleService;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Pterodactyl\Repositories\Eloquent\SubuserRepository;
 use Pterodactyl\Services\Subusers\SubuserCreationService;
 use Pterodactyl\Transformers\Api\Client\SubuserTransformer;
@@ -28,6 +31,7 @@ class SubuserController extends ClientApiController
         private SubuserRepository $repository,
         private SubuserCreationService $creationService,
         private DaemonRevocationRepository $revocationRepository,
+        private ServerRoleService $roles,
     ) {
         parent::__construct();
     }
@@ -64,15 +68,19 @@ class SubuserController extends ClientApiController
      */
     public function store(StoreSubuserRequest $request, Server $server): array
     {
+        $role = $this->resolveRole($request, $server);
         $response = $this->creationService->handle(
             $server,
             $request->input('username'),
-            $this->getDefaultPermissions($request)
+            $this->getDefaultPermissions($request, $role)
         );
 
         $paths = $this->getAllowedPaths($request);
-        if (!empty($paths)) {
-            $this->repository->update($response->id, ['allowed_paths' => $paths]);
+        if (!empty($paths) || $role) {
+            $this->repository->update($response->id, array_filter([
+                'allowed_paths' => empty($paths) ? null : $paths,
+                'hydra_role_id' => $role?->id,
+            ], fn ($value) => !is_null($value)));
             $response->refresh();
         }
 
@@ -80,8 +88,9 @@ class SubuserController extends ClientApiController
             ->subject($response->user)
             ->property([
                 'username' => $response->user->username,
-                'permissions' => $this->getDefaultPermissions($request),
+                'permissions' => $this->getDefaultPermissions($request, $role),
                 'allowed_paths' => $paths ?? [],
+                'role' => $role?->name,
             ])
             ->log();
 
@@ -101,7 +110,10 @@ class SubuserController extends ClientApiController
         /** @var \Pterodactyl\Models\Subuser $subuser */
         $subuser = $request->attributes->get('subuser');
 
-        $permissions = $this->getDefaultPermissions($request);
+        // Hydra: with a role the permissions come from it; "role" null means own permissions.
+        $role = $this->resolveRole($request, $server);
+        $roleChanged = $request->has('role') && ($role?->id !== $subuser->hydra_role_id);
+        $permissions = $this->getDefaultPermissions($request, $role);
         $current = $subuser->permissions;
 
         sort($permissions);
@@ -125,11 +137,11 @@ class SubuserController extends ClientApiController
 
         // Only update the database and hit up the Wings instance to invalidate JTI's if the permissions
         // have actually changed for the user.
-        if ($permissions !== $current || $pathsChanged) {
-            $log->transaction(function () use ($request, $subuser, $server, $paths, $pathsChanged) {
+        if ($permissions !== $current || $pathsChanged || $roleChanged) {
+            $log->transaction(function () use ($request, $subuser, $server, $paths, $pathsChanged, $permissions, $role) {
                 $this->repository->update($subuser->id, array_merge([
-                    'permissions' => $this->getDefaultPermissions($request),
-                ], $pathsChanged ? ['allowed_paths' => count($paths) > 0 ? $paths : null] : []));
+                    'permissions' => $permissions,
+                ], $pathsChanged ? ['allowed_paths' => count($paths) > 0 ? $paths : null] : [], $request->has('role') ? ['hydra_role_id' => $role?->id] : []));
 
                 RevokeSftpAccessJob::dispatch($subuser->user->uuid, $server);
             });
@@ -169,8 +181,13 @@ class SubuserController extends ClientApiController
      * that were passed that do not also exist in the internally tracked list of
      * permissions.
      */
-    protected function getDefaultPermissions(Request $request): array
+    protected function getDefaultPermissions(Request $request, ?HydraServerRole $role = null): array
     {
+        // Hydra: a role brings its own permissions.
+        if ($role) {
+            return $role->permissions;
+        }
+
         $allowed = Permission::permissions()
             ->map(function ($value, $prefix) {
                 return array_map(function ($value) use ($prefix) {
@@ -183,6 +200,23 @@ class SubuserController extends ClientApiController
         $cleaned = array_intersect($request->input('permissions') ?? [], $allowed);
 
         return array_unique(array_merge($cleaned, [Permission::ACTION_WEBSOCKET_CONNECT]));
+    }
+
+    /**
+     * Hydra: the role picked for the subuser, null for own permissions. Only
+     * roles of the server whose permissions the user has can be given.
+     */
+    protected function resolveRole(Request $request, Server $server): ?HydraServerRole
+    {
+        if (!$request->filled('role')) {
+            return null;
+        }
+
+        $role = HydraServerRole::query()->where('server_id', $server->id)->find((int) $request->input('role'))
+            ?? throw new NotFoundHttpException(__('server/users.role_not_found'));
+        $this->roles->assertAssignable($request->user(), $server, $role->permissions);
+
+        return $role;
     }
 
     /**

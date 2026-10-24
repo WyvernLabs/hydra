@@ -10,6 +10,7 @@ import tw from 'twin.macro';
 import GreyRowBox from '@/components/elements/GreyRowBox';
 import Avatar from '@/components/Avatar';
 import { useTranslation } from 'react-i18next';
+import { useServerRoles } from '@/api/server/users/roles';
 
 interface Props {
     subuser: Subuser;
@@ -19,6 +20,8 @@ export default ({ subuser }: Props) => {
     const uuid = useStoreState((state) => state.user!.data!.uuid);
     const [visible, setVisible] = useState(false);
     const { t } = useTranslation('client/server');
+    const { data: roles } = useServerRoles();
+    const role = roles?.find((item) => item.id === subuser.roleId);
 
     return (
         <GreyRowBox css={tw`mb-2`}>
@@ -34,7 +37,17 @@ export default ({ subuser }: Props) => {
                 {subuser.online && <span className={'hydra-online-dot hydra-online-dot--small'} />}
             </div>
             <div css={tw`ml-4 flex-1 overflow-hidden`}>
-                <p css={tw`text-sm truncate`}>{subuser.username}</p>
+                <p css={tw`text-sm truncate`}>
+                    {subuser.username}
+                    {role && (
+                        <span
+                            className={'ml-2 rounded-full border px-2 py-px text-2xs'}
+                            style={{ borderColor: role.color, color: role.color }}
+                        >
+                            {role.name}
+                        </span>
+                    )}
+                </p>
                 {subuser.allowedPaths.length > 0 && (
                     <p css={tw`text-xs text-neutral-400 truncate`} title={subuser.allowedPaths.join(', ')}>
                         {t('users.folders_limited', { count: subuser.allowedPaths.length })}:{' '}

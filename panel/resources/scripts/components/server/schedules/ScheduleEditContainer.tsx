@@ -12,11 +12,10 @@ import { ServerContext } from '@/state/server';
 import PageContentBlock from '@/components/elements/PageContentBlock';
 import tw from 'twin.macro';
 import { Button } from '@/components/elements/button/index';
-import ScheduleTaskRow from '@/components/server/schedules/ScheduleTaskRow';
+import ScheduleTaskTree from '@/components/server/schedules/ScheduleTaskTree';
 import isEqual from 'react-fast-compare';
 import { formatDate } from '@/lib/date';
 import ScheduleTriggerText from '@/components/server/schedules/ScheduleTriggerText';
-import { taskDepths } from '@/components/server/schedules/taskActions';
 import RunScheduleButton from '@/components/server/schedules/RunScheduleButton';
 import { useTranslation } from 'react-i18next';
 
@@ -77,9 +76,8 @@ export default () => {
         setShowEditModal((s) => !s);
     }, []);
 
-    // Hydra: tasks in order, indented inside the blocks of conditions.
+    // Hydra: tasks in order; blocks of conditions are built from them.
     const sorted = (schedule?.tasks || []).slice().sort((a, b) => a.sequenceId - b.sequenceId);
-    const depths = taskDepths(sorted);
 
     return (
         <PageContentBlock title={t('schedules.title')}>
@@ -136,16 +134,8 @@ export default () => {
                             <ScheduleTriggerText schedule={schedule} className={'mt-1 text-gray-100'} />
                         </div>
                         <div css={tw`bg-neutral-700 rounded-b`}>
-                            {sorted.map((task, index) => (
-                                <ScheduleTaskRow
-                                    key={`${schedule.id}_${task.id}`}
-                                    task={task}
-                                    schedule={schedule}
-                                    depth={depths[task.id]}
-                                    first={index === 0}
-                                    last={index === sorted.length - 1}
-                                />
-                            ))}
+                            {/* Hydra: "if" blocks hold their branches. */}
+                            <ScheduleTaskTree schedule={schedule} tasks={sorted} />
                         </div>
                     </div>
                     <EditScheduleModal visible={showEditModal} schedule={schedule} onModalDismissed={toggleEditModal} />

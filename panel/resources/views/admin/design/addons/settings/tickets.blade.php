@@ -100,11 +100,6 @@
                         <p class="text-muted small">{{ __('admin/addons.tickets.max_open_help') }}</p>
                     </div>
                 </div>
-                <div class="checkbox checkbox-primary no-margin">
-                    <input type="checkbox" id="ticketNotify" name="notify" value="1" @checked(old('notify', $addon->notifies()))>
-                    <label for="ticketNotify">{{ __('admin/addons.tickets.notify') }}</label>
-                </div>
-                <p class="text-muted small no-margin">{{ __('admin/addons.tickets.notify_help') }}</p>
             </div>
         </div>
     </div>

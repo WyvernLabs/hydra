@@ -58,7 +58,7 @@
 
         {{-- Loaded last so that the Hydra theme wins over AdminLTE and Bootstrap. --}}
         @include('partials.hydra.head')
-        <link rel="stylesheet" href="/hydra/admin.css?v={{ config('app.version') }}">
+        <link rel="stylesheet" href="/hydra/admin.css?v={{ substr(md5_file(public_path('hydra/admin.css')), 0, 8) }}">
     </head>
     <body class="hydra-body hydra-admin">
         <div class="hydra-shell">

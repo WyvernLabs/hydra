@@ -4,6 +4,7 @@ namespace Pterodactyl\Services\Servers;
 
 use Webmozart\Assert\Assert;
 use Pterodactyl\Models\Server;
+use Pterodactyl\Notifications\ServerSuspended;
 use Pterodactyl\Repositories\Wings\DaemonServerRepository;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
@@ -21,11 +22,12 @@ class SuspensionService
     }
 
     /**
-     * Suspends a server on the system.
+     * Suspends a server on the system. Hydra: the owner gets an email about
+     * the suspension unless $notify is false.
      *
      * @throws \Throwable
      */
-    public function toggle(Server $server, string $action = self::ACTION_SUSPEND): void
+    public function toggle(Server $server, string $action = self::ACTION_SUSPEND, bool $notify = true): void
     {
         Assert::oneOf($action, [self::ACTION_SUSPEND, self::ACTION_UNSUSPEND]);
 
@@ -58,6 +60,10 @@ class SuspensionService
                 'status' => $isSuspending ? null : Server::STATUS_SUSPENDED,
             ]);
             throw $exception;
+        }
+
+        if ($isSuspending && $notify && $server->user) {
+            $server->user->notify(new ServerSuspended($server->name));
         }
     }
 }

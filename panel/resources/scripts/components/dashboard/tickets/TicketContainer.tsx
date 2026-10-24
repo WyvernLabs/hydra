@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import useSWR from 'swr';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,7 @@ import { closeTicket, getTicket, replyToTicket, TicketMessage } from '@/api/acco
 import { httpErrorToHuman } from '@/api/http';
 import { useFlashKey } from '@/plugins/useFlash';
 import { formatDate, formatDistanceToNow } from '@/lib/date';
+import { useDocumentTitle } from '@/components/hydra/tabs/context';
 
 // Hydra: a support ticket with its messages and the answer form (tickets addon).
 
@@ -73,9 +74,7 @@ export default () => {
     const [sending, setSending] = useState(false);
     const [confirmClose, setConfirmClose] = useState(false);
 
-    useEffect(() => {
-        if (data) document.title = `#${data.id} ${data.subject}`;
-    }, [data]);
+    useDocumentTitle(data ? `#${data.id} ${data.subject}` : undefined);
 
     if (error) {
         return <ServerError message={httpErrorToHuman(error)} onRetry={() => mutate()} />;

@@ -24,7 +24,7 @@ class SubuserTransformer extends BaseClientTransformer
         // Hydra: other users only see the username, never the email address.
         return array_merge(
             collect($this->makeTransformer(UserTransformer::class)->transform($model->user))->except('email')->all(),
-            ['permissions' => $model->permissions, 'allowed_paths' => $model->allowed_paths ?? []]
+            ['permissions' => $model->permissions, 'allowed_paths' => $model->allowed_paths ?? [], 'role_id' => $model->hydra_role_id]
         );
     }
 }

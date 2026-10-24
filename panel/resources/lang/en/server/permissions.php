@@ -48,7 +48,7 @@ return [
     ],
     'settings' => [
         'title' => 'Settings',
-        'labels' => ['rename' => 'Rename', 'reinstall' => 'Reinstall', 'game' => 'Switch Game', 'version' => 'Change Minecraft Version'],
+        'labels' => ['rename' => 'Rename', 'reinstall' => 'Reinstall', 'game' => 'Switch Game', 'version' => 'Change Minecraft Version', 'import' => 'Import Server'],
     ],
     'activity' => ['title' => 'Activity', 'labels' => ['read' => 'View']],
 ];

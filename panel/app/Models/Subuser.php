@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property int $server_id
  * @property array $permissions
  * @property array|null $allowed_paths
+ * @property int|null $hydra_role_id
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @property User $user
@@ -48,6 +49,7 @@ class Subuser extends Model
         'server_id' => 'int',
         'permissions' => 'array',
         'allowed_paths' => 'array',
+        'hydra_role_id' => 'int',
     ];
 
     public static array $validationRules = [
@@ -57,6 +59,8 @@ class Subuser extends Model
         'permissions.*' => 'string',
         'allowed_paths' => 'nullable|array|max:50',
         'allowed_paths.*' => 'string|max:255',
+        // Hydra: role the permissions come from (see HydraServerRole).
+        'hydra_role_id' => 'nullable|integer',
     ];
 
     /**

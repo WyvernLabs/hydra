@@ -12,31 +12,6 @@ return [
     'trouble' => 'Falls die Schaltfläche „:action“ nicht funktioniert, kopiere diese Adresse in deinen Browser:',
     'rights' => 'Alle Rechte vorbehalten.',
 
-    'account_created' => [
-        'subject' => 'Dein Konto bei :app',
-        'intro' => 'Für dich wurde ein Konto bei :app angelegt.',
-        'username' => 'Benutzername: :username',
-        'email' => 'E-Mail: :email',
-        'action' => 'Konto einrichten',
-    ],
-    'added_to_server' => [
-        'subject' => 'Du wurdest zu einem Server hinzugefügt',
-        'intro' => 'Du wurdest als Unterbenutzer zu diesem Server hinzugefügt und kannst ihn jetzt teilweise verwalten.',
-        'server' => 'Server: :name',
-        'action' => 'Server öffnen',
-    ],
-    'removed_from_server' => [
-        'subject' => 'Du wurdest von einem Server entfernt',
-        'intro' => 'Du wurdest als Unterbenutzer von diesem Server entfernt.',
-        'server' => 'Server: :name',
-        'action' => 'Panel öffnen',
-    ],
-    'server_installed' => [
-        'subject' => 'Dein Server ist bereit',
-        'intro' => 'Dein Server ist fertig installiert und kann jetzt genutzt werden.',
-        'server' => 'Server: :name',
-        'action' => 'Anmelden und loslegen',
-    ],
     'password_reset' => [
         'subject' => 'Passwort zurücksetzen',
         'intro' => 'Du erhältst diese E-Mail, weil für dein Konto das Zurücksetzen des Passworts angefordert wurde.',
@@ -53,18 +28,19 @@ return [
         'lifetime' => 'Der Code ist :minutes Minuten gültig.',
         'outro' => 'Wenn du kein Konto anlegen wolltest, kannst du diese E-Mail ignorieren.',
     ],
-    // Hydra: Verwarnungen und Sperren.
-    'ticket_answered' => [
-        'subject' => 'Neue Antwort auf dein Ticket #:id',
-        'intro' => 'Unser Team hat auf dein Ticket „:subject“ geantwortet.',
-        'action' => 'Ticket öffnen',
+    // Hydra: Sperre eines Servers und Löschung des Kontos.
+    'server_suspended' => [
+        'subject' => 'Dein Server :name wurde gesperrt',
+        'intro' => 'Ein Administrator hat deinen Server „:name“ gesperrt. Er kann nicht mehr gestartet werden.',
+        'access' => 'Auf Dateien, Datenbanken und Backups kannst du weiterhin zugreifen.',
+        'deletion' => 'Bleibt der Server gesperrt, wird er nach :days Tagen automatisch gelöscht.',
+        'outro' => 'Wenn du denkst, dass es sich um einen Fehler handelt, wende dich bitte an den Support.',
     ],
-    'account_warned' => [
-        'subject' => 'Du hast eine Verwarnung erhalten',
-        'intro' => 'Ein Administrator hat dein Konto verwarnt.',
-        'reason' => 'Grund: :reason',
-        'outro' => 'Bitte halte dich an die Regeln, weitere Verstöße können zu einer Sperre führen. Die Verwarnung wird dir auch beim Anmelden angezeigt.',
-        'action' => 'Panel öffnen',
+    'account_deleted' => [
+        'subject' => 'Dein Konto bei :app wurde gelöscht',
+        'intro' => 'Dein Konto bei :app wurde gelöscht.',
+        'data' => 'Deine Daten wurden entfernt, eine Anmeldung ist nicht mehr möglich.',
+        'outro' => 'Wenn du das nicht veranlasst hast, wende dich bitte an den Support.',
     ],
     'account_banned' => [
         'subject' => 'Dein Konto wurde gesperrt',

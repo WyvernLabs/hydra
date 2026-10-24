@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import classNames from 'classnames';
-import { LogOut as LogoutIcon, ShieldCheck as ShieldCheckIcon } from 'lucide-react';
+import { Download as DownloadIcon, LogOut as LogoutIcon, ShieldCheck as ShieldCheckIcon } from 'lucide-react';
 import { useStoreState } from '@/state/hooks';
 import http from '@/api/http';
 import Avatar from '@/components/Avatar';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 import { useTranslation } from 'react-i18next';
+import { useInstallPrompt } from '@/lib/pwa';
 
 type IconComponent = React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 
@@ -84,6 +85,8 @@ export default ({ sections, open, onNavigate }: Props) => {
     const rootAdmin = useStoreState((state) => state.user.data!.adminAccess);
     const { t } = useTranslation();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    // Hydra: offered by the browser while the app (addon "pwa") is not installed.
+    const install = useInstallPrompt();
 
     const onTriggerLogout = () => {
         setIsLoggingOut(true);
@@ -132,6 +135,14 @@ export default ({ sections, open, onNavigate }: Props) => {
                         <a href={'/admin'} className={'hydra-icon-btn'}>
                             <ShieldCheckIcon className={'hydra-nav-icon'} />
                         </a>
+                    </Tooltip>
+                )}
+                {install && (
+                    <Tooltip placement={'top'} content={t('nav.install_app')}>
+                        <button type={'button'} className={'hydra-icon-btn'} onClick={install}>
+                            <DownloadIcon className={'hydra-nav-icon'} />
+                            <span className={'sr-only'}>{t('nav.install_app')}</span>
+                        </button>
                     </Tooltip>
                 )}
                 <Tooltip placement={'top'} content={t('nav.sign_out')}>

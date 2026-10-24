@@ -18,6 +18,15 @@ Route::get('/branding/{type}', Base\BrandingController::class)
     ->where('type', 'logo|favicon')
     ->name('branding');
 
+// Hydra: the panel as an installable app (addon "pwa").
+Route::get('/manifest.webmanifest', [Base\PwaController::class, 'manifest'])
+    ->withoutMiddleware(['auth', RequireTwoFactorAuthentication::class])
+    ->name('pwa.manifest');
+Route::get('/pwa/{type}-{size}.png', [Base\PwaController::class, 'icon'])
+    ->withoutMiddleware(['auth', RequireTwoFactorAuthentication::class])
+    ->where(['type' => 'icon|maskable', 'size' => '[0-9]+'])
+    ->name('pwa.icon');
+
 // Hydra: profile pictures and banners of users.
 // Hydra: backgrounds of the login page, the dashboard and the server pages.
 Route::get('/backgrounds/{file}', Base\BackgroundController::class)

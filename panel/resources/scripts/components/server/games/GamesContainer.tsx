@@ -294,7 +294,7 @@ export default () => {
                             >
                                 {t('games.profiles', { count: library.profiles.length, limit: library.maxProfiles })}
                             </h2>
-                            <div className={'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3'}>
+                            <div className={'hydra-tiles'}>
                                 {library.profiles.map((profile) => (
                                     <Tile
                                         key={profile.id}
@@ -333,7 +333,7 @@ export default () => {
                             >
                                 {nest.name}
                             </h2>
-                            <div className={'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3'}>
+                            <div className={'hydra-tiles'}>
                                 {nest.eggs.map((egg) => {
                                     const current = egg.id === library.current;
                                     return (

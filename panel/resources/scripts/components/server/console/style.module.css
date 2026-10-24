@@ -42,7 +42,7 @@
          * 15rem. "flex: none", since flex-1 would ignore the height.
          */
         flex: none;
-        height: max(24rem, calc(100vh - 15rem));
+        height: max(24rem, calc(var(--hydra-vh, 100vh) - 15rem));
 
         & #terminal {
             @apply h-full;

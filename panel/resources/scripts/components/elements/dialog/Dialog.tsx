@@ -39,6 +39,7 @@ export default ({
     hideCloseIcon,
     preventExternalClose,
     wide,
+    huge,
     children,
 }: RenderDialogProps) => {
     const container = useRef<HTMLDivElement>(null);
@@ -73,7 +74,7 @@ export default ({
                         open={open}
                         onClose={onDialogClose}
                     >
-                        <div className={'fixed inset-0 bg-gray-900/50 z-40'} />
+                        <div className={'fixed inset-0 bg-black/60 z-40'} />
                         <div className={'fixed inset-0 overflow-y-auto z-50'}>
                             <div
                                 ref={container}
@@ -87,11 +88,21 @@ export default ({
                                     animate={down ? 'bounce' : 'open'}
                                     exit={'closed'}
                                     variants={variants}
-                                    className={wide ? `${styles.panel} !max-w-4xl` : styles.panel}
+                                    className={
+                                        huge
+                                            ? `${styles.panel} !max-w-6xl`
+                                            : wide
+                                            ? `${styles.panel} !max-w-4xl`
+                                            : styles.panel
+                                    }
                                 >
                                     <div className={'flex p-6 pb-0 overflow-y-auto'}>
                                         {iconPosition === 'container' && icon}
-                                        <div className={'flex-1 max-h-[70vh] min-w-0'}>
+                                        <div
+                                            className={
+                                                huge ? 'flex-1 max-h-[80vh] min-w-0' : 'flex-1 max-h-[70vh] min-w-0'
+                                            }
+                                        >
                                             <div className={'flex items-center'}>
                                                 {iconPosition !== 'container' && icon}
                                                 <div>

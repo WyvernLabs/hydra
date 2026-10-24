@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { useDocumentTitle } from '@/components/hydra/tabs/context';
 import useSWR from 'swr';
 import { useParams } from 'react-router-dom';
 import http, { httpErrorToHuman } from '@/api/http';
@@ -22,9 +23,7 @@ export default () => {
         http.get(`/api/client/pages/${slug}`).then(({ data }) => data.attributes)
     );
 
-    useEffect(() => {
-        if (data) document.title = data.title;
-    }, [data]);
+    useDocumentTitle(data?.title);
 
     // Spoilers open on click, like on Discord.
     const reveal = (event: React.MouseEvent | React.KeyboardEvent) => {

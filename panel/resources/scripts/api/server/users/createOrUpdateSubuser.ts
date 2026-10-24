@@ -6,6 +6,8 @@ interface Params {
     username: string;
     permissions: string[];
     allowedPaths: string[];
+    // Hydra: role for the permissions, null for own permissions.
+    role: number | null;
 }
 
 export default (uuid: string, params: Params, subuser?: Subuser): Promise<Subuser> => {
@@ -15,6 +17,7 @@ export default (uuid: string, params: Params, subuser?: Subuser): Promise<Subuse
             permissions: params.permissions,
             // eslint-disable-next-line camelcase
             allowed_paths: params.allowedPaths,
+            role: params.role,
         })
             .then((data) => resolve(rawDataToServerSubuser(data.data)))
             .catch(reject);

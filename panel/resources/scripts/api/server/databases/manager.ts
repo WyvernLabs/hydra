@@ -55,6 +55,13 @@ export interface QueryResult {
 
 const base = (uuid: string, database: string) => `/api/client/servers/${uuid}/databases/${database}`;
 
+// Hydra: size in bytes and number of tables, null when the database server is not reachable.
+export const getDatabaseStats = (
+    uuid: string,
+    database: string
+): Promise<{ tables: number | null; size: number | null }> =>
+    http.get(`/api/client/servers/${uuid}/databases/${database}/stats`).then(({ data }) => data);
+
 export const getTables = (uuid: string, database: string): Promise<{ tables: DatabaseTable[]; phpmyadmin: boolean }> =>
     http.get(`${base(uuid, database)}/tables`).then(({ data }) => data);
 

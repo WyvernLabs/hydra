@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import ContentContainer from '@/components/elements/ContentContainer';
 import { CSSTransition } from 'react-transition-group';
 import tw from 'twin.macro';
 import Footer from '@/components/hydra/Footer';
 import FlashMessageRender from '@/components/FlashMessageRender';
+import { useDocumentTitle } from '@/components/hydra/tabs/context';
 
 export interface PageContentBlockProps {
     title?: string;
@@ -12,11 +13,8 @@ export interface PageContentBlockProps {
 }
 
 const PageContentBlock: React.FC<PageContentBlockProps> = ({ title, showFlashKey, className, children }) => {
-    useEffect(() => {
-        if (title) {
-            document.title = title;
-        }
-    }, [title]);
+    // Hydra: in the installed app this names the tab.
+    useDocumentTitle(title);
 
     return (
         <CSSTransition timeout={150} classNames={'fade'} appear in>

@@ -35,6 +35,12 @@ return [
             'ban-expired' => 'Ban expired',
             'auto-deleted' => 'Account :username deleted automatically',
         ],
+        // Hydra: resource pool.
+        'pool' => [
+            'server-created' => 'Created server :name from the resource pool',
+            'server-updated' => 'Changed the resources of server :name',
+            'server-deleted' => 'Deleted server :name from the resource pool',
+        ],
         'api-key' => [
             'create' => 'Created new API key :identifier',
             'delete' => 'Deleted API key :identifier',
@@ -131,6 +137,14 @@ return [
             'notes' => 'Updated the notes for :allocation from ":old" to ":new"',
             'primary' => 'Set :allocation as the primary server allocation',
             'delete' => 'Deleted the :allocation allocation',
+        ],
+        'role' => [
+            'create' => 'Created role :name',
+            'update' => 'Changed role :name',
+            'delete' => 'Deleted role :name',
+        ],
+        'import' => [
+            'start' => 'Started an import from :host (:source) to :target (mode: :mode)',
         ],
         'game' => [
             'switch' => 'Switched the game from :from to :to (files kept: :kept)',

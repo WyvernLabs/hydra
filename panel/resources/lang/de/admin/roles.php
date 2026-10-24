@@ -138,6 +138,7 @@ return [
             'update' => ['title' => 'Ändern', 'description' => 'Benutzer bearbeiten, auch ihr Passwort.'],
             'warn' => ['title' => 'Verwarnen', 'description' => 'Benutzer verwarnen. Sie bekommen eine E-Mail und sehen die Verwarnung im Panel.'],
             'ban' => ['title' => 'Sperren', 'description' => 'Benutzer sperren und entsperren, Ban-Vorlagen verwalten. Eine Sperre meldet ab und sperrt alle Server des Benutzers.'],
+            'pool' => ['title' => 'Ressourcenpool', 'description' => 'Den Ressourcenpool eines Benutzers festlegen und bestimmen, welche seiner Server dazu zählen (Addon „Ressourcenpool“).'],
             'delete' => ['title' => 'Löschen', 'description' => 'Benutzer löschen.'],
         ],
         'roles' => [

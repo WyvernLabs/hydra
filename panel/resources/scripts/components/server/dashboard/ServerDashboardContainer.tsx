@@ -36,6 +36,7 @@ import ActivityLogEntry from '@/components/elements/activity/ActivityLogEntry';
 import { useCpuValue } from '@/lib/usage';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import { useLockdownToggle } from '@/components/server/lockdown/Lockdown';
+import PlayerStatsCard from '@/components/server/dashboard/PlayerStatsCard';
 
 // Hydra: overview page of a server (addon "Server Dashboard").
 
@@ -525,6 +526,9 @@ export default () => {
                         />
                     </Card>
                 </div>
+
+                {/* Players online (addon "player_stats") */}
+                {server.playerStats && <PlayerStatsCard className={'lg:col-span-3'} />}
 
                 {/* Recent activity */}
                 {canActivity && (

@@ -40,6 +40,9 @@ interface Props {
     depth?: number;
     first?: boolean;
     last?: boolean;
+    // Hydra: the head of an "if" block: deleting removes these tasks too (the
+    // whole block), and it does not move on its own.
+    blockIds?: number[];
 }
 
 const icons: Record<TaskAction, any> = {
@@ -55,7 +58,7 @@ const icons: Record<TaskAction, any> = {
     stop: faStopCircle,
 };
 
-export default ({ schedule, task, depth = 0, first, last }: Props) => {
+export default ({ schedule, task, depth = 0, first, last, blockIds }: Props) => {
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
     const { t } = useTranslation('client/server');
     const { clearFlashes, addError } = useFlash();
@@ -67,13 +70,13 @@ export default ({ schedule, task, depth = 0, first, last }: Props) => {
     const onConfirmDeletion = () => {
         setIsLoading(true);
         clearFlashes('schedules');
-        deleteScheduleTask(uuid, schedule.id, task.id)
-            .then(() =>
-                appendSchedule({
-                    ...schedule,
-                    tasks: schedule.tasks.filter((t) => t.id !== task.id),
-                })
-            )
+        const ids = blockIds || [task.id];
+        ids.reduce<Promise<unknown>>(
+            (chain, id) => chain.then(() => deleteScheduleTask(uuid, schedule.id, id)),
+            Promise.resolve()
+        )
+            .then(() => getServerSchedule(uuid, schedule.id))
+            .then((updated) => appendSchedule(updated))
             .catch((error) => {
                 console.error(error);
                 setIsLoading(false);
@@ -124,7 +127,7 @@ export default ({ schedule, task, depth = 0, first, last }: Props) => {
                 visible={visible}
                 onModalDismissed={() => setVisible(false)}
             >
-                {t('schedules.tasks.delete_text')}
+                {blockIds ? t('schedules.tasks.delete_block_text') : t('schedules.tasks.delete_text')}
             </ConfirmationModal>
             <FontAwesomeIcon
                 icon={icons[action] || faCode}
@@ -174,30 +177,34 @@ export default ({ schedule, task, depth = 0, first, last }: Props) => {
                 )}
                 <Can action={'schedule.update'}>
                     <div className={'ml-auto flex items-center sm:ml-0'}>
-                        <button
-                            type={'button'}
-                            aria-label={t('schedules.tasks.move_up')}
-                            title={t('schedules.tasks.move_up')}
-                            disabled={first}
-                            className={
-                                'p-2 text-sm text-neutral-500 transition-colors hover:text-neutral-100 disabled:opacity-30'
-                            }
-                            onClick={() => move(-1)}
-                        >
-                            <FontAwesomeIcon icon={faArrowUp} />
-                        </button>
-                        <button
-                            type={'button'}
-                            aria-label={t('schedules.tasks.move_down')}
-                            title={t('schedules.tasks.move_down')}
-                            disabled={last}
-                            className={
-                                'mr-2 p-2 text-sm text-neutral-500 transition-colors hover:text-neutral-100 disabled:opacity-30'
-                            }
-                            onClick={() => move(1)}
-                        >
-                            <FontAwesomeIcon icon={faArrowDown} />
-                        </button>
+                        {!blockIds && (
+                            <>
+                                <button
+                                    type={'button'}
+                                    aria-label={t('schedules.tasks.move_up')}
+                                    title={t('schedules.tasks.move_up')}
+                                    disabled={first}
+                                    className={
+                                        'p-2 text-sm text-neutral-500 transition-colors hover:text-neutral-100 disabled:opacity-30'
+                                    }
+                                    onClick={() => move(-1)}
+                                >
+                                    <FontAwesomeIcon icon={faArrowUp} />
+                                </button>
+                                <button
+                                    type={'button'}
+                                    aria-label={t('schedules.tasks.move_down')}
+                                    title={t('schedules.tasks.move_down')}
+                                    disabled={last}
+                                    className={
+                                        'mr-2 p-2 text-sm text-neutral-500 transition-colors hover:text-neutral-100 disabled:opacity-30'
+                                    }
+                                    onClick={() => move(1)}
+                                >
+                                    <FontAwesomeIcon icon={faArrowDown} />
+                                </button>
+                            </>
+                        )}
                         <button
                             type={'button'}
                             aria-label={t('schedules.tasks.edit_label')}

@@ -124,6 +124,9 @@
             @include('admin.users.partials.roles', ['readonly' => !$canManage])
         </div>
     </form>
+    @if(app(\Pterodactyl\Services\Hydra\Addons\ResourcePoolAddon::class)->enabled())
+        @include('admin.users.partials.pool', ['user' => $user, 'canManage' => $canManage])
+    @endif
     @if(Auth::user()->hasAdminPermission('users.warn') || Auth::user()->hasAdminPermission('users.ban'))
         @include('admin.users.partials.sanctions', ['user' => $user, 'canManage' => $canManage])
     @endif

@@ -19,7 +19,7 @@
 
 @section('content')
     @yield('design::nav')
-    <form action="{{ route('admin.design.addons.view', $addon->key()) }}" method="POST">
+    <form action="{{ route('admin.design.addons.view', $addon->key()) }}" method="POST" enctype="multipart/form-data">
         {!! csrf_field() !!}
         {!! method_field('PATCH') !!}
         <div class="row">

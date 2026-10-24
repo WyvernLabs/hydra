@@ -47,6 +47,8 @@ export interface Subuser {
     permissions: SubuserPermission[];
     // Hydra: folders the subuser is limited to, empty for the whole server.
     allowedPaths: string[];
+    // Hydra: role the permissions come from, null for own permissions.
+    roleId: number | null;
 
     can(permission: SubuserPermission): boolean;
 }

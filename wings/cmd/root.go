@@ -34,6 +34,7 @@ import (
 	"github.com/pterodactyl/wings/internal/database"
 	"github.com/pterodactyl/wings/internal/network"
 	"github.com/pterodactyl/wings/loggers/cli"
+	"github.com/pterodactyl/wings/motd"
 	"github.com/pterodactyl/wings/remote"
 	"github.com/pterodactyl/wings/router"
 	"github.com/pterodactyl/wings/server"
@@ -288,6 +289,29 @@ func rootCmdRun(cmd *cobra.Command, _ []string) {
 		s.StartAsync()
 	}
 
+	// Hydra: custom MOTD of Minecraft servers that are not running (addon "motd").
+	go (&motd.Service{
+		Firewall: motd.IPTables{},
+		Servers: func() []motd.Server {
+			var out []motd.Server
+			for _, s := range manager.All() {
+				state := s.Environment.State()
+				// Admins may run suspended servers, those are reachable as usual.
+				if s.IsSuspended() && state == environment.ProcessOfflineState {
+					state = "suspended"
+				}
+				out = append(out, motd.Server{
+					UUID:  s.ID(),
+					Name:  s.Config().Meta.Name,
+					IP:    s.Config().Allocations.DefaultMapping.Ip,
+					Port:  s.Config().Allocations.DefaultMapping.Port,
+					State: state,
+				})
+			}
+			return out
+		},
+	}).Run(cmd.Context())
+
 	httpConnections, sftpConnections := connectionLimits()
 	log.WithFields(log.Fields{"http": httpConnections, "sftp": sftpConnections}).Info("limiting the number of open connections, raise the open file limit for Wings to allow more")
 
@@ -494,7 +518,7 @@ func printLogo() {
 	fmt.Printf(colorstring.Color(`
  [green][bold]_   _           _
 | | | |_   _  __| |_ __ __ _
-| |_| | | | |/ _` + "`" + ` | '__/ _` + "`" + ` |
+| |_| | | | |/ _`+"`"+` | '__/ _`+"`"+` |
 |  _  | |_| | (_| | | | (_| |
 |_| |_|\__, |\__,_|_|  \__,_|
        |___/[reset]  Wings [bold]%s[reset]

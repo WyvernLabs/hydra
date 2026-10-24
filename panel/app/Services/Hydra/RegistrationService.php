@@ -148,7 +148,7 @@ class RegistrationService
             'password' => $data['password'],
             'root_admin' => false,
             'language' => app()->getLocale(),
-        ], false);
+        ]);
 
         $session->forget(self::SESSION_KEY);
 

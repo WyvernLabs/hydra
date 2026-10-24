@@ -12,31 +12,6 @@ return [
     'trouble' => 'If you’re having trouble clicking the ":action" button, copy and paste the URL below into your web browser:',
     'rights' => 'All rights reserved.',
 
-    'account_created' => [
-        'subject' => 'Your account on :app',
-        'intro' => 'You are receiving this email because an account has been created for you on :app.',
-        'username' => 'Username: :username',
-        'email' => 'Email: :email',
-        'action' => 'Setup Your Account',
-    ],
-    'added_to_server' => [
-        'subject' => 'You have been added to a server',
-        'intro' => 'You have been added as a subuser for the following server, allowing you certain control over the server.',
-        'server' => 'Server Name: :name',
-        'action' => 'Visit Server',
-    ],
-    'removed_from_server' => [
-        'subject' => 'You have been removed from a server',
-        'intro' => 'You have been removed as a subuser for the following server.',
-        'server' => 'Server Name: :name',
-        'action' => 'Visit Panel',
-    ],
-    'server_installed' => [
-        'subject' => 'Your server is ready',
-        'intro' => 'Your server has finished installing and is now ready for you to use.',
-        'server' => 'Server Name: :name',
-        'action' => 'Login and Begin Using',
-    ],
     'password_reset' => [
         'subject' => 'Reset Password',
         'intro' => 'You are receiving this email because we received a password reset request for your account.',
@@ -53,18 +28,19 @@ return [
         'lifetime' => 'The code is valid for :minutes minutes.',
         'outro' => 'If you did not try to create an account, you can ignore this email.',
     ],
-    // Hydra: warnings and bans.
-    'ticket_answered' => [
-        'subject' => 'New answer to your ticket #:id',
-        'intro' => 'Our team has answered your ticket ":subject".',
-        'action' => 'Open ticket',
+    // Hydra: suspension of a server and deletion of the account.
+    'server_suspended' => [
+        'subject' => 'Your server :name has been suspended',
+        'intro' => 'An administrator has suspended your server ":name". It can no longer be started.',
+        'access' => 'You can still access its files, databases and backups.',
+        'deletion' => 'If the server stays suspended, it will be deleted automatically after :days days.',
+        'outro' => 'If you think this is a mistake, please contact support.',
     ],
-    'account_warned' => [
-        'subject' => 'You have received a warning',
-        'intro' => 'An administrator has warned your account.',
-        'reason' => 'Reason: :reason',
-        'outro' => 'Please follow the rules, further violations can lead to a ban. The warning is also shown when you log in.',
-        'action' => 'Open panel',
+    'account_deleted' => [
+        'subject' => 'Your :app account has been deleted',
+        'intro' => 'Your account on :app has been deleted.',
+        'data' => 'Your data has been removed and you can no longer log in.',
+        'outro' => 'If you did not ask for this, please contact support.',
     ],
     'account_banned' => [
         'subject' => 'Your account has been banned',

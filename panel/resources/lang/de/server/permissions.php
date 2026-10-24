@@ -180,12 +180,14 @@ return [
             'reinstall' => 'Erlaubt das Neuinstallieren des Servers.',
             'game' => 'Erlaubt das Wechseln des Spiels sowie das Laden und Löschen von Spielprofilen. Achtung: Dabei werden die Dateien des Servers ersetzt.',
             'version' => 'Erlaubt das Installieren einer anderen Minecraft-Software oder -Version. Achtung: Dabei können Dateien des Servers ersetzt oder gelöscht werden.',
+            'import' => 'Erlaubt das Übertragen der Dateien eines anderen Servers per SFTP auf diesen Server. Achtung: Dabei können Dateien des Servers ersetzt oder gelöscht werden.',
         ],
         'labels' => [
             'rename' => 'Umbenennen',
             'reinstall' => 'Neu installieren',
             'game' => 'Spiel wechseln',
             'version' => 'Minecraft-Version wechseln',
+            'import' => 'Server importieren',
         ],
     ],
 

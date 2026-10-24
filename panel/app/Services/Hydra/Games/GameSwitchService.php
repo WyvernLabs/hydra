@@ -128,10 +128,11 @@ class GameSwitchService
 
     /**
      * Stops the server and keeps its files as a profile, or removes them.
+     * Also used by the importer before it copies another server.
      *
      * @throws \Throwable
      */
-    private function clear(Server $server, bool $keep, ?string $name): void
+    public function clear(Server $server, bool $keep, ?string $name): void
     {
         if (!is_null($server->status)) {
             throw new DisplayException(__('server/games.busy'));

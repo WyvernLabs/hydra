@@ -41,7 +41,7 @@ class CreateServerSubuserTest extends ClientApiIntegrationTestCase
         $response->assertJsonMissingPath('attributes.email');
 
         $expected = $response->json('attributes');
-        unset($expected['permissions'], $expected['allowed_paths']);
+        unset($expected['permissions'], $expected['allowed_paths'], $expected['role_id']);
 
         $this->assertEquals(
             collect($this->getTransformedSubuserUser($subuser))->except('email')->all(),

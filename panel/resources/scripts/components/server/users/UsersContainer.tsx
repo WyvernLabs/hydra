@@ -5,6 +5,7 @@ import { ApplicationStore } from '@/state';
 import Spinner from '@/components/elements/Spinner';
 import AddSubuserButton from '@/components/server/users/AddSubuserButton';
 import UserRow from '@/components/server/users/UserRow';
+import RolesBox from '@/components/server/users/RolesBox';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import getServerSubusers from '@/api/server/users/getServerSubusers';
 import { httpErrorToHuman } from '@/api/http';
@@ -52,6 +53,8 @@ export default () => {
     return (
         <ServerContentBlock title={t('users.title')}>
             <FlashMessageRender byKey={'users'} css={tw`mb-4`} />
+            {/* Hydra: roles with permissions for the subusers. */}
+            <RolesBox />
             {!subusers.length ? (
                 <p css={tw`text-center text-sm text-neutral-300`}>{t('users.none')}</p>
             ) : (

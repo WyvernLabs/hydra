@@ -4,6 +4,9 @@
  * Design tokens (colors, radius, sizes) live in public/hydra/tokens.css.
  */
 
+/* Height of the page area; smaller below the tab bar of the installed app. */
+:root { --hydra-vh: 100vh; }
+
 body.hydra-body {
     margin: 0;
     min-height: 100vh;
@@ -47,7 +50,7 @@ a { color: rgb(var(--hydra-accent-400)); }
     display: flex;
     align-items: flex-start;
     gap: var(--hydra-gap);
-    min-height: 100vh;
+    min-height: var(--hydra-vh);
     padding: var(--hydra-gap);
 }
 
@@ -65,7 +68,7 @@ a { color: rgb(var(--hydra-accent-400)); }
     flex-direction: column;
     flex: none;
     width: var(--hydra-sidebar-width);
-    height: calc(100vh - var(--hydra-gap) * 2);
+    height: calc(var(--hydra-vh) - var(--hydra-gap) * 2);
     background: var(--hydra-panel);
     border: 1px solid var(--hydra-border);
     border-radius: var(--hydra-radius);
@@ -312,6 +315,114 @@ a { color: rgb(var(--hydra-accent-400)); }
     bottom: 100%;
     height: calc(var(--hydra-gap) + 1px);
     background: var(--hydra-page-background, var(--hydra-bg) var(--hydra-pattern) center top / 760px repeat fixed);
+}
+
+/*
+ * Greeting and, when the user has a resource pool, the pool card next to it.
+ * The row stays visible while scrolling instead of the greeting alone.
+ */
+.hydra-dashboard-head {
+    position: sticky;
+    top: var(--hydra-gap);
+    z-index: 15;
+    display: flex;
+    align-items: stretch;
+    gap: var(--hydra-gap);
+    margin-bottom: var(--hydra-gap);
+}
+
+.hydra-dashboard-head::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    right: -1px;
+    bottom: 100%;
+    height: calc(var(--hydra-gap) + 1px);
+    background: var(--hydra-page-background, var(--hydra-bg) var(--hydra-pattern) center top / 760px repeat fixed);
+}
+
+.hydra-dashboard-head > .hydra-dashboard-hero {
+    position: static;
+    flex: 1;
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+.hydra-dashboard-head > .hydra-dashboard-hero::before { content: none; }
+
+.hydra-dashboard-pool {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: none;
+    width: 280px;
+    padding: 14px 18px;
+    overflow: hidden;
+    background: var(--hydra-panel);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius);
+    box-shadow: var(--hydra-shadow);
+}
+
+.hydra-dashboard-pool-label {
+    color: rgb(var(--hydra-accent-400));
+    font-size: 12px;
+}
+
+.hydra-dashboard-pool-value {
+    margin-top: 2px;
+    color: var(--hydra-text);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.hydra-dashboard-pool-bar {
+    position: relative;
+    z-index: 1;
+    height: 5px;
+    margin-top: 8px;
+    border-radius: 999px;
+    background: var(--hydra-panel-2);
+    overflow: hidden;
+}
+
+.hydra-dashboard-pool-bar > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: rgb(var(--hydra-accent-500));
+}
+
+.hydra-dashboard-pool-button {
+    position: relative;
+    z-index: 1;
+    align-self: flex-start;
+    margin-top: 10px;
+    padding: 6px 12px;
+    border: 1px solid var(--hydra-border-strong);
+    border-radius: var(--hydra-radius-sm);
+    background: var(--hydra-panel-2);
+    color: var(--hydra-text);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .12s ease, background .12s ease;
+}
+
+.hydra-dashboard-pool-button:hover { border-color: rgb(var(--hydra-accent-500)); }
+
+/* Large faded icon in the corner, like the storage card of the reference. */
+.hydra-dashboard-pool-icon {
+    position: absolute;
+    right: -8px;
+    bottom: -10px;
+    width: 84px;
+    height: 84px;
+    color: rgb(var(--hydra-accent-500));
+    opacity: .12;
+    pointer-events: none;
 }
 
 .hydra-dashboard-greeting {
@@ -729,6 +840,11 @@ a { color: rgb(var(--hydra-accent-400)); }
 
     .hydra-dashboard-hero { top: calc(60px + var(--hydra-gap)); }
 
+    /* On small screens the pool card goes below the greeting and nothing sticks. */
+    .hydra-dashboard-head { position: static; flex-wrap: wrap; }
+    .hydra-dashboard-head::before { content: none; }
+    .hydra-dashboard-pool { width: 100%; }
+
     .hydra-topbar {
         position: sticky;
         top: 0;
@@ -751,7 +867,7 @@ a { color: rgb(var(--hydra-accent-400)); }
 
     .hydra-sidebar {
         position: fixed;
-        top: var(--hydra-gap);
+        top: calc(var(--hydra-tabbar-offset, 0px) + var(--hydra-gap));
         left: var(--hydra-gap);
         bottom: var(--hydra-gap);
         height: auto;
@@ -770,3 +886,254 @@ a { color: rgb(var(--hydra-accent-400)); }
         z-index: 40;
     }
 }
+
+/* ---------------------------------------------------------------- Tabs of the installed app */
+
+/*
+ * Every tab scrolls on its own below the tab bar. With "window controls
+ * overlay" the bar sits in the title bar of the window, next to its buttons.
+ */
+.hydra-tabs-mode {
+    --hydra-tabbar-height: env(titlebar-area-height, 40px);
+    --hydra-tabbar-offset: var(--hydra-tabbar-height);
+    --hydra-vh: calc(100vh - var(--hydra-tabbar-height));
+}
+
+.hydra-tabs-mode body.hydra-body { overflow: hidden; }
+
+.hydra-tabbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    height: var(--hydra-tabbar-height);
+    /* The darkest surface, the same colour as the title bar of the app window. */
+    background: var(--hydra-bg);
+    border-bottom: 1px solid var(--hydra-border);
+    -webkit-app-region: drag;
+    app-region: drag;
+}
+
+.hydra-tabbar-tabs {
+    position: absolute;
+    top: env(titlebar-area-y, 0);
+    left: env(titlebar-area-x, 0);
+    width: env(titlebar-area-width, 100%);
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    padding: 0 8px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.hydra-tab {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex: 0 1 220px;
+    min-width: 44px;
+    height: calc(100% - 6px);
+    padding: 0 6px 0 10px;
+    border-radius: 8px 8px 0 0;
+    color: var(--hydra-muted);
+    font-size: 12.5px;
+    cursor: default;
+    user-select: none;
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
+    transition: background .12s ease, color .12s ease;
+}
+
+.hydra-tab:hover { background: var(--hydra-panel-2); color: var(--hydra-text-2); }
+
+.hydra-tab.is-active {
+    background: var(--hydra-panel);
+    color: var(--hydra-text);
+    box-shadow: inset 0 2px 0 rgb(var(--hydra-accent-500));
+}
+
+.hydra-tab.is-dragging { opacity: .5; }
+
+.hydra-tab-icon { width: 14px; height: 14px; flex: none; }
+.hydra-tab.is-active .hydra-tab-icon { color: rgb(var(--hydra-accent-400)); }
+
+.hydra-tab-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.hydra-tab-close,
+.hydra-tab-new {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
+}
+
+.hydra-tab-close {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    opacity: 0;
+}
+
+.hydra-tab-close svg { width: 13px; height: 13px; }
+.hydra-tab:hover .hydra-tab-close,
+.hydra-tab.is-active .hydra-tab-close { opacity: .75; }
+.hydra-tab-close:hover { opacity: 1; background: var(--hydra-border-strong); }
+
+.hydra-tab-new {
+    align-self: center;
+    width: 28px;
+    height: 28px;
+    margin-left: 2px;
+    border-radius: 7px;
+    color: var(--hydra-muted);
+}
+
+.hydra-tab-new svg { width: 16px; height: 16px; }
+.hydra-tab-new:hover { background: var(--hydra-panel-2); color: var(--hydra-text); }
+
+.hydra-tab-views {
+    position: fixed;
+    top: var(--hydra-tabbar-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.hydra-tab-view {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.hydra-tab-view.is-active {
+    visibility: visible;
+    pointer-events: auto;
+    z-index: 1;
+}
+
+.hydra-tab-view--frame { overflow: hidden; }
+
+.hydra-tab-frame {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: var(--hydra-bg);
+}
+
+/* ---------------------------------------------------------------- Server import */
+
+/* The circle draws itself, then the tick. */
+.hydra-import-check circle {
+    stroke: rgb(var(--hydra-accent-500));
+    stroke-width: 3;
+    stroke-dasharray: 151;
+    stroke-dashoffset: 151;
+    animation: hydra-import-draw .6s ease-out forwards;
+}
+
+.hydra-import-check path {
+    stroke: rgb(var(--hydra-accent-400));
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 40;
+    stroke-dashoffset: 40;
+    animation: hydra-import-draw .35s .55s ease-out forwards;
+}
+
+.hydra-import-check {
+    animation: hydra-import-pop .3s .85s ease-out;
+}
+
+@keyframes hydra-import-draw { to { stroke-dashoffset: 0; } }
+@keyframes hydra-import-pop { 50% { transform: scale(1.08); } }
+
+/* Moving bar while the files are still being counted. */
+.hydra-import-indeterminate { animation: hydra-import-slide 1.2s ease-in-out infinite; }
+@keyframes hydra-import-slide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(300%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hydra-import-check circle,
+    .hydra-import-check path { animation: none; stroke-dashoffset: 0; }
+    .hydra-import-check,
+    .hydra-import-indeterminate { animation: none; }
+}
+
+/* ---------------------------------------------------------------- Power buttons */
+
+.hydra-power-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border: 1px solid var(--power-color);
+    border-radius: var(--hydra-radius-sm);
+    background: var(--hydra-panel-2);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .12s ease, box-shadow .12s ease;
+}
+
+.hydra-power-btn:hover:not(:disabled) {
+    background: var(--hydra-panel-3);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--power-color) 18%, transparent);
+}
+
+.hydra-power-btn-icon { width: 15px; height: 15px; color: var(--power-color); }
+
+.hydra-power-btn:disabled {
+    border-color: var(--hydra-border-strong);
+    color: var(--hydra-muted);
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+.hydra-power-btn:disabled .hydra-power-btn-icon { color: var(--hydra-muted); }
+
+/* ---------------------------------------------------------------- Tiles */
+
+/*
+ * Up to three tiles per row; a row with fewer tiles is centred. The doubled
+ * class wins over width utilities (e.g. w-full) on the tiles themselves.
+ */
+.hydra-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+}
+
+.hydra-tiles.hydra-tiles > * { width: 100%; }
+
+@media (min-width: 768px) {
+    .hydra-tiles.hydra-tiles > * { width: calc((100% - 16px) / 2); }
+}
+
+@media (min-width: 1280px) {
+    .hydra-tiles.hydra-tiles > * { width: calc((100% - 32px) / 3); }
+}
+

@@ -30,4 +30,8 @@ return [
         'schedule_update' => 'Erlaubt das Ändern bestehender Zeitpläne.',
         'schedule_delete' => 'Erlaubt das Löschen von Zeitplänen.',
     ],
+    // Hydra: Rollen des Servers.
+    'role_not_grantable' => 'Du kannst keine Rolle mit Rechten vergeben oder ändern, die du selbst nicht hast.',
+    'role_limit' => 'Ein Server kann höchstens 50 Rollen haben.',
+    'role_not_found' => 'Diese Rolle gibt es auf dem Server nicht.',
 ];

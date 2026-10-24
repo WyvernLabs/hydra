@@ -101,7 +101,7 @@ class CreateServerScheduleTaskTest extends ClientApiIntegrationTestCase
             'time_offset' => 0,
         ])
             ->assertStatus(Response::HTTP_FORBIDDEN)
-            ->assertJsonPath('errors.0.detail', 'A backup task cannot be created when the server\'s backup limit is set to 0.');
+            ->assertJsonPath('errors.0.detail', 'This server has no space for backups.');
 
         $this->actingAs($user)->postJson($this->link($schedule, '/tasks'), [
             'action' => 'backup',
@@ -109,14 +109,14 @@ class CreateServerScheduleTaskTest extends ClientApiIntegrationTestCase
             'time_offset' => 0,
         ])
             ->assertStatus(Response::HTTP_FORBIDDEN)
-            ->assertJsonPath('errors.0.detail', 'A backup task cannot be created when the server\'s backup limit is set to 0.');
+            ->assertJsonPath('errors.0.detail', 'This server has no space for backups.');
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('missingActionPermissionDataProvider')]
     public function testTaskCannotBeCreatedWithoutActionPermission(string $action, ?string $payload)
     {
         [$user, $server] = $this->generateTestAccount([Permission::ACTION_SCHEDULE_UPDATE]);
-        $server->forceFill(['backup_limit' => 1])->save();
+        $server->forceFill(['backup_limit' => 1, 'backup_storage_limit' => 1024])->save();
 
         /** @var Schedule $schedule */
         $schedule = Schedule::factory()->create(['server_id' => $server->id]);
@@ -132,7 +132,7 @@ class CreateServerScheduleTaskTest extends ClientApiIntegrationTestCase
     public function testTaskCanBeCreatedWithActionPermission(string $action, ?string $payload, string $permission)
     {
         [$user, $server] = $this->generateTestAccount([Permission::ACTION_SCHEDULE_UPDATE, $permission]);
-        $server->forceFill(['backup_limit' => 1])->save();
+        $server->forceFill(['backup_limit' => 1, 'backup_storage_limit' => 1024])->save();
 
         /** @var Schedule $schedule */
         $schedule = Schedule::factory()->create(['server_id' => $server->id]);
@@ -192,7 +192,7 @@ class CreateServerScheduleTaskTest extends ClientApiIntegrationTestCase
         ])
             ->assertStatus(Response::HTTP_BAD_REQUEST)
             ->assertJsonPath('errors.0.code', 'ServiceLimitExceededException')
-            ->assertJsonPath('errors.0.detail', 'Schedules may not have more than 2 tasks associated with them. Creating this task would put this schedule over the limit.');
+            ->assertJsonPath('errors.0.detail', 'A schedule can have at most 2 tasks.');
     }
 
     /**

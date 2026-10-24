@@ -17,6 +17,7 @@
 @section('content')
     @include('admin.servers.partials.navigation')
     <div class="row equal-height">
+        @if(Auth::user()->hasAdminPermission('servers.manage'))
         <div class="col-sm-4">
             <div class="box box-danger">
                 <div class="box-header with-border">
@@ -89,6 +90,39 @@
                             {!! csrf_field() !!}
                             <input type="hidden" name="action" value="unsuspend" />
                             <button type="submit" class="btn btn-success">{{ __('admin/servers.manage.unsuspend') }}</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+        @endif
+
+        @if(Auth::user()->hasAdminPermission('servers.lockdown') && config('hydra.addons.lockdown.enabled'))
+            <div class="col-sm-4">
+                <div class="box {{ $server->isLockedDown() ? 'box-success' : 'box-danger' }}">
+                    <div class="box-header with-border">
+                        <h3 class="box-title"><x-hydra.icon name="{{ $server->isLockedDown() ? 'lock-open' : 'lock' }}" /> {{ __('admin/servers.manage.lockdown') }}</h3>
+                    </div>
+                    <div class="box-body">
+                        @if($server->isLockedDown())
+                            <p>{{ __('admin/servers.manage.lockdown_active', ['date' => $server->hydra_lockdown_at->locale(app()->getLocale())->isoFormat('LLL')]) }}</p>
+                        @else
+                            <p>{{ __('admin/servers.manage.lockdown_text') }}</p>
+                        @endif
+                        @if($server->isSuspended())
+                            <p class="text-muted small">{{ __('admin/servers.manage.lockdown_suspended') }}</p>
+                        @endif
+                    </div>
+                    <div class="box-footer">
+                        <form action="{{ route('admin.servers.view.manage.lockdown', $server->id) }}" method="POST">
+                            {!! csrf_field() !!}
+                            @if($server->isLockedDown())
+                                <input type="hidden" name="lockdown" value="0" />
+                                <button type="submit" class="btn btn-success">{{ __('admin/servers.manage.lockdown_lift') }}</button>
+                            @else
+                                <input type="hidden" name="lockdown" value="1" />
+                                <button type="submit" class="btn btn-danger">{{ __('admin/servers.manage.lockdown_enable') }}</button>
+                            @endif
                         </form>
                     </div>
                 </div>

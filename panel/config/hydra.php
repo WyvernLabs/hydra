@@ -84,6 +84,18 @@ return [
     | autodelete:   deletes servers suspended for "server_days" and accounts
     |               banned permanently for "user_days" (both can be switched
     |               off with "servers" and "users").
+    | lockdown:     owners can lock everyone else out of their server.
+    | cpu:          CPU usage out of 100 % instead of 100 % per core.
+    | mclogs:       console button that uploads the log file at "path" to mclo.gs.
+    | startup_command: users change the startup command of their servers.
+    | properties:   server page with the .properties file at "path" as a form.
+    | env:          server page with the .env file at "path" as a form.
+    | versions:     Minecraft version changer with the software of mcjars.app.
+    | trash:        deleted files are kept in a trash for "days" (on by default).
+    | tickets:      support tickets in the "languages" (ISO codes, JSON) with
+    |               "categories" named in each of them (JSON), images up to
+    |               "upload_limit" MB, "max_open" unclosed tickets per user
+    |               (0 = any number), "notify" mails users about answers.
     |
     */
     'addons' => [
@@ -114,6 +126,60 @@ return [
             'users' => true,
             'user_days' => 14,
         ],
+        'lockdown' => [
+            'enabled' => false,
+        ],
+        'cpu' => [
+            'enabled' => false,
+        ],
+        'mclogs' => [
+            'enabled' => false,
+            'path' => 'logs/latest.log',
+        ],
+        'sftp_backups' => [
+            'enabled' => false,
+            'users' => true,
+        ],
+        'subdomains' => [
+            'enabled' => false,
+            'default_limit' => 1,
+            'blocked' => '',
+        ],
+        'proxy' => [
+            'enabled' => false,
+            'default_limit' => 1,
+        ],
+        'games' => [
+            'enabled' => false,
+            'eggs' => [],
+            'max_profiles' => 3,
+        ],
+        'startup_command' => [
+            'enabled' => false,
+        ],
+        'properties' => [
+            'enabled' => false,
+            'path' => 'server.properties',
+        ],
+        'env' => [
+            'enabled' => false,
+            'path' => '.env',
+        ],
+        'versions' => [
+            'enabled' => false,
+        ],
+        'trash' => [
+            'enabled' => true,
+            'days' => 7,
+        ],
+        'tickets' => [
+            'enabled' => false,
+            'languages' => null,
+            'categories' => null,
+            'upload_limit' => 5,
+            'max_open' => 5,
+            'notify' => true,
+        ],
     ],
 
     /*
@@ -128,5 +194,22 @@ return [
     */
     'navigation' => [
         'server' => null,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Console
+    |--------------------------------------------------------------------------
+    |
+    | Texts of the server console, set under Design > Console
+    | ("settings::hydra:console:*"): the message while a server is offline (JSON
+    | by language), the prefix of panel messages and the one that replaces
+    | "[… Daemon]:" of Wings (null keeps it).
+    |
+    */
+    'console' => [
+        'offline_message' => null,
+        'prefix' => null,
+        'daemon_prefix' => null,
     ],
 ];

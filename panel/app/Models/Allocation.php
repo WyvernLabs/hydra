@@ -64,6 +64,8 @@ class Allocation extends Model
      * Cast values to correct type.
      */
     protected $casts = [
+        // Hydra: created by the owner of a server with a dedicated node.
+        'hydra_dedicated' => 'boolean',
         'node_id' => 'integer',
         'port' => 'integer',
         'server_id' => 'integer',

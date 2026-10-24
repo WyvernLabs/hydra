@@ -73,6 +73,9 @@ return [
         'range_start_help' => 'The starting port in the range that can be automatically allocated.',
         'range_end' => 'Ending Port',
         'range_end_help' => 'The ending port in the range that can be automatically allocated.',
+        'schedules' => 'Schedules',
+        'task_limit' => 'Tasks per schedule',
+        'task_limit_help' => 'How many tasks a single schedule may have, including conditions.',
         'updated' => 'Advanced settings have been updated successfully and the queue worker was restarted to apply these changes.',
     ],
 

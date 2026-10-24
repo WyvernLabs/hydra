@@ -25,9 +25,9 @@ class CompressFilesTest extends ClientApiIntegrationTestCase
         [$user, $server] = $this->generateTestAccount([Permission::ACTION_FILE_ARCHIVE]);
 
         $this->mock(DaemonFileRepository::class, function (MockInterface $mock) {
-            $mock->expects('setServer->compressFiles')->with('/', ['test.txt'])->andReturn([
-                'name' => 'test.tar.gz',
-                'mime' => 'application/gzip',
+            $mock->expects('setServer->compressFiles')->with('/', ['test.txt'], 'a1b2c3d4-progress')->andReturn([
+                'name' => 'test.zip',
+                'mime' => 'application/zip',
             ]);
         });
 
@@ -36,10 +36,15 @@ class CompressFilesTest extends ClientApiIntegrationTestCase
             ->assertUnprocessable()
             ->assertJsonPath('errors.0.meta', ['source_field' => 'files', 'rule' => 'required']);
 
-        $this->postJson($endpoint, ['root' => '/', 'files' => ['test.txt']])
+        // Hydra: the progress id is passed on to the daemon, but only in a safe format.
+        $this->postJson($endpoint, ['root' => '/', 'files' => ['test.txt'], 'progress' => '../x'])
+            ->assertUnprocessable()
+            ->assertJsonPath('errors.0.meta.source_field', 'progress');
+
+        $this->postJson($endpoint, ['root' => '/', 'files' => ['test.txt'], 'progress' => 'a1b2c3d4-progress'])
             ->assertOk()
             ->assertJsonPath('object', 'file_object')
-            ->assertJsonPath('attributes.name', 'test.tar.gz')
-            ->assertJsonPath('attributes.mimetype', 'application/gzip');
+            ->assertJsonPath('attributes.name', 'test.zip')
+            ->assertJsonPath('attributes.mimetype', 'application/zip');
     }
 }

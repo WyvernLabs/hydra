@@ -80,6 +80,8 @@ class ServerTransformer extends BaseClientTransformer
             'background' => Container::getInstance()->make(BackgroundService::class)->forEgg($server->egg),
             // Hydra: for the server dashboard (addon).
             'banner' => Container::getInstance()->make(BackgroundService::class)->bannerForEgg($server->egg),
+            // Hydra: picture in the server list (Design > Eggs).
+            'list_image' => Container::getInstance()->make(BackgroundService::class)->imageForEgg($server->egg, 'list'),
             'egg_name' => $server->egg->name,
             'location' => $server->node->location?->short,
             'created_at' => $server->created_at?->toAtomString(),
@@ -87,6 +89,8 @@ class ServerTransformer extends BaseClientTransformer
                 'databases' => $server->database_limit,
                 'allocations' => $server->allocation_limit,
                 'backups' => $server->backup_limit,
+                // Hydra: backup space in MiB.
+                'backup_storage' => $server->backup_storage_limit,
             ],
             'status' => $server->status,
             // This field is deprecated, please use "status".
@@ -96,6 +100,14 @@ class ServerTransformer extends BaseClientTransformer
             'is_transferring' => !is_null($server->transfer),
             // Hydra: whether the requesting user keeps full access while the server is suspended.
             'can_use_suspended' => $this->getUser()->canUseSuspendedServers(),
+            // Hydra: lockdown by the owner, see ServerLockdownService.
+            'lockdown' => [
+                'active' => $server->isLockedDown(),
+                'since' => $server->hydra_lockdown_at?->toAtomString(),
+                'can_toggle' => config('hydra.addons.lockdown.enabled', false)
+                    && ($this->getUser()->id === $server->owner_id || $this->getUser()->canUseLockedDownServers()),
+                'locked_out' => !$server->lockdownAllows($this->getUser()),
+            ],
             'skip_scripts' => $server->skip_scripts,
         ];
     }

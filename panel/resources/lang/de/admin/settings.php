@@ -73,6 +73,9 @@ return [
         'range_start_help' => 'Erster Port des Bereichs für die automatische Vergabe.',
         'range_end' => 'Letzter Port',
         'range_end_help' => 'Letzter Port des Bereichs für die automatische Vergabe.',
+        'schedules' => 'Zeitpläne',
+        'task_limit' => 'Aufgaben pro Zeitplan',
+        'task_limit_help' => 'Wie viele Aufgaben ein einzelner Zeitplan haben darf, Bedingungen mitgezählt.',
         'updated' => 'Die erweiterten Einstellungen wurden gespeichert und der Queue-Worker wurde neu gestartet.',
     ],
 

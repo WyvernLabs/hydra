@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 	"io/fs"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,6 +15,8 @@ import (
 	"emperror.dev/errors"
 	"github.com/apex/log"
 	"github.com/juju/ratelimit"
+	"github.com/klauspost/compress/flate"
+	"github.com/klauspost/compress/zip"
 	"github.com/klauspost/pgzip"
 
 	"github.com/pterodactyl/wings/config"
@@ -74,7 +77,26 @@ type Archive struct {
 	// Progress wraps the writer of the archive to pass through the progress tracker.
 	Progress *progress.Progress
 
-	w *TarProgress
+	// Zip (Hydra) writes a zip archive instead of a tar.gz. Backups and server
+	// transfers keep using tar.gz.
+	Zip bool
+
+	// MaxSize (Hydra) is the largest size of the archive in bytes when it is
+	// written with Create, 0 is no limit.
+	MaxSize int64
+
+	// OnProgress (Hydra) receives how many bytes of the files have been written
+	// to the archive, out of the size of all files. The files are walked once
+	// more beforehand to get that size.
+	OnProgress ProgressFunc
+
+	w  *TarProgress
+	zw *zip.Writer
+
+	// Set while the files are only walked to add up their size.
+	sizing bool
+	total  int64
+	done   int64
 }
 
 // Create creates an archive at dst with all the files defined in the
@@ -102,7 +124,38 @@ func (a *Archive) Create(ctx context.Context, dst string) error {
 		writer = f
 	}
 
+	// Hydra: stop once the archive grows beyond the space left for backups.
+	if a.MaxSize > 0 {
+		limited := &maxSizeWriter{w: writer, left: a.MaxSize}
+		err := a.Stream(ctx, limited)
+		// The last bytes are written when the writers are closed, where an
+		// error is not returned, so the limit is checked here as well.
+		if limited.exceeded {
+			return ErrArchiveTooLarge
+		}
+		return err
+	}
+
 	return a.Stream(ctx, writer)
+}
+
+// ErrArchiveTooLarge (Hydra) is returned when an archive is larger than its
+// MaxSize.
+var ErrArchiveTooLarge = errors.New("filesystem: archive is larger than the space left for it")
+
+type maxSizeWriter struct {
+	w        io.Writer
+	left     int64
+	exceeded bool
+}
+
+func (m *maxSizeWriter) Write(p []byte) (int, error) {
+	if int64(len(p)) > m.left {
+		m.exceeded = true
+		return 0, ErrArchiveTooLarge
+	}
+	m.left -= int64(len(p))
+	return m.w.Write(p)
 }
 
 type walkFunc func(dirfd int, name, relative string, d ufs.DirEntry) error
@@ -159,6 +212,22 @@ func (a *Archive) Stream(ctx context.Context, w io.Writer) error {
 		callback = a.callback()
 	}
 
+	// Hydra: add up the size of every file first, so the progress can be
+	// reported against it.
+	if a.OnProgress != nil {
+		a.sizing = true
+		err := a.walk(ctx, callback)
+		a.sizing = false
+		if err != nil {
+			return err
+		}
+		a.OnProgress(0, a.total)
+	}
+
+	if a.Zip {
+		return a.streamZip(ctx, w, callback)
+	}
+
 	// Choose which compression level to use based on the compression_level configuration option
 	var compressionLevel int
 	switch config.Get().System.Backups.CompressionLevel {
@@ -181,6 +250,34 @@ func (a *Archive) Stream(ctx context.Context, w io.Writer) error {
 
 	a.w = NewTarProgress(tw, a.Progress)
 
+	return a.walk(ctx, callback)
+}
+
+// streamZip (Hydra) writes the files as a zip archive to w.
+func (a *Archive) streamZip(ctx context.Context, w io.Writer, callback walkFunc) error {
+	zw := zip.NewWriter(w)
+	level := flate.BestSpeed
+	switch config.Get().System.Backups.CompressionLevel {
+	case "none":
+		level = flate.NoCompression
+	case "best_compression":
+		level = flate.BestCompression
+	}
+	zw.RegisterCompressor(zip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
+		return flate.NewWriter(out, level)
+	})
+	a.zw = zw
+
+	if err := a.walk(ctx, callback); err != nil {
+		_ = zw.Close()
+		return err
+	}
+	// Closing writes the central directory, without it the archive is broken.
+	return zw.Close()
+}
+
+// walk calls callback for every file below the base directory.
+func (a *Archive) walk(ctx context.Context, callback walkFunc) error {
 	fs := a.Filesystem.unixFS
 
 	// Open the base directory we were provided.
@@ -287,6 +384,13 @@ func (a *Archive) addToArchive(dirfd int, name, relative string, entry ufs.DirEn
 		return nil
 	}
 
+	if a.sizing {
+		if s.Mode().IsRegular() {
+			a.total += s.Size()
+		}
+		return nil
+	}
+
 	// Resolve the symlink target if the file is a symlink.
 	var target string
 	if s.Mode()&fs.ModeSymlink != 0 {
@@ -302,6 +406,10 @@ func (a *Archive) addToArchive(dirfd int, name, relative string, entry ufs.DirEn
 			}
 			return nil
 		}
+	}
+
+	if a.zw != nil {
+		return a.addToZip(dirfd, name, relative, s, target)
 	}
 
 	// Get the tar FileInfoHeader in order to add the file to the archive.
@@ -343,8 +451,67 @@ func (a *Archive) addToArchive(dirfd int, name, relative string, entry ufs.DirEn
 	defer f.Close()
 
 	// Copy the file's contents to the archive using our buffer.
-	if _, err := io.CopyBuffer(a.w, io.LimitReader(f, header.Size), buf); err != nil {
+	n, err := io.CopyBuffer(a.w, a.countReader(io.LimitReader(f, header.Size)), buf)
+	a.done += n
+	if err != nil {
 		return errors.WrapIff(err, "failed to copy '%s' to archive", header.Name)
+	}
+	return nil
+}
+
+// countReader (Hydra) reports every byte read from r to OnProgress.
+func (a *Archive) countReader(r io.Reader) io.Reader {
+	if a.OnProgress == nil {
+		return r
+	}
+	return NewProgressReader(r, math.MaxInt64, func(done, _ int64) {
+		a.OnProgress(min(a.done+done, a.total), a.total)
+	})
+}
+
+// addToZip (Hydra) adds a file or symlink to the zip archive. Symlinks are
+// stored the way unzip expects them: the link target as the content.
+func (a *Archive) addToZip(dirfd int, name, relative string, s fs.FileInfo, target string) error {
+	header, err := zip.FileInfoHeader(s)
+	if err != nil {
+		return errors.WrapIff(err, "failed to get zip#FileInfoHeader for '%s'", name)
+	}
+	header.Name = relative
+
+	if s.Mode()&fs.ModeSymlink != 0 {
+		header.Method = zip.Store
+		w, err := a.zw.CreateHeader(header)
+		if err != nil {
+			return errors.WrapIff(err, "failed to write zip header for '%s'", name)
+		}
+		_, err = io.WriteString(w, filepath.ToSlash(target))
+		return err
+	}
+	if !s.Mode().IsRegular() {
+		return nil
+	}
+
+	f, err := a.Filesystem.unixFS.OpenFileat(dirfd, name, ufs.O_RDONLY, 0)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return errors.WrapIff(err, "failed to open '%s' for copying", relative)
+	}
+	defer f.Close()
+
+	header.Method = zip.Deflate
+	w, err := a.zw.CreateHeader(header)
+	if err != nil {
+		return errors.WrapIff(err, "failed to write zip header for '%s'", name)
+	}
+
+	bp := pool.Get().(*[]byte)
+	defer pool.Put(bp)
+	n, err := io.CopyBuffer(w, a.countReader(io.LimitReader(f, s.Size())), *bp)
+	a.done += n
+	if err != nil {
+		return errors.WrapIff(err, "failed to copy '%s' to archive", relative)
 	}
 	return nil
 }

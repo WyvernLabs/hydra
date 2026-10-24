@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"context"
 	"io"
+	"mime"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"os"
@@ -11,6 +13,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"emperror.dev/errors"
 	"github.com/apex/log"
@@ -19,6 +22,7 @@ import (
 
 	"github.com/pterodactyl/wings/config"
 	"github.com/pterodactyl/wings/internal/models"
+	"github.com/pterodactyl/wings/internal/ufs"
 	"github.com/pterodactyl/wings/router/downloader"
 	"github.com/pterodactyl/wings/router/middleware"
 	"github.com/pterodactyl/wings/router/tokens"
@@ -188,6 +192,8 @@ func postServerDeleteFiles(c *gin.Context) {
 	var data struct {
 		Root  string   `json:"root"`
 		Files []string `json:"files"`
+		// Hydra: seconds the files are kept in the trash, 0 deletes them for good.
+		Trash int64 `json:"hydra_trash"`
 	}
 
 	if err := c.BindJSON(&data); err != nil {
@@ -213,12 +219,23 @@ func postServerDeleteFiles(c *gin.Context) {
 			case <-ctx.Done():
 				return ctx.Err()
 			default:
+				if data.Trash > 0 {
+					// Like a deletion, a file that is gone already is no error.
+					if _, err := s.Filesystem().MoveToTrash(pi, time.Duration(data.Trash)*time.Second); err != nil && !errors.Is(err, ufs.ErrNotExist) {
+						return err
+					}
+					return nil
+				}
 				return s.Filesystem().Delete(pi)
 			}
 		})
 	}
 
 	if err := g.Wait(); err != nil {
+		if errors.Is(err, filesystem.ErrTrashUnavailable) {
+			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": err.Error(), "code": "trash_unavailable"})
+			return
+		}
 		middleware.CaptureAndAbort(c, err)
 		return
 	}
@@ -283,6 +300,8 @@ func postServerPullRemoteFile(c *gin.Context) {
 		FileName   string `json:"file_name"`
 		UseHeader  bool   `json:"use_header"`
 		Foreground bool   `json:"foreground"`
+		// Hydra: the user who started the download.
+		User string `json:"hydra_user"`
 	}
 	if err := c.BindJSON(&data); err != nil {
 		return
@@ -322,6 +341,7 @@ func postServerPullRemoteFile(c *gin.Context) {
 		URL:       u,
 		FileName:  data.FileName,
 		UseHeader: data.UseHeader,
+		User:      data.User,
 	})
 
 	download := func() error {
@@ -417,6 +437,8 @@ func postServerCompressFiles(c *gin.Context) {
 	var data struct {
 		RootPath string   `json:"root"`
 		Files    []string `json:"files"`
+		// Progress (Hydra) is the id the progress is reported under.
+		Progress string `json:"progress"`
 	}
 
 	if err := c.BindJSON(&data); err != nil {
@@ -437,7 +459,13 @@ func postServerCompressFiles(c *gin.Context) {
 		return
 	}
 
-	f, err := s.Filesystem().CompressFiles(data.RootPath, data.Files)
+	p := s.NewFileProgress(data.Progress)
+	var onProgress filesystem.ProgressFunc
+	if p != nil {
+		onProgress = p.Update
+	}
+	f, err := s.Filesystem().CompressFiles(data.RootPath, data.Files, onProgress)
+	p.Finish(err != nil)
 	if err != nil {
 		middleware.CaptureAndAbort(c, err)
 		return
@@ -445,7 +473,7 @@ func postServerCompressFiles(c *gin.Context) {
 
 	c.JSON(http.StatusOK, &filesystem.Stat{
 		FileInfo: f,
-		Mimetype: "application/tar+gzip",
+		Mimetype: "application/zip",
 	})
 }
 
@@ -459,6 +487,8 @@ func postServerDecompressFiles(c *gin.Context) {
 		// Contained (Hydra) keeps every entry inside RootPath, for subusers
 		// who may only work in certain folders.
 		Contained bool `json:"contained"`
+		// Progress (Hydra) is the id the progress is reported under.
+		Progress string `json:"progress"`
 	}
 	if err := c.BindJSON(&data); err != nil {
 		return
@@ -466,9 +496,29 @@ func postServerDecompressFiles(c *gin.Context) {
 
 	s := middleware.ExtractServer(c)
 	lg := middleware.ExtractLogger(c).WithFields(log.Fields{"root_path": data.RootPath, "file": data.File})
+	// Hydra: when the space check has to read the whole archive, it is the
+	// first half of the progress and the extraction the second.
+	p := s.NewFileProgress(data.Progress)
+	var onScan, onExtract filesystem.ProgressFunc
+	if p != nil {
+		var scanned bool
+		onScan = func(done, total int64) {
+			scanned = true
+			p.Update(done, 2*total)
+		}
+		onExtract = func(done, total int64) {
+			if scanned {
+				p.Update(total+done, 2*total)
+				return
+			}
+			p.Update(done, total)
+		}
+	}
+
 	lg.Debug("checking if space is available for file decompression")
-	err := s.Filesystem().SpaceAvailableForDecompression(context.Background(), data.RootPath, data.File)
+	err := s.Filesystem().SpaceAvailableForDecompressionWithProgress(context.Background(), data.RootPath, data.File, onScan)
 	if err != nil {
+		p.Finish(true)
 		if filesystem.IsErrorCode(err, filesystem.ErrCodeUnknownArchive) {
 			lg.WithField("error", err).Warn("failed to decompress file: unknown archive format")
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "The archive provided is in a format Wings does not understand."})
@@ -479,11 +529,9 @@ func postServerDecompressFiles(c *gin.Context) {
 	}
 
 	lg.Info("starting file decompression")
-	decompress := s.Filesystem().DecompressFile
-	if data.Contained {
-		decompress = s.Filesystem().DecompressFileContained
-	}
-	if err := decompress(context.Background(), data.RootPath, data.File); err != nil {
+	err = s.Filesystem().DecompressFileWithProgress(context.Background(), data.RootPath, data.File, data.Contained, onExtract)
+	p.Finish(err != nil)
+	if err != nil {
 		// If the file is busy for some reason just return a nicer error to the user since there is not
 		// much we specifically can do. They'll need to stop the running server process in order to overwrite
 		// a file like this.
@@ -607,6 +655,9 @@ func postServerUploadFiles(c *gin.Context) {
 		return
 	}
 
+	// Hydra: ends the upload when the user loses access to the server.
+	transfer := s.FileTransfers().Context(token.UserUuid)
+
 	maxFileSize := config.Get().Api.UploadLimit
 	maxFileSizeBytes := maxFileSize * 1024 * 1024
 	var found bool
@@ -626,8 +677,17 @@ func postServerUploadFiles(c *gin.Context) {
 		}
 		found = true
 
-		name := part.FileName()
-		if err := handleFileUpload(filepath.Join(directory, name), s, part, maxFileSizeBytes); err != nil {
+		name := uploadFileName(part)
+		if name == "" {
+			continue
+		}
+		if err := handleFileUpload(filepath.Join(directory, name), s, cancelableReader{ctx: transfer, r: part}, maxFileSizeBytes); err != nil {
+			if errors.Is(err, context.Canceled) {
+				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+					"error": "Your access to this server has been revoked.",
+				})
+				return
+			}
 			if errors.Is(err, errUploadTooLarge) {
 				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 					"error": "File " + name + " is larger than the maximum file upload size of " + strconv.FormatInt(maxFileSize, 10) + " MB.",
@@ -652,6 +712,22 @@ func postServerUploadFiles(c *gin.Context) {
 
 var errUploadTooLarge = errors.New("router: uploaded file is larger than the upload limit")
 
+// uploadFileName (Hydra) is the name of an uploaded file relative to the
+// upload folder. Folders are uploaded as files named like "world/level.dat",
+// which part.FileName() would cut down to "level.dat"; the path is cleaned, so
+// it cannot leave the upload folder.
+func uploadFileName(part *multipart.Part) string {
+	name := part.FileName()
+	if _, params, err := mime.ParseMediaType(part.Header.Get("Content-Disposition")); err == nil && params["filename"] != "" {
+		name = params["filename"]
+	}
+	name = strings.TrimLeft(path.Clean("/"+strings.ReplaceAll(name, "\\", "/")), "/")
+	if name == "" || name == "." {
+		return ""
+	}
+	return name
+}
+
 // handleFileUpload writes an uploaded file to p, refusing it if it is larger
 // than limit bytes.
 func handleFileUpload(p string, s *server.Server, r io.Reader, limit int64) error {
@@ -661,6 +737,10 @@ func handleFileUpload(p string, s *server.Server, r io.Reader, limit int64) erro
 
 	n, err := s.Filesystem().WriteFrom(p, io.LimitReader(r, limit+1))
 	if err != nil {
+		// Hydra: do not leave half a file behind when the upload was stopped.
+		if errors.Is(err, context.Canceled) {
+			_ = s.Filesystem().Delete(p)
+		}
 		return err
 	}
 	if n > limit {

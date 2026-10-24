@@ -3,6 +3,8 @@
 namespace Pterodactyl\Http\Controllers\Api\Client\Servers;
 
 use Pterodactyl\Models\Task;
+use Pterodactyl\Services\Files\AllowedPaths;
+use Pterodactyl\Services\Hydra\Schedules\TaskPayload;
 use Illuminate\Http\Response;
 use Pterodactyl\Models\Server;
 use Pterodactyl\Models\Schedule;
@@ -39,13 +41,15 @@ class ScheduleTaskController extends ClientApiController
      */
     public function store(StoreTaskRequest $request, Server $server, Schedule $schedule): array
     {
-        $limit = config('pterodactyl.client_features.schedules.per_schedule_task_limit', 10);
+        $limit = (int) config('pterodactyl.client_features.schedules.per_schedule_task_limit', 100);
         if ($schedule->tasks()->count() >= $limit) {
-            throw new ServiceLimitExceededException("Schedules may not have more than $limit tasks associated with them. Creating this task would put this schedule over the limit.");
+            throw new ServiceLimitExceededException(__('server/schedules.task_limit', ['limit' => $limit]));
         }
 
-        if ($server->backup_limit === 0 && $request->action === 'backup') {
-            throw new HttpForbiddenException("A backup task cannot be created when the server's backup limit is set to 0.");
+        $this->assertPathsAllowed($request, $server);
+
+        if ($server->backup_storage_limit === 0 && $request->action === 'backup') {
+            throw new HttpForbiddenException(__('server/backups.disabled'));
         }
 
         /** @var Task|null $lastTask */
@@ -77,7 +81,7 @@ class ScheduleTaskController extends ClientApiController
                 'sequence_id' => $sequenceId,
                 'action' => $request->input('action'),
                 'payload' => $request->input('payload') ?? '',
-                'time_offset' => $request->input('time_offset'),
+                'time_offset' => $this->timeOffset($request),
                 'continue_on_failure' => $request->boolean('continue_on_failure'),
             ]);
         });
@@ -104,9 +108,11 @@ class ScheduleTaskController extends ClientApiController
             throw new NotFoundHttpException();
         }
 
-        if ($server->backup_limit === 0 && $request->action === 'backup') {
-            throw new HttpForbiddenException("A backup task cannot be created when the server's backup limit is set to 0.");
+        if ($server->backup_storage_limit === 0 && $request->action === 'backup') {
+            throw new HttpForbiddenException(__('server/backups.disabled'));
         }
+
+        $this->assertPathsAllowed($request, $server);
 
         $this->connection->transaction(function () use ($request, $schedule, $task) {
             $sequenceId = $request->integer('sequence_id', $task->sequence_id);
@@ -132,7 +138,7 @@ class ScheduleTaskController extends ClientApiController
                 'sequence_id' => $sequenceId,
                 'action' => $request->input('action'),
                 'payload' => $request->input('payload') ?? '',
-                'time_offset' => $request->input('time_offset'),
+                'time_offset' => $this->timeOffset($request),
                 'continue_on_failure' => $request->boolean('continue_on_failure'),
             ]);
         });
@@ -171,5 +177,26 @@ class ScheduleTaskController extends ClientApiController
         Activity::event('server:task.delete')->subject($schedule, $task)->property('name', $schedule->name)->log();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * Hydra: flow control runs right away, without a delay.
+     */
+    private function timeOffset(StoreTaskRequest $request): int
+    {
+        return in_array($request->input('action'), TaskPayload::CONTROL, true) ? 0 : (int) $request->input('time_offset');
+    }
+
+    /**
+     * Hydra: subusers limited to certain folders can only delete files there.
+     */
+    private function assertPathsAllowed(StoreTaskRequest $request, Server $server): void
+    {
+        if ($request->input('action') === Task::ACTION_DELETE_FILES) {
+            AllowedPaths::for($server, $request->user())->assertAllowed(...TaskPayload::paths($request->input('payload')));
+        }
+        if ($request->input('action') === Task::ACTION_IF && (TaskPayload::json($request->input('payload'))['check'] ?? null) === 'file') {
+            AllowedPaths::for($server, $request->user())->assertAllowed((string) TaskPayload::json($request->input('payload'))['value']);
+        }
     }
 }

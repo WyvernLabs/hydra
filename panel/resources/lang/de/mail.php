@@ -54,6 +54,11 @@ return [
         'outro' => 'Wenn du kein Konto anlegen wolltest, kannst du diese E-Mail ignorieren.',
     ],
     // Hydra: Verwarnungen und Sperren.
+    'ticket_answered' => [
+        'subject' => 'Neue Antwort auf dein Ticket #:id',
+        'intro' => 'Unser Team hat auf dein Ticket „:subject“ geantwortet.',
+        'action' => 'Ticket öffnen',
+    ],
     'account_warned' => [
         'subject' => 'Du hast eine Verwarnung erhalten',
         'intro' => 'Ein Administrator hat dein Konto verwarnt.',

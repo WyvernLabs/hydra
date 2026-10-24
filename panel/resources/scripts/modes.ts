@@ -24,6 +24,8 @@ const modes: Mode[] = [
     { name: 'Dockerfile', mime: 'text/x-dockerfile', mode: 'dockerfile', file: /^Dockerfile$/ },
     { name: 'Git Markdown', mime: 'text/x-gfm', mode: 'gfm', file: /^(readme|contributing|history|license).md$/i },
     { name: 'Golang', mime: 'text/x-go', mode: 'go', ext: ['go'] },
+    { name: 'Java', mime: 'text/x-java', mode: 'clike', ext: ['java'] },
+    { name: 'Kotlin', mime: 'text/x-kotlin', mode: 'clike', ext: ['kt', 'kts', 'gradle'] },
     { name: 'HTML', mime: 'text/html', mode: 'htmlmixed', ext: ['html', 'htm', 'handlebars', 'hbs'], alias: ['xhtml'] },
     { name: 'HTTP', mime: 'message/http', mode: 'http' },
     {

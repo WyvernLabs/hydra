@@ -97,11 +97,22 @@ Route::group(['prefix' => 'design'], function () {
     Route::get('/', [Admin\Design\BrandingController::class, 'index'])->name('admin.design')->middleware('admin.can:design.view');
     Route::get('/backgrounds', [Admin\Design\BackgroundController::class, 'index'])->name('admin.design.backgrounds')->middleware('admin.can:design.view');
     Route::get('/navigation', [Admin\Design\NavigationController::class, 'index'])->name('admin.design.navigation')->middleware('admin.can:design.view');
+    Route::get('/console', [Admin\Design\ConsoleController::class, 'index'])->name('admin.design.console')->middleware('admin.can:design.view');
+    Route::patch('/console', [Admin\Design\ConsoleController::class, 'update'])->middleware('admin.can:design.update');
+    Route::get('/eggs', [Admin\Design\EggImageController::class, 'index'])->name('admin.design.eggs')->middleware('admin.can:design.view');
+    Route::get('/eggs/{egg:id}', [Admin\Design\EggImageController::class, 'view'])->name('admin.design.eggs.view')->middleware('admin.can:design.view');
+    Route::patch('/eggs/{egg:id}/background', [Admin\Design\EggImageController::class, 'background'])->name('admin.design.eggs.background')->middleware('admin.can:design.update');
+    Route::patch('/eggs/{egg:id}/{type}', [Admin\Design\EggImageController::class, 'image'])->name('admin.design.eggs.image')->where('type', 'banner|list')->middleware('admin.can:design.update');
     Route::get('/addons', [Admin\Design\AddonController::class, 'index'])->name('admin.design.addons')->middleware('admin.can:addons.view');
     Route::get('/addons/phpmyadmin/status', [Admin\Design\PhpMyAdminController::class, 'status'])->name('admin.design.addons.phpmyadmin.status')->middleware('admin.can:addons.view');
     Route::post('/addons/phpmyadmin/install', [Admin\Design\PhpMyAdminController::class, 'install'])->name('admin.design.addons.phpmyadmin.install')->middleware('admin.can:addons.update');
     Route::post('/addons/phpmyadmin/uninstall', [Admin\Design\PhpMyAdminController::class, 'uninstall'])->name('admin.design.addons.phpmyadmin.uninstall')->middleware('admin.can:addons.update');
     Route::get('/addons/{addon}', [Admin\Design\AddonController::class, 'view'])->name('admin.design.addons.view')->middleware('admin.can:addons.view');
+    // Hydra: Cloudflare domains of the subdomains addon.
+    Route::get('/domains', [Admin\Design\DomainController::class, 'index'])->name('admin.design.domains')->middleware('admin.can:addons.view');
+    Route::post('/domains', [Admin\Design\DomainController::class, 'store'])->middleware('admin.can:addons.update');
+    Route::patch('/domains/{domain:id}', [Admin\Design\DomainController::class, 'update'])->name('admin.design.domains.update')->middleware('admin.can:addons.update');
+    Route::delete('/domains/{domain:id}', [Admin\Design\DomainController::class, 'delete'])->name('admin.design.domains.delete')->middleware('admin.can:addons.update');
     Route::get('/links', [Admin\Design\LinkController::class, 'index'])->name('admin.design.links')->middleware('admin.can:design.view');
     Route::get('/links/new', [Admin\Design\LinkController::class, 'create'])->name('admin.design.links.new')->middleware('admin.can:design.update');
     Route::get('/links/{link:id}', [Admin\Design\LinkController::class, 'view'])->name('admin.design.links.view')->middleware('admin.can:design.view');
@@ -174,6 +185,26 @@ Route::group(['prefix' => 'roles'], function () {
 
 /*
 |--------------------------------------------------------------------------
+| Ticket Controller Routes (Hydra, tickets addon)
+|--------------------------------------------------------------------------
+|
+| Endpoint: /admin/tickets
+|
+*/
+Route::group(['prefix' => 'tickets', 'middleware' => 'addon:tickets'], function () {
+    Route::get('/', [Admin\Community\TicketController::class, 'index'])->name('admin.tickets')->middleware('admin.can:tickets.view');
+    Route::get('/view/{ticket:id}', [Admin\Community\TicketController::class, 'view'])->name('admin.tickets.view')->middleware('admin.can:tickets.view');
+
+    Route::post('/view/{ticket:id}/reply', [Admin\Community\TicketController::class, 'reply'])->name('admin.tickets.reply')->middleware('admin.can:tickets.reply');
+    Route::post('/attachments', [Admin\Community\TicketController::class, 'upload'])->name('admin.tickets.upload')->middleware(['admin.can:tickets.reply', 'throttle:30,1']);
+    Route::post('/preview', [Admin\Community\TicketController::class, 'preview'])->name('admin.tickets.preview')->middleware('admin.can:tickets.reply');
+
+    Route::patch('/view/{ticket:id}', [Admin\Community\TicketController::class, 'update'])->name('admin.tickets.update')->middleware('admin.can:tickets.manage');
+    Route::delete('/view/{ticket:id}', [Admin\Community\TicketController::class, 'delete'])->name('admin.tickets.delete')->middleware('admin.can:tickets.delete');
+});
+
+/*
+|--------------------------------------------------------------------------
 | Server Controller Routes
 |--------------------------------------------------------------------------
 |
@@ -192,7 +223,7 @@ Route::group(['prefix' => 'servers'], function () {
         Route::get('/view/{server:id}/database', [Admin\Servers\ServerViewController::class, 'database'])->name('admin.servers.view.database')->middleware('admin.can:servers.databases');
     });
 
-    Route::get('/view/{server:id}/manage', [Admin\Servers\ServerViewController::class, 'manage'])->name('admin.servers.view.manage')->middleware('admin.can:servers.manage|servers.transfer');
+    Route::get('/view/{server:id}/manage', [Admin\Servers\ServerViewController::class, 'manage'])->name('admin.servers.view.manage')->middleware('admin.can:servers.manage|servers.transfer|servers.lockdown');
     Route::get('/view/{server:id}/delete', [Admin\Servers\ServerViewController::class, 'delete'])->name('admin.servers.view.delete')->middleware('admin.can:servers.delete');
 
     Route::post('/new', [Admin\Servers\CreateServerController::class, 'store'])->middleware('admin.can:servers.create');
@@ -201,6 +232,7 @@ Route::group(['prefix' => 'servers'], function () {
     Route::post('/view/{server:id}/database', [Admin\ServersController::class, 'newDatabase'])->middleware('admin.can:servers.databases');
     Route::post('/view/{server:id}/manage/toggle', [Admin\ServersController::class, 'toggleInstall'])->name('admin.servers.view.manage.toggle')->middleware('admin.can:servers.manage');
     Route::post('/view/{server:id}/manage/suspension', [Admin\ServersController::class, 'manageSuspension'])->name('admin.servers.view.manage.suspension')->middleware('admin.can:servers.manage');
+    Route::post('/view/{server:id}/manage/lockdown', Admin\Servers\ServerLockdownController::class)->name('admin.servers.view.manage.lockdown')->middleware('admin.can:servers.lockdown');
     Route::post('/view/{server:id}/manage/reinstall', [Admin\ServersController::class, 'reinstallServer'])->name('admin.servers.view.manage.reinstall')->middleware('admin.can:servers.manage');
     Route::post('/view/{server:id}/manage/transfer', [Admin\Servers\ServerTransferController::class, 'transfer'])->name('admin.servers.view.manage.transfer')->middleware('admin.can:servers.transfer');
     Route::post('/view/{server:id}/delete', [Admin\ServersController::class, 'delete'])->middleware('admin.can:servers.delete');
@@ -236,6 +268,12 @@ Route::group(['prefix' => 'nodes'], function () {
         Route::get('/view/{node:id}/database/status', [Admin\Nodes\NodeDatabaseController::class, 'status'])->name('admin.nodes.view.database.status');
         Route::post('/view/{node:id}/database/setup', [Admin\Nodes\NodeDatabaseController::class, 'setup'])->name('admin.nodes.view.database.setup');
         Route::post('/view/{node:id}/database/sync', [Admin\Nodes\NodeDatabaseController::class, 'sync'])->name('admin.nodes.view.database.sync');
+    });
+    // Hydra: SFTP server for the backups of a node (addon "sftp_backups").
+    Route::group(['middleware' => 'admin.can:nodes.backups'], function () {
+        Route::get('/view/{node:id}/backups', [Admin\Nodes\NodeBackupController::class, 'index'])->name('admin.nodes.view.backups');
+        Route::post('/view/{node:id}/backups', [Admin\Nodes\NodeBackupController::class, 'update']);
+        Route::delete('/view/{node:id}/backups', [Admin\Nodes\NodeBackupController::class, 'delete'])->name('admin.nodes.view.backups.delete');
     });
     Route::group(['middleware' => 'admin.can:nodes.firewall'], function () {
         Route::get('/view/{node:id}/firewall', [Admin\Nodes\NodeFirewallController::class, 'index'])->name('admin.nodes.view.firewall');
@@ -287,8 +325,6 @@ Route::group(['prefix' => 'nests'], function () {
 
     Route::patch('/view/{nest:id}', [Admin\Nests\NestController::class, 'update'])->middleware('admin.can:nests.update');
     Route::patch('/egg/{egg:id}', [Admin\Nests\EggController::class, 'update'])->middleware('admin.can:eggs.update');
-    Route::patch('/egg/{egg:id}/background', [Admin\Nests\EggBackgroundController::class, 'update'])->name('admin.nests.egg.background')->middleware('admin.can:eggs.update');
-    Route::patch('/egg/{egg:id}/banner', [Admin\Nests\EggBackgroundController::class, 'banner'])->name('admin.nests.egg.banner')->middleware('admin.can:eggs.update');
     Route::patch('/egg/{egg:id}/scripts', [Admin\Nests\EggScriptController::class, 'update'])->middleware('admin.can:eggs.update');
     Route::patch('/egg/{egg:id}/variables/{variable:id}', [Admin\Nests\EggVariableController::class, 'update'])->name('admin.nests.egg.variables.edit')->middleware('admin.can:eggs.update');
 

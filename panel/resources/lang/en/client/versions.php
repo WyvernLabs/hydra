@@ -1,0 +1,51 @@
+<?php
+
+/*
+ * Hydra: Minecraft version changer (addon "versions").
+ */
+return [
+    'title' => 'Versions',
+    'current' => 'Installed',
+    'current_unknown' => 'No software was installed with the version changer yet. Pick one below.',
+    'build' => 'Build :build',
+    'categories' => [
+        'recommended' => 'Recommended',
+        'established' => 'Established',
+        'experimental' => 'Experimental',
+        'miscellaneous' => 'Miscellaneous',
+        'limbos' => 'Limbo servers',
+    ],
+    'deprecated' => 'No longer maintained',
+    'experimental' => 'Experimental',
+    'minecraft_versions_one' => '1 Minecraft version',
+    'minecraft_versions_other' => ':count Minecraft versions',
+    'project_versions_one' => '1 project version',
+    'project_versions_other' => ':count project versions',
+    'builds_one' => '1 build',
+    'builds_other' => ':count builds',
+    'search' => 'Search versions…',
+    'back' => 'Go back',
+    'show_snapshots' => 'Show snapshot versions',
+    'hide_snapshots' => 'Hide snapshot versions',
+    'version_types' => [
+        'RELEASE' => 'Release',
+        'SNAPSHOT' => 'Snapshot',
+    ],
+    'no_versions' => 'No version matches.',
+    'latest' => 'Latest',
+    'install' => 'Install',
+    'reinstall' => 'Reinstall',
+    'install_wipe' => 'Delete files and install',
+    'cancel' => 'Cancel',
+    'install_title' => 'Install :name :version (:build)',
+    'install_text' => 'The server is stopped and the software is downloaded straight onto it. Your worlds, plugins and settings stay unless you delete all files.',
+    'install_java' => 'This version needs Java :java. If the egg offers an image for it, it is selected automatically.',
+    'wipe' => 'Delete all files first',
+    'wipe_help' => 'Every file of the server is deleted for good, including worlds, plugins and configs. Make a backup first if you are unsure.',
+    'eula' => 'Accept the Minecraft EULA',
+    'eula_help' => 'Writes eula=true into eula.txt, so the server starts right away. By checking this you accept the',
+    'eula_link' => 'Minecraft End User License Agreement',
+    'installing' => 'Stopping the server and installing … this can take a minute.',
+    'installed' => ':name :version (:build) was installed.',
+    'installed_java' => 'The Docker image was switched to Java :java.',
+];

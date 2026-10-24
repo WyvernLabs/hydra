@@ -17,7 +17,7 @@
     <div class="col-md-4">
         <div class="box">
             <div class="box-body">
-                <p class="text-muted small">{!! __('admin/addons.dashboard.banner_hint', ['url' => route('admin.nests')]) !!}</p>
+                <p class="text-muted small">{!! __('admin/addons.dashboard.banner_hint', ['url' => route('admin.design.eggs')]) !!}</p>
                 <p class="text-muted small no-margin">{!! __('admin/addons.dashboard.navigation_hint', ['url' => route('admin.design.navigation')]) !!}</p>
             </div>
         </div>

@@ -9,6 +9,8 @@ use Illuminate\Http\JsonResponse;
 use Pterodactyl\Facades\Activity;
 use Pterodactyl\Models\Permission;
 use Pterodactyl\Services\Files\AllowedPaths;
+use Pterodactyl\Services\Hydra\Backups\BackupStorage;
+use Pterodactyl\Services\Hydra\Addons\SftpBackupsAddon;
 use Illuminate\Auth\Access\AuthorizationException;
 use Pterodactyl\Services\Backups\DeleteBackupService;
 use Pterodactyl\Services\Backups\DownloadLinkService;
@@ -33,6 +35,7 @@ class BackupController extends ClientApiController
         private InitiateBackupService $initiateBackupService,
         private DownloadLinkService $downloadLinkService,
         private BackupRepository $repository,
+        private SftpBackupsAddon $sftpAddon,
     ) {
         parent::__construct();
     }
@@ -55,6 +58,10 @@ class BackupController extends ClientApiController
             ->transformWith($this->getTransformer(BackupTransformer::class))
             ->addMeta([
                 'backup_count' => $this->repository->getNonFailedBackups($server)->count(),
+                // Hydra: backup space in bytes, and whether the own SFTP server can be used.
+                'storage_used' => BackupStorage::used($server),
+                'storage_limit' => BackupStorage::limit($server),
+                'own_sftp' => $this->sftpAddon->usersAllowed() && !empty($server->sftpBackupTarget?->host_key),
             ])
             ->toArray();
     }
@@ -69,7 +76,8 @@ class BackupController extends ClientApiController
     public function store(StoreBackupRequest $request, Server $server): array
     {
         $action = $this->initiateBackupService
-            ->setIgnoredFiles(explode(PHP_EOL, $request->input('ignored') ?? ''));
+            ->setIgnoredFiles(explode(PHP_EOL, $request->input('ignored') ?? ''))
+            ->setOwnSftp($request->input('location') === 'own_sftp');
 
         // Only set the lock status if the user even has permission to delete backups,
         // otherwise ignore this status. This gets a little funky since it isn't clear
@@ -87,6 +95,7 @@ class BackupController extends ClientApiController
             $log->subject($backup)->property([
                 'name' => $backup->name,
                 'locked' => $request->boolean('is_locked'),
+                'location' => $backup->location(),
             ]);
 
             return $backup;
@@ -174,7 +183,7 @@ class BackupController extends ClientApiController
 
         $this->assertWholeServerAccess($request, $server);
 
-        if ($backup->disk !== Backup::ADAPTER_AWS_S3 && $backup->disk !== Backup::ADAPTER_WINGS) {
+        if (!in_array($backup->disk, [Backup::ADAPTER_AWS_S3, Backup::ADAPTER_WINGS, Backup::ADAPTER_SFTP], true)) {
             throw new BadRequestHttpException('The backup requested references an unknown disk driver type and cannot be downloaded.');
         }
 

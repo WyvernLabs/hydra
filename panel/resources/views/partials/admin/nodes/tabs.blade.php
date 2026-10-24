@@ -11,8 +11,10 @@
     ['servers', 'admin.nodes.view.servers', null],
     ['database', 'admin.nodes.view.database', 'nodes.database'],
     ['firewall', 'admin.nodes.view.firewall', 'nodes.firewall'],
+    ['backups', 'admin.nodes.view.backups', 'nodes.backups'],
 ] as [$key, $route, $permission])
-@if(is_null($permission) || Auth::user()->hasAdminPermission($permission))
+{{-- The backups tab belongs to the addon "sftp_backups". --}}
+@if((is_null($permission) || Auth::user()->hasAdminPermission($permission)) && ($key !== 'backups' || app(\Pterodactyl\Services\Hydra\Addons\SftpBackupsAddon::class)->enabled()))
                 <li @if($active === $key) class="active" @endif><a href="{{ route($route, $node->id) }}">{{ __('admin/nodes.tabs.' . $key) }}</a></li>
 @endif
 @endforeach

@@ -207,6 +207,7 @@ func postDeauthorizeUser(c *gin.Context) {
 				tokens.DenyForServer(s.ID(), data.User)
 				s.Websockets().CancelUser(data.User)
 				s.Sftp().Cancel(data.User)
+				cancelUserTransfers(s, data.User)
 			}
 		}
 	} else {
@@ -214,6 +215,7 @@ func postDeauthorizeUser(c *gin.Context) {
 			tokens.DenyForServer(s.ID(), data.User)
 			s.Websockets().CancelUser(data.User)
 			s.Sftp().Cancel(data.User)
+			cancelUserTransfers(s, data.User)
 		}
 	}
 

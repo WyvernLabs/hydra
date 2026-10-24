@@ -1,0 +1,91 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-10-24T13:00:00+02:00",
+    "name": "Minecraft (Universal)",
+    "author": "hydra@wyvernlabs.de",
+    "description": "Every Minecraft server software of mcjars.app in one egg: Vanilla, Paper, Purpur, Folia, Fabric, Quilt, Forge, NeoForge, Velocity, BungeeCord and many more. Pick the software with \"Server Type\" or switch it later on the Versions page of the server.",
+    "features": [
+        "eula",
+        "java_version",
+        "pid_limit"
+    ],
+    "docker_images": {
+        "Java 25": "ghcr.io/pterodactyl/yolks:java_25",
+        "Java 21": "ghcr.io/pterodactyl/yolks:java_21",
+        "Java 17": "ghcr.io/pterodactyl/yolks:java_17",
+        "Java 16": "ghcr.io/pterodactyl/yolks:java_16",
+        "Java 11": "ghcr.io/pterodactyl/yolks:java_11",
+        "Java 8": "ghcr.io/pterodactyl/yolks:java_8"
+    },
+    "file_denylist": [],
+    "startup": "java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}",
+    "config": {
+        "files": "{\n    \"server.properties\": {\n        \"parser\": \"properties\",\n        \"find\": {\n            \"server-ip\": \"0.0.0.0\",\n            \"server-port\": \"{{server.build.default.port}}\",\n            \"query.port\": \"{{server.build.default.port}}\"\n        }\n    },\n    \"velocity.toml\": {\n        \"parser\": \"file\",\n        \"find\": {\n            \"bind = \": \"bind = \\\"0.0.0.0:{{server.build.default.port}}\\\"\"\n        }\n    },\n    \"config.yml\": {\n        \"parser\": \"file\",\n        \"find\": {\n            \"  host: \": \"  host: 0.0.0.0:{{server.build.default.port}}\"\n        }\n    }\n}",
+        "startup": "{\n    \"done\": [\n        \")! For help, type \",\n        \"Done (\",\n        \"Listening on /\"\n    ]\n}",
+        "logs": "{}",
+        "stop": "stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/ash\r\n# Hydra: installs any server software of mcjars.app (Paper, Purpur, Fabric,\r\n# Forge, NeoForge, Quilt, Velocity, BungeeCord, ...). The version changer of\r\n# the panel uses the same steps later on.\r\nset -e\r\napk add --no-cache curl jq unzip ca-certificates >/dev/null\r\n\r\nmkdir -p /mnt/server\r\ncd /mnt/server\r\n\r\nAPI=\"https://mcjars.app/api\"\r\nTYPE=$(echo \"${SERVER_TYPE:-PAPER}\" | tr 'a-z-' 'A-Z_')\r\nJAR=\"${SERVER_JARFILE:-server.jar}\"\r\n\r\nVERSIONS=$(curl -fsSL \"${API}/v2/builds/${TYPE}\") || { echo \"Unknown server type ${TYPE}, see https://mcjars.app\"; exit 1; }\r\nVERSION=\"${MINECRAFT_VERSION:-latest}\"\r\nif [ \"${VERSION}\" = \"latest\" ] || ! echo \"${VERSIONS}\" | jq -e --arg v \"${VERSION}\" '.builds[$v]' >/dev/null; then\r\n    if [ \"${VERSION}\" != \"latest\" ]; then\r\n        echo \"Version ${VERSION} not found, using the latest release.\"\r\n    fi\r\n    VERSION=$(echo \"${VERSIONS}\" | jq -r '[.builds | to_entries[] | select(.value.type == \"RELEASE\")] | last | .key')\r\nfi\r\n\r\nBUILDS=$(curl -fsSL \"${API}/v2/builds/${TYPE}/${VERSION}\")\r\nif [ \"${BUILD_NUMBER:-latest}\" = \"latest\" ]; then\r\n    BUILD=$(echo \"${BUILDS}\" | jq -c '.builds[0]')\r\nelse\r\n    BUILD=$(echo \"${BUILDS}\" | jq -c --arg b \"${BUILD_NUMBER}\" '([.builds[] | select((.buildNumber | tostring) == $b or .name == $b or .name == (\"#\" + $b))][0]) // .builds[0]')\r\nfi\r\necho \"Installing ${TYPE} ${VERSION} ($(echo \"${BUILD}\" | jq -r '.name'))\"\r\n\r\nsafe() {\r\n    case \"$1\" in\r\n        /* | *..*) echo \"Refusing path $1\"; exit 1 ;;\r\n    esac\r\n}\r\n\r\necho \"${BUILD}\" | jq -c '.installation[][]' > /tmp/steps\r\nwhile read -r step; do\r\n    case \"$(echo \"${step}\" | jq -r '.type')\" in\r\n        download)\r\n            file=$(echo \"${step}\" | jq -r '.file')\r\n            safe \"${file}\"\r\n            if [ \"${file}\" = \"server.jar\" ]; then\r\n                file=\"${JAR}\"\r\n            fi\r\n            mkdir -p \"$(dirname \"${file}\")\"\r\n            echo \"Downloading ${file}\"\r\n            curl -fsSL -o \"${file}\" \"$(echo \"${step}\" | jq -r '.url')\"\r\n            ;;\r\n        unzip)\r\n            file=$(echo \"${step}\" | jq -r '.file')\r\n            location=$(echo \"${step}\" | jq -r '.location')\r\n            safe \"${file}\"\r\n            safe \"${location}\"\r\n            unzip -oq \"${file}\" -d \"${location}\"\r\n            ;;\r\n        remove)\r\n            location=$(echo \"${step}\" | jq -r '.location')\r\n            safe \"${location}\"\r\n            rm -rf -- \"${location}\"\r\n            ;;\r\n    esac\r\ndone < /tmp/steps\r\n\r\n# Forge, NeoForge and others unpack a server.jar of their own.\r\nif [ \"${JAR}\" != \"server.jar\" ] && [ -f server.jar ]; then\r\n    mv -f server.jar \"${JAR}\"\r\nfi\r\n\r\nif [ \"${EULA:-false}\" = \"true\" ] || [ \"${EULA:-0}\" = \"1\" ]; then\r\n    echo \"eula=true\" > eula.txt\r\nfi\r\n\r\necho \"Installation finished.\"\r\n",
+            "container": "ghcr.io/pterodactyl/installers:alpine",
+            "entrypoint": "ash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Server Type",
+            "description": "The server software from mcjars.app, e.g. PAPER, PURPUR, FOLIA, FABRIC, QUILT, FORGE, NEOFORGE, VANILLA, VELOCITY or BUNGEECORD.",
+            "env_variable": "SERVER_TYPE",
+            "default_value": "PAPER",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:40|regex:/^[A-Za-z0-9_-]+$/",
+            "field_type": "text"
+        },
+        {
+            "name": "Minecraft Version",
+            "description": "The version to install, e.g. 1.21.4. Leave at latest for the newest release.",
+            "env_variable": "MINECRAFT_VERSION",
+            "default_value": "latest",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:40|regex:/^[A-Za-z0-9._+-]+$/",
+            "field_type": "text"
+        },
+        {
+            "name": "Build Number",
+            "description": "The build of the version, e.g. 232. Leave at latest for the newest build.",
+            "env_variable": "BUILD_NUMBER",
+            "default_value": "latest",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:40|regex:/^[A-Za-z0-9#._+-]+$/",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Jar File",
+            "description": "The name of the server jar file to run the server with.",
+            "env_variable": "SERVER_JARFILE",
+            "default_value": "server.jar",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|regex:/^([\\w\\d._-]+)(\\.jar)$/",
+            "field_type": "text"
+        },
+        {
+            "name": "Accept EULA",
+            "description": "Accepts the Minecraft EULA (https://aka.ms/MinecraftEULA) during the installation, so the server starts right away.",
+            "env_variable": "EULA",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:true,false",
+            "field_type": "text"
+        }
+    ]
+}

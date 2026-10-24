@@ -28,6 +28,7 @@ use Pterodactyl\Services\Databases\DatabaseManagementService;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Pterodactyl\Contracts\Repository\ServerRepositoryInterface;
 use Pterodactyl\Contracts\Repository\DatabaseRepositoryInterface;
+use Pterodactyl\Services\Hydra\Backups\BackupStorage;
 use Pterodactyl\Contracts\Repository\AllocationRepositoryInterface;
 use Pterodactyl\Services\Servers\ServerConfigurationStructureService;
 use Pterodactyl\Http\Requests\Admin\Servers\Databases\StoreServerDatabaseRequest;
@@ -143,7 +144,15 @@ class ServersController extends Controller
                 'allocation_id', 'add_allocations', 'remove_allocations',
                 'memory', 'swap', 'io', 'cpu', 'threads', 'disk',
                 'database_limit', 'allocation_limit', 'backup_limit', 'oom_disabled',
-            ]));
+            ]) + ($request->has('hydra_limits') ? [
+                // Hydra: the owner picks the ports; empty limits use the addon defaults.
+                'hydra_dedicated' => $request->boolean('hydra_dedicated'),
+                'hydra_subdomain_limit' => $request->filled('hydra_subdomain_limit') ? max(0, $request->integer('hydra_subdomain_limit')) : null,
+                'hydra_proxy_limit' => $request->filled('hydra_proxy_limit') ? max(0, $request->integer('hydra_proxy_limit')) : null,
+            ] : []) + ($request->has('backup_storage_gb') ? [
+                // Hydra: the backup space is entered in GB.
+                'backup_storage_limit' => BackupStorage::mbFromGb($request->input('backup_storage_gb')),
+            ] : []));
         } catch (DataValidationException $exception) {
             throw new ValidationException($exception->getValidator());
         }

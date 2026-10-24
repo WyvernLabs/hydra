@@ -37,6 +37,12 @@ Route::get('/profiles/{uuid}/{type}', Base\ProfileMediaController::class)
     ->where('type', 'avatar|banner')
     ->name('profiles.media');
 
+// Hydra: images of support tickets (tickets addon).
+Route::get('/tickets/attachments/{uuid}', Base\TicketAttachmentController::class)
+    ->where('uuid', '[0-9a-f-]{36}')
+    ->middleware('addon:tickets')
+    ->name('tickets.attachments');
+
 // Hydra: download of a database export, the link comes from the client API.
 Route::get('/databases/export/{token}', Base\DatabaseExportController::class)
     ->where('token', '[A-Za-z0-9]{48}')

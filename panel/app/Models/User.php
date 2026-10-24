@@ -436,6 +436,15 @@ class User extends Model implements
     }
 
     /**
+     * Hydra: whether this user may put servers they can open into lockdown, lift
+     * it again and keep using them meanwhile.
+     */
+    public function canUseLockedDownServers(): bool
+    {
+        return $this->hasAdminPermission('servers.lockdown');
+    }
+
+    /**
      * Hydra: whether this user may open every server in the client area with
      * full rights, like a root admin.
      */

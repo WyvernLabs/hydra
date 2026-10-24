@@ -2,6 +2,7 @@
 
 namespace Pterodactyl\Services\Servers;
 
+use Pterodactyl\Services\Hydra\ServerCleanup;
 use Illuminate\Http\Response;
 use Pterodactyl\Models\Server;
 use Illuminate\Support\Facades\Log;
@@ -21,6 +22,7 @@ class ServerDeletionService
         private ConnectionInterface $connection,
         private DaemonServerRepository $daemonServerRepository,
         private DatabaseManagementService $databaseManagementService,
+        private ServerCleanup $cleanup,
     ) {
     }
 
@@ -42,6 +44,11 @@ class ServerDeletionService
      */
     public function handle(Server $server): void
     {
+        // Hydra: subdomains, proxies, own ports and backups go first, while the
+        // server still exists on its node.
+        $this->cleanup->beforeDeletion($server, $this->force);
+        $primaryAllocation = $server->allocation_id;
+
         try {
             $this->daemonServerRepository->setServer($server)->delete();
         } catch (DaemonConnectionException $exception) {
@@ -83,5 +90,7 @@ class ServerDeletionService
 
             $server->delete();
         });
+
+        $this->cleanup->afterDeletion($primaryAllocation);
     }
 }

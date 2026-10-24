@@ -28,6 +28,7 @@ class SettingsServiceProvider extends ServiceProvider
         'pterodactyl:client_features:allocations:enabled',
         'pterodactyl:client_features:allocations:range_start',
         'pterodactyl:client_features:allocations:range_end',
+        'pterodactyl:client_features:schedules:per_schedule_task_limit',
         'hydra:branding:accent',
         'hydra:branding:logo',
         'hydra:branding:favicon',
@@ -39,6 +40,9 @@ class SettingsServiceProvider extends ServiceProvider
         'hydra:backgrounds:dashboard:blur',
         'hydra:backgrounds:dashboard:dim',
         'hydra:navigation:server',
+        'hydra:console:offline_message',
+        'hydra:console:prefix',
+        'hydra:console:daemon_prefix',
     ];
 
     /**
@@ -96,6 +100,12 @@ class SettingsServiceProvider extends ServiceProvider
                     $value = $encrypter->decrypt($value);
                 } catch (DecryptException $exception) {
                 }
+            }
+
+            // Hydra: defaults of addons can be lists (e.g. the eggs of the game library).
+            if (is_array($value)) {
+                $config->set(str_replace(':', '.', $key), $value);
+                continue;
             }
 
             switch (strtolower((string) $value)) {

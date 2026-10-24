@@ -7,7 +7,9 @@ use Webmozart\Assert\Assert;
 use Pterodactyl\Models\Server;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\TransferException;
+use Pterodactyl\Exceptions\DisplayException;
 use Pterodactyl\Exceptions\Http\Server\FileSizeTooLargeException;
 use Pterodactyl\Exceptions\Http\Connection\DaemonConnectionException;
 
@@ -169,9 +171,13 @@ class DaemonFileRepository extends DaemonRepository
     /**
      * Delete a file or folder for the server.
      *
+     * Hydra: with $trashSeconds the files are moved into the trash of the
+     * server and kept there for that long.
+     *
      * @throws DaemonConnectionException
+     * @throws DisplayException
      */
-    public function deleteFiles(?string $root, array $files): ResponseInterface
+    public function deleteFiles(?string $root, array $files, ?int $trashSeconds = null): ResponseInterface
     {
         Assert::isInstanceOf($this->server, Server::class);
 
@@ -179,12 +185,20 @@ class DaemonFileRepository extends DaemonRepository
             return $this->getHttpClient()->post(
                 sprintf('/api/servers/%s/files/delete', $this->server->uuid),
                 [
-                    'json' => [
+                    'json' => array_filter([
                         'root' => $root ?? '/',
                         'files' => $files,
-                    ],
+                        'hydra_trash' => $trashSeconds,
+                    ], fn ($value) => !is_null($value)),
                 ]
             );
+        } catch (RequestException $exception) {
+            $code = $exception->getResponse() ? (json_decode($exception->getResponse()->getBody()->__toString(), true)['code'] ?? null) : null;
+            if ($code === 'trash_unavailable') {
+                throw new DisplayException(__('client/files.trash.unavailable'));
+            }
+
+            throw new DaemonConnectionException($exception);
         } catch (TransferException $exception) {
             throw new DaemonConnectionException($exception);
         }
@@ -195,7 +209,7 @@ class DaemonFileRepository extends DaemonRepository
      *
      * @throws DaemonConnectionException
      */
-    public function compressFiles(?string $root, array $files): array
+    public function compressFiles(?string $root, array $files, ?string $progress = null): array
     {
         Assert::isInstanceOf($this->server, Server::class);
 
@@ -206,6 +220,8 @@ class DaemonFileRepository extends DaemonRepository
                     'json' => [
                         'root' => $root ?? '/',
                         'files' => $files,
+                        // Hydra: the daemon reports the progress over the websocket under this id.
+                        'progress' => $progress,
                     ],
                     // Wait for up to 15 minutes for the archive to be completed when calling this endpoint
                     // since it will likely take quite awhile for large directories.
@@ -224,7 +240,7 @@ class DaemonFileRepository extends DaemonRepository
      *
      * @throws DaemonConnectionException
      */
-    public function decompressFile(?string $root, string $file, bool $contained = false): ResponseInterface
+    public function decompressFile(?string $root, string $file, bool $contained = false, ?string $progress = null): ResponseInterface
     {
         Assert::isInstanceOf($this->server, Server::class);
 
@@ -238,6 +254,7 @@ class DaemonFileRepository extends DaemonRepository
                         // Hydra: keep every entry inside the target folder and skip links,
                         // used for subusers that may only work in certain folders.
                         'contained' => $contained,
+                        'progress' => $progress,
                     ],
                     // Wait for up to 15 minutes for the decompress to be completed when calling this endpoint
                     // since it will likely take quite awhile for large directories.
@@ -288,14 +305,18 @@ class DaemonFileRepository extends DaemonRepository
             'file_name' => $params['filename'] ?? null,
             'use_header' => $params['use_header'] ?? null,
             'foreground' => $params['foreground'] ?? null,
+            // Hydra: lets Wings stop the download when the user loses access.
+            'hydra_user' => $params['user'] ?? null,
         ];
 
         try {
             return $this->getHttpClient()->post(
                 sprintf('/api/servers/%s/files/pull', $this->server->uuid),
-                [
+                array_filter([
                     'json' => array_filter($attributes, fn ($value) => !is_null($value)),
-                ]
+                    // Hydra: downloads in the foreground can take longer than a normal request.
+                    'timeout' => $params['timeout'] ?? null,
+                ])
             );
         } catch (TransferException $exception) {
             throw new DaemonConnectionException($exception);

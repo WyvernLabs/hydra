@@ -155,6 +155,13 @@ class SftpAuthenticationController extends Controller
             throw new HttpForbiddenException('This account has been banned.');
         }
 
+        // Hydra: only the owner and allowed admins may use a server in lockdown.
+        if (!$server->lockdownAllows($user)) {
+            Activity::event('server:sftp.denied')->actor($user)->subject($server)->log();
+
+            throw new HttpForbiddenException('This server is in lockdown.');
+        }
+
         if (!$user->canAccessAllServers() && $server->owner_id !== $user->id) {
             $permissions = $this->permissions->handle($server, $user);
 

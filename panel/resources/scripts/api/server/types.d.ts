@@ -16,6 +16,9 @@ export interface ServerBackup {
     bytes: number;
     createdAt: Date;
     completedAt: Date | null;
+    // Hydra: where the backup is kept, and why it failed ("storage_full", "sftp: …").
+    location: 'panel' | 'node_sftp' | 'own_sftp';
+    error: string | null;
 }
 
 export interface ServerEggVariable {

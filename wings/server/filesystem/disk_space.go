@@ -172,6 +172,8 @@ func (fs *Filesystem) walkDiskUsage() (int64, error) {
 	// grab the size of their data directory. This is a taxing operation, so we want to store it in
 	// the cache once we've gotten it.
 	size, err := fs.DirectorySize("/")
+	// Hydra: game profiles and the trash kept outside of the directory count as well.
+	size += fs.profilesSize() + fs.trashSize()
 
 	// Always record the lookup, even if there is an error, so that a persistent error does not
 	// cause the disk to be walked on every call.

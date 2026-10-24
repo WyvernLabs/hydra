@@ -34,6 +34,8 @@ type Client interface {
 	SetTransferStatus(ctx context.Context, uuid string, successful bool) error
 	ValidateSftpCredentials(ctx context.Context, request SftpAuthRequest) (SftpAuthResponse, error)
 	SendActivityLogs(ctx context.Context, activity []models.Activity) error
+	// TriggerSchedule (Hydra) asks the panel to run a schedule of the server.
+	TriggerSchedule(ctx context.Context, uuid string, schedule int, reason string) error
 	SetCredentials(id, token string)
 }
 

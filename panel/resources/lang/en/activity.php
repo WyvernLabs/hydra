@@ -72,6 +72,9 @@ return [
             'fail' => 'Marked the :name backup as failed',
             'lock' => 'Locked the :name backup',
             'unlock' => 'Unlocked the :name backup',
+            'import' => 'Added the :name backup from the own SFTP server',
+            'sftp-update' => 'Set up the SFTP server :host for backups',
+            'sftp-delete' => 'Removed the SFTP server :host for backups',
         ],
         'database' => [
             'create' => 'Created new database :name',
@@ -98,6 +101,17 @@ return [
             'write' => 'Wrote new content to :file',
             'upload' => 'Began a file upload',
             'uploaded' => 'Uploaded :directory:file',
+            // Hydra: trash of the file manager.
+            'trash_one' => 'Moved :directory:files.0 to the trash',
+            'trash_other' => 'Moved :count files in :directory to the trash',
+            'trash-restore_one' => 'Restored :files.0 from the trash',
+            'trash-restore_other' => 'Restored :count files from the trash',
+            'trash-delete_one' => 'Deleted :files.0 from the trash for good',
+            'trash-delete_other' => 'Deleted :count files from the trash for good',
+            'trash-empty' => 'Emptied the trash',
+        ],
+        'minecraft' => [
+            'install' => 'Installed :software :version (build :build)',
         ],
         'sftp' => [
             'denied' => 'Blocked SFTP access due to permissions',
@@ -118,11 +132,25 @@ return [
             'primary' => 'Set :allocation as the primary server allocation',
             'delete' => 'Deleted the :allocation allocation',
         ],
+        'game' => [
+            'switch' => 'Switched the game from :from to :to (files kept: :kept)',
+            'load' => 'Loaded the game profile :name (files kept: :kept)',
+            'delete' => 'Deleted the game profile :name',
+        ],
+        'subdomain' => [
+            'create' => 'Created the subdomain :name',
+            'delete' => 'Deleted the subdomain :name',
+        ],
+        'proxy' => [
+            'create' => 'Created a reverse proxy for :domain to :allocation',
+            'delete' => 'Deleted the reverse proxy for :domain',
+        ],
         'schedule' => [
             'create' => 'Created the :name schedule',
             'update' => 'Updated the :name schedule',
             'execute' => 'Manually executed the :name schedule',
             'delete' => 'Deleted the :name schedule',
+            'triggered' => 'The :name schedule was started by the server (:reason)',
         ],
         'task' => [
             'create' => 'Created a new ":action" task for the :name schedule',
@@ -132,8 +160,15 @@ return [
         'settings' => [
             'rename' => 'Renamed the server from :old to :new',
             'description' => 'Changed the server description from :old to :new',
+            'lockdown-enable' => 'Put the server into lockdown',
+            'lockdown-disable' => 'Lifted the lockdown of the server',
+        ],
+        'console' => [
+            'mclogs' => 'Uploaded :file to mclo.gs: :url',
         ],
         'startup' => [
+            'command' => 'Changed the startup command from ":old" to ":new"',
+            'done' => 'Changed the messages that mark the server as running from ":old" to ":new"',
             'edit' => 'Changed the :variable variable from ":old" to ":new"',
             'image' => 'Updated the Docker Image for the server from :old to :new',
         ],

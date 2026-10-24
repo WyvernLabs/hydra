@@ -15,6 +15,8 @@ class AdvancedSettingsFormRequest extends AdminFormRequest
             'pterodactyl:guzzle:timeout' => 'required|integer|between:1,60',
             'pterodactyl:guzzle:connect_timeout' => 'required|integer|between:1,60',
             'pterodactyl:client_features:allocations:enabled' => 'required|in:true,false',
+            // Hydra: tasks per schedule.
+            'pterodactyl:client_features:schedules:per_schedule_task_limit' => 'required|integer|min:1|max:1000',
             'pterodactyl:client_features:allocations:range_start' => [
                 'nullable',
                 'required_if:pterodactyl:client_features:allocations:enabled,true',

@@ -41,6 +41,12 @@ func postServerBackup(c *gin.Context) {
 		Adapter backup.AdapterType `json:"adapter"`
 		Uuid    string             `json:"uuid"`
 		Ignore  string             `json:"ignore"`
+		// Hydra: largest size of the archive in bytes (space left for
+		// backups), 0 is no limit.
+		MaxSize int64 `json:"max_size"`
+		// Hydra: target and file name for the sftp adapter.
+		Sftp *backup.SftpTarget `json:"sftp"`
+		File string             `json:"file"`
 	}
 	if err := c.BindJSON(&data); err != nil {
 		return
@@ -61,9 +67,19 @@ func postServerBackup(c *gin.Context) {
 		adapter = backup.NewLocal(client, backupUuid, data.Ignore)
 	case backup.S3BackupAdapter:
 		adapter = backup.NewS3(client, backupUuid, data.Ignore)
+	case backup.SftpBackupAdapter:
+		if data.Sftp == nil || data.Sftp.Validate() != nil || (data.File != "" && !backup.ValidSftpFileName(data.File)) {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "The SFTP server settings are incomplete."})
+			return
+		}
+		adapter = backup.NewSftp(client, backupUuid, data.Ignore, *data.Sftp, data.File)
 	default:
 		middleware.CaptureAndAbort(c, errors.New("router/backups: provided adapter is not valid: "+string(data.Adapter)))
 		return
+	}
+
+	if data.MaxSize > 0 {
+		adapter.SetMaxSize(data.MaxSize)
 	}
 
 	// Attach the server ID and the request ID to the adapter log context for easier
@@ -95,11 +111,14 @@ func postServerRestoreBackup(c *gin.Context) {
 	logger := middleware.ExtractLogger(c)
 
 	var data struct {
-		Adapter           backup.AdapterType `binding:"required,oneof=wings s3" json:"adapter"`
+		Adapter           backup.AdapterType `binding:"required,oneof=wings s3 sftp" json:"adapter"`
 		TruncateDirectory bool               `json:"truncate_directory"`
 		// A UUID is always required for this endpoint, however the download URL
 		// is only present when the given adapter type is s3.
 		DownloadUrl string `json:"download_url"`
+		// Hydra: target and file name for the sftp adapter.
+		Sftp *backup.SftpTarget `json:"sftp"`
+		File string             `json:"file"`
 	}
 	if err := c.BindJSON(&data); err != nil {
 		return
@@ -150,6 +169,40 @@ func postServerRestoreBackup(c *gin.Context) {
 			logger.Info("completed server restoration from local backup")
 			s.SetRestoring(false)
 		}(s, b, logger)
+		hasError = false
+		c.Status(http.StatusAccepted)
+		return
+	}
+
+	// Hydra: read the archive from the SFTP server while restoring it.
+	if data.Adapter == backup.SftpBackupAdapter {
+		if data.Sftp == nil || !backup.ValidSftpFileName(data.File) {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "The SFTP server settings are incomplete."})
+			return
+		}
+		conn, err := data.Sftp.Connect(s.Context(), false)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "SFTP: " + err.Error()})
+			return
+		}
+		f, _, err := conn.Open(data.File)
+		if err != nil {
+			_ = conn.Close()
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "SFTP: the backup was not found on the server."})
+			return
+		}
+		go func(s *server.Server, uuid string, logger *log.Entry) {
+			defer conn.Close()
+			logger.Info("starting restoration process for server backup using SFTP driver")
+			b := backup.NewSftp(client, uuid, "", *data.Sftp, data.File)
+			if err := s.RestoreBackup(b, f, data.TruncateDirectory); err != nil {
+				logger.WithField("error", errors.WithStack(err)).Error("failed to restore SFTP backup to server")
+			}
+			s.Events().Publish(server.DaemonMessageEvent, "Completed server restoration from SFTP backup.")
+			s.Events().Publish(server.BackupRestoreCompletedEvent, "")
+			logger.Info("completed server restoration from SFTP backup")
+			s.SetRestoring(false)
+		}(s, backupUuid, logger)
 		hasError = false
 		c.Status(http.StatusAccepted)
 		return

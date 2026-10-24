@@ -48,6 +48,8 @@ class StoreServerRequest extends ApplicationApiRequest
             'feature_limits.databases' => $rules['database_limit'],
             'feature_limits.allocations' => $rules['allocation_limit'],
             'feature_limits.backups' => $rules['backup_limit'],
+            // Hydra: backup space in MiB, replaces the number of backups.
+            'feature_limits.backup_storage' => 'sometimes|nullable|integer|min:0',
 
             // Placeholders for rules added in withValidator() function.
             'allocation.default' => '',
@@ -94,6 +96,7 @@ class StoreServerRequest extends ApplicationApiRequest
             'database_limit' => array_get($data, 'feature_limits.databases'),
             'allocation_limit' => array_get($data, 'feature_limits.allocations'),
             'backup_limit' => array_get($data, 'feature_limits.backups'),
+            'backup_storage_limit' => array_get($data, 'feature_limits.backup_storage'),
             'oom_disabled' => array_get($data, 'oom_disabled'),
         ];
     }

@@ -8,6 +8,7 @@ use Illuminate\Contracts\Bus\Dispatcher;
 use Pterodactyl\Jobs\Schedule\RunTaskJob;
 use Illuminate\Database\ConnectionInterface;
 use Pterodactyl\Exceptions\DisplayException;
+use Pterodactyl\Services\Hydra\Schedules\TaskFlow;
 use Pterodactyl\Repositories\Wings\DaemonServerRepository;
 use Pterodactyl\Exceptions\Http\Connection\DaemonConnectionException;
 
@@ -16,8 +17,12 @@ class ProcessScheduleService
     /**
      * ProcessScheduleService constructor.
      */
-    public function __construct(private ConnectionInterface $connection, private Dispatcher $dispatcher, private DaemonServerRepository $serverRepository)
-    {
+    public function __construct(
+        private ConnectionInterface $connection,
+        private Dispatcher $dispatcher,
+        private DaemonServerRepository $serverRepository,
+        private TaskFlow $flow,
+    ) {
     }
 
     /**
@@ -27,15 +32,26 @@ class ProcessScheduleService
      */
     public function handle(Schedule $schedule, bool $now = false): void
     {
-        $task = $schedule->tasks()->orderBy('sequence_id')->first();
-        if (is_null($task)) {
+        if (!$schedule->tasks()->exists()) {
             throw new DisplayException('Cannot process schedule for task execution: no tasks are registered.');
+        }
+
+        // Hydra: the first task that does something, the conditions before it decide which.
+        $task = $this->flow->next($schedule, 0);
+        if (is_null($task)) {
+            $schedule->forceFill([
+                'last_run_at' => now(),
+                'next_run_at' => $schedule->isCron() ? $schedule->getNextRunDate() : null,
+            ])->saveOrFail();
+
+            return;
         }
 
         $this->connection->transaction(function () use ($schedule, $task) {
             $schedule->forceFill([
                 'is_processing' => true,
-                'next_run_at' => $schedule->getNextRunDate(),
+                // Hydra: schedules started by a state or a console line have no next time.
+                'next_run_at' => $schedule->isCron() ? $schedule->getNextRunDate() : null,
             ])->saveOrFail();
 
             $task->update(['is_queued' => true]);

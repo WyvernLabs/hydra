@@ -6,6 +6,8 @@ interface Data {
     payload: string;
     timeOffset: string | number;
     continueOnFailure: boolean;
+    // Hydra: moves the task to this position.
+    sequenceId?: number;
 }
 
 export default async (uuid: string, schedule: number, task: number | undefined, data: Data): Promise<Task> => {
@@ -16,6 +18,7 @@ export default async (uuid: string, schedule: number, task: number | undefined, 
             payload: data.payload,
             continue_on_failure: data.continueOnFailure,
             time_offset: data.timeOffset,
+            sequence_id: data.sequenceId,
         }
     );
 

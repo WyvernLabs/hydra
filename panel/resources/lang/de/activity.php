@@ -70,6 +70,9 @@ return [
             'fail' => 'Backup :name als fehlgeschlagen markiert',
             'lock' => 'Backup :name gesperrt',
             'unlock' => 'Backup :name entsperrt',
+            'import' => 'Backup :name vom eigenen SFTP-Server übernommen',
+            'sftp-update' => 'SFTP-Server :host für Backups eingerichtet',
+            'sftp-delete' => 'SFTP-Server :host für Backups entfernt',
         ],
         'database' => [
             'create' => 'Neue Datenbank :name angelegt',
@@ -96,6 +99,17 @@ return [
             'write' => 'Neuen Inhalt in :file geschrieben',
             'upload' => 'Datei-Upload gestartet',
             'uploaded' => ':directory:file hochgeladen',
+            // Hydra: Papierkorb des Dateimanagers.
+            'trash_one' => ':directory:files.0 in den Papierkorb verschoben',
+            'trash_other' => ':count Dateien in :directory in den Papierkorb verschoben',
+            'trash-restore_one' => ':files.0 aus dem Papierkorb wiederhergestellt',
+            'trash-restore_other' => ':count Dateien aus dem Papierkorb wiederhergestellt',
+            'trash-delete_one' => ':files.0 endgültig aus dem Papierkorb gelöscht',
+            'trash-delete_other' => ':count Dateien endgültig aus dem Papierkorb gelöscht',
+            'trash-empty' => 'Papierkorb geleert',
+        ],
+        'minecraft' => [
+            'install' => ':software :version (Build :build) installiert',
         ],
         'sftp' => [
             'denied' => 'SFTP-Zugriff wegen fehlender Berechtigung blockiert',
@@ -116,11 +130,25 @@ return [
             'primary' => ':allocation als primäre Adresse des Servers festgelegt',
             'delete' => 'Adresse :allocation gelöscht',
         ],
+        'game' => [
+            'switch' => 'Spiel von :from zu :to gewechselt (Dateien behalten: :kept)',
+            'load' => 'Spielprofil :name geladen (Dateien behalten: :kept)',
+            'delete' => 'Spielprofil :name gelöscht',
+        ],
+        'subdomain' => [
+            'create' => 'Subdomain :name angelegt',
+            'delete' => 'Subdomain :name gelöscht',
+        ],
+        'proxy' => [
+            'create' => 'Reverse Proxy für :domain auf :allocation angelegt',
+            'delete' => 'Reverse Proxy für :domain gelöscht',
+        ],
         'schedule' => [
             'create' => 'Zeitplan :name erstellt',
             'update' => 'Zeitplan :name aktualisiert',
             'execute' => 'Zeitplan :name manuell ausgeführt',
             'delete' => 'Zeitplan :name gelöscht',
+            'triggered' => 'Zeitplan :name wurde vom Server gestartet (:reason)',
         ],
         'task' => [
             'create' => 'Neue Aufgabe ":action" für den Zeitplan :name erstellt',
@@ -130,8 +158,15 @@ return [
         'settings' => [
             'rename' => 'Server von :old in :new umbenannt',
             'description' => 'Serverbeschreibung von :old in :new geändert',
+            'lockdown-enable' => 'Server in den Lockdown versetzt',
+            'lockdown-disable' => 'Lockdown des Servers aufgehoben',
+        ],
+        'console' => [
+            'mclogs' => ':file zu mclo.gs hochgeladen: :url',
         ],
         'startup' => [
+            'command' => 'Startbefehl von ":old" in ":new" geändert',
+            'done' => 'Meldungen, die den Server als gestartet markieren, von ":old" in ":new" geändert',
             'edit' => 'Variable :variable von ":old" in ":new" geändert',
             'image' => 'Docker-Image des Servers von :old auf :new geändert',
         ],

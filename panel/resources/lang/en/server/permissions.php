@@ -28,7 +28,7 @@ return [
     ],
     'backup' => [
         'title' => 'Backups',
-        'labels' => ['create' => 'Create', 'read' => 'View', 'delete' => 'Delete', 'download' => 'Download', 'restore' => 'Restore'],
+        'labels' => ['create' => 'Create', 'read' => 'View', 'delete' => 'Delete', 'download' => 'Download', 'restore' => 'Restore', 'sftp' => 'Own SFTP Server'],
     ],
     'allocation' => [
         'title' => 'Network',
@@ -48,7 +48,7 @@ return [
     ],
     'settings' => [
         'title' => 'Settings',
-        'labels' => ['rename' => 'Rename', 'reinstall' => 'Reinstall'],
+        'labels' => ['rename' => 'Rename', 'reinstall' => 'Reinstall', 'game' => 'Switch Game', 'version' => 'Change Minecraft Version'],
     ],
     'activity' => ['title' => 'Activity', 'labels' => ['read' => 'View']],
 ];

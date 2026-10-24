@@ -243,6 +243,87 @@ fi
 systemctl enable --now docker >/dev/null 2>&1
 info "Docker $(docker version --format '{{.Server.Version}}' 2>/dev/null || echo '?') ok"
 
+# Caddy für die Reverse Proxys der Server (Addon "Reverse Proxy"). Ohne Proxys lauscht Caddy
+# auf keinem Port; Wings schreibt die Proxys nach /etc/hydra/caddy/ und lädt Caddy neu.
+CADDY_LIST=/etc/apt/sources.list.d/caddy-stable.list
+install_caddy_github() {
+  local arch tag ver deb tmp
+  arch="$(dpkg --print-architecture)"
+  tag="$(curl -fsSL https://api.github.com/repos/caddyserver/caddy/releases/latest | sed -n 's/.*"tag_name": *"\(v[^"]*\)".*/\1/p' | head -n1 || true)"
+  [[ -n "$tag" ]] || { warn "Aktuelle Caddy-Version konnte nicht ermittelt werden – Reverse Proxys bleiben aus."; return 1; }
+  ver="${tag#v}"
+  command -v caddy >/dev/null && [[ "$(caddy version | awk '{print $1}')" == "$tag" ]] && return 0
+  info "Installiere Caddy $ver aus dem GitHub-Release …"
+  deb="caddy_${ver}_linux_${arch}.deb"
+  tmp="$(mktemp -d)"
+  if curl -fsSL -o "$tmp/$deb" "https://github.com/caddyserver/caddy/releases/download/$tag/$deb" \
+    && curl -fsSL -o "$tmp/checksums.txt" "https://github.com/caddyserver/caddy/releases/download/$tag/caddy_${ver}_checksums.txt" \
+    && (cd "$tmp" && grep " $deb\$" checksums.txt | sha512sum -c --status) \
+    && dpkg -i "$tmp/$deb" >/dev/null; then
+    rm -rf "$tmp"
+    return 0
+  fi
+  rm -rf "$tmp"
+  warn "Caddy konnte nicht installiert werden – Reverse Proxys bleiben aus."
+  return 1
+}
+if [[ -f "$CADDY_LIST.disabled" ]]; then
+  install_caddy_github || true
+elif ! command -v caddy >/dev/null; then
+  info "Installiere Caddy (offizielles Repository) …"
+  curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor --yes -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+  curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' > "$CADDY_LIST"
+  if ! apt-get update -qq || ! apt-get install -y -qq caddy >/dev/null 2>&1; then
+    warn "Caddy-Repository nicht nutzbar – weiche auf das GitHub-Release aus."
+    mv -f "$CADDY_LIST" "$CADDY_LIST.disabled"
+    apt-get update -qq || true
+    install_caddy_github || true
+  fi
+fi
+if command -v caddy >/dev/null; then
+  PROXY_DIR=$CONF_DIR/caddy
+  mkdir -p "$PROXY_DIR"
+  [[ -f "$PROXY_DIR/proxies.caddy" ]] || echo "# Managed by Hydra (reverse proxies of this node). Changes are overwritten." > "$PROXY_DIR/proxies.caddy"
+  CADDY_MAIN=/etc/caddy/Caddyfile
+  IMPORT_LINE="import $PROXY_DIR/*.caddy"
+  if ! grep -qxF "$IMPORT_LINE" "$CADDY_MAIN" 2>/dev/null; then
+    # Die Standardseite der Caddy-Pakete belegt Port 80 und wird ersetzt; eigene Konfigurationen
+    # (z. B. das Panel auf demselben Server) bleiben erhalten.
+    if [[ -f "$CADDY_MAIN" ]] && grep -qv '^\s*\(#.*\)\?$' "$CADDY_MAIN" && ! grep -q '^:80\b' "$CADDY_MAIN"; then
+      cp "$CADDY_MAIN" "$CADDY_MAIN.bak.$(date +%Y%m%d%H%M%S)"
+      printf '\n%s\n' "$IMPORT_LINE" >> "$CADDY_MAIN"
+    else
+      [[ -f "$CADDY_MAIN" ]] && cp "$CADDY_MAIN" "$CADDY_MAIN.bak.$(date +%Y%m%d%H%M%S)"
+      if [[ -n "$EMAIL" ]]; then
+        printf '{\n\temail %s\n}\n\n%s\n' "$EMAIL" "$IMPORT_LINE" > "$CADDY_MAIN"
+      else
+        printf '%s\n' "$IMPORT_LINE" > "$CADDY_MAIN"
+      fi
+    fi
+  fi
+  if caddy validate --config "$CADDY_MAIN" --adapter caddyfile >/dev/null 2>&1; then
+    systemctl enable caddy >/dev/null 2>&1
+    systemctl reload-or-restart caddy >/dev/null 2>&1 || systemctl restart caddy >/dev/null 2>&1 || true
+    info "Caddy $(caddy version | awk '{print $1}') für Reverse Proxys ok"
+  else
+    warn "Caddy-Konfiguration ungültig ($CADDY_MAIN) – Reverse Proxys funktionieren erst nach einer Korrektur."
+  fi
+  # certbot erneuert das Zertifikat von Wings über Port 80; solange Caddy dort Proxys bedient,
+  # wird es dafür kurz angehalten.
+  mkdir -p /etc/letsencrypt/renewal-hooks/pre /etc/letsencrypt/renewal-hooks/post
+  cat > /etc/letsencrypt/renewal-hooks/pre/hydra-caddy.sh <<'HOOK'
+#!/bin/sh
+# Hydra: Caddy für die Erneuerung über Port 80 anhalten.
+if systemctl is-active --quiet caddy; then systemctl stop caddy && touch /run/hydra-caddy-stopped; fi
+HOOK
+  cat > /etc/letsencrypt/renewal-hooks/post/hydra-caddy.sh <<'HOOK'
+#!/bin/sh
+# Hydra: Caddy nach der Erneuerung wieder starten.
+if [ -f /run/hydra-caddy-stopped ]; then rm -f /run/hydra-caddy-stopped; systemctl start caddy; fi
+HOOK
+  chmod 755 /etc/letsencrypt/renewal-hooks/pre/hydra-caddy.sh /etc/letsencrypt/renewal-hooks/post/hydra-caddy.sh
+fi
+
 # ------------------------------------------------------------------ Wings bauen / laden
 
 step "Hydra Wings bereitstellen"
@@ -375,6 +456,9 @@ SSH_PORTS="$(sshd -T 2>/dev/null | awk '$1 == "port" {print $2}' | sort -u || tr
 for port in ${SSH_PORTS:-22}; do ufw allow "$port/tcp" comment 'SSH' >/dev/null; done
 ufw allow 8080/tcp comment 'Hydra Wings' >/dev/null && ufw allow 2022/tcp comment 'Hydra SFTP' >/dev/null
 (( SSL )) && ufw allow 80/tcp comment 'Certbot' >/dev/null
+if command -v caddy >/dev/null; then
+  ufw allow 80/tcp comment 'Hydra Proxy' >/dev/null && ufw allow 443/tcp comment 'Hydra Proxy' >/dev/null
+fi
 if ufw status | grep -q "Status: active"; then
   info "Firewall (ufw): SSH, Ports 8080 (API) und 2022 (SFTP) freigegeben"
 else

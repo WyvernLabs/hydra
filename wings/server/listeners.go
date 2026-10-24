@@ -55,6 +55,8 @@ func (s *Server) processConsoleOutputEvent(v []byte) {
 	// the line marking the server as started is not missed. Lines are checked in
 	// the order they are read.
 	s.onConsoleOutput(v)
+	// Hydra: schedules waiting for a console line, also checked for throttled lines.
+	s.checkConsoleTriggers(v)
 
 	// If the console is being throttled, do nothing else with it, we don't want
 	// to waste time. This code previously terminated server instances after violating

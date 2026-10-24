@@ -21,6 +21,19 @@ class AddonManager
         PhpMyAdminAddon::class,
         DashboardAddon::class,
         AutoDeleteAddon::class,
+        LockdownAddon::class,
+        TicketsAddon::class,
+        CpuAddon::class,
+        McLogsAddon::class,
+        StartupCommandAddon::class,
+        PropertiesAddon::class,
+        SftpBackupsAddon::class,
+        SubdomainsAddon::class,
+        ProxyAddon::class,
+        GamesAddon::class,
+        TrashAddon::class,
+        EnvAddon::class,
+        VersionsAddon::class,
     ];
 
     public function __construct(private SettingsRepositoryInterface $settings, private Encrypter $encrypter)
@@ -75,6 +88,8 @@ class AddonManager
      */
     public function save(Addon $addon, array $values): void
     {
+        $values = $addon->prepare($values);
+
         foreach ($addon->booleans() as $setting) {
             $values[$setting] = !empty($values[$setting]);
         }
@@ -111,6 +126,8 @@ class AddonManager
     {
         return match (true) {
             is_bool($value) => $value ? 'true' : 'false',
+            // Lists, e.g. the categories of the tickets addon.
+            is_array($value) => json_encode($value, JSON_UNESCAPED_UNICODE),
             is_null($value) || $value === '' => '(empty)',
             default => (string) $value,
         };

@@ -178,6 +178,9 @@ type BackupRequest struct {
 	Size         int64        `json:"size"`
 	Successful   bool         `json:"successful"`
 	Parts        []BackupPart `json:"parts"`
+	// Error (Hydra) tells the panel why a backup failed: "storage_full",
+	// "sftp: <message>" or "error".
+	Error string `json:"hydra_error,omitempty"`
 }
 
 type InstallStatusRequest struct {

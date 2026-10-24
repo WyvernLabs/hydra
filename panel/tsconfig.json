@@ -6,6 +6,7 @@
     "moduleResolution": "node",
     "lib": [
       "es2015",
+      "es2020.bigint",
       "dom"
     ],
     "strict": true,

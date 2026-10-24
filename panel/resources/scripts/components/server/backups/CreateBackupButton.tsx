@@ -20,10 +20,17 @@ interface Values {
     name: string;
     ignored: string;
     isLocked: boolean;
+    location: 'default' | 'own_sftp';
 }
 
-const ModalContent = ({ ...props }: RequiredModalProps) => {
-    const { isSubmitting } = useFormikContext<Values>();
+// Hydra: where the backup can go, the backup space and/or the own SFTP server.
+interface Locations {
+    panelSpace: boolean;
+    ownSftp: boolean;
+}
+
+const ModalContent = ({ panelSpace, ownSftp, ...props }: RequiredModalProps & Locations) => {
+    const { isSubmitting, values, setFieldValue } = useFormikContext<Values>();
     const { t } = useTranslation('client/server');
 
     return (
@@ -32,6 +39,33 @@ const ModalContent = ({ ...props }: RequiredModalProps) => {
                 <FlashMessageRender byKey={'backups:create'} css={tw`mb-4`} />
                 <h2 css={tw`text-2xl mb-6`}>{t('backups.create_title')}</h2>
                 <Field name={'name'} label={t('backups.name')} description={t('backups.name_help')} />
+                {panelSpace && ownSftp && (
+                    <div className={'mt-6'}>
+                        <p className={'mb-2 text-sm text-gray-200'}>{t('backups.location.title')}</p>
+                        <div className={'grid grid-cols-1 gap-2 sm:grid-cols-2'}>
+                            {(['default', 'own_sftp'] as const).map((location) => (
+                                <button
+                                    key={location}
+                                    type={'button'}
+                                    onClick={() => setFieldValue('location', location)}
+                                    className={`rounded border p-3 text-left text-sm transition-colors ${
+                                        values.location === location
+                                            ? 'border-accent-500 bg-accent-500/10 text-gray-50'
+                                            : 'border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-500'
+                                    }`}
+                                >
+                                    <span className={'block font-medium'}>{t(`backups.location.${location}`)}</span>
+                                    <span className={'mt-1 block text-xs text-gray-400'}>
+                                        {t(`backups.location.${location}_help`)}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+                {!panelSpace && ownSftp && (
+                    <p className={'mt-4 text-sm text-gray-300'}>{t('backups.location.only_own_sftp')}</p>
+                )}
                 <div css={tw`mt-6`}>
                     <FormikFieldWrapper
                         name={'ignored'}
@@ -60,7 +94,7 @@ const ModalContent = ({ ...props }: RequiredModalProps) => {
     );
 };
 
-export default () => {
+export default ({ panelSpace, ownSftp }: Locations) => {
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
     const { t } = useTranslation('client/server');
     const { clearFlashes, clearAndAddHttpError } = useFlash();
@@ -79,6 +113,8 @@ export default () => {
                     (data) => ({ ...data, items: data.items.concat(backup), backupCount: data.backupCount + 1 }),
                     false
                 );
+                // Hydra: reloads the backup space.
+                mutate();
                 setVisible(false);
             })
             .catch((error) => {
@@ -92,14 +128,25 @@ export default () => {
             {visible && (
                 <Formik
                     onSubmit={submit}
-                    initialValues={{ name: '', ignored: '', isLocked: false }}
+                    initialValues={{
+                        name: '',
+                        ignored: '',
+                        isLocked: false,
+                        location: (panelSpace ? 'default' : 'own_sftp') as Values['location'],
+                    }}
                     validationSchema={object().shape({
                         name: string().max(191),
                         ignored: string(),
                         isLocked: boolean(),
                     })}
                 >
-                    <ModalContent appear visible={visible} onDismissed={() => setVisible(false)} />
+                    <ModalContent
+                        appear
+                        visible={visible}
+                        onDismissed={() => setVisible(false)}
+                        panelSpace={panelSpace}
+                        ownSftp={ownSftp}
+                    />
                 </Formik>
             )}
             <Button css={tw`w-full sm:w-auto`} onClick={() => setVisible(true)}>

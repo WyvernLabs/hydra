@@ -23,6 +23,9 @@ class BackupTransformer extends BaseClientTransformer
             'bytes' => $backup->bytes,
             'created_at' => $backup->created_at->toAtomString(),
             'completed_at' => $backup->completed_at ? $backup->completed_at->toAtomString() : null,
+            // Hydra: "panel", "node_sftp" or "own_sftp", and why a backup failed.
+            'location' => $backup->location(),
+            'error' => $backup->hydra_error,
         ];
     }
 }

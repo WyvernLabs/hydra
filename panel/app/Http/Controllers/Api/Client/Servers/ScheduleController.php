@@ -13,6 +13,7 @@ use Pterodactyl\Helpers\Utilities;
 use Pterodactyl\Exceptions\DisplayException;
 use Pterodactyl\Repositories\Eloquent\ScheduleRepository;
 use Pterodactyl\Services\Schedules\ProcessScheduleService;
+use Pterodactyl\Services\Hydra\Schedules\ScheduleTriggerSync;
 use Pterodactyl\Transformers\Api\Client\ScheduleTransformer;
 use Pterodactyl\Http\Controllers\Api\Client\ClientApiController;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -27,7 +28,11 @@ class ScheduleController extends ClientApiController
     /**
      * ScheduleController constructor.
      */
-    public function __construct(private ScheduleRepository $repository, private ProcessScheduleService $service)
+    public function __construct(
+        private ScheduleRepository $repository,
+        private ProcessScheduleService $service,
+        private ScheduleTriggerSync $triggers,
+    )
     {
         parent::__construct();
     }
@@ -64,7 +69,10 @@ class ScheduleController extends ClientApiController
             'is_active' => (bool) $request->input('is_active'),
             'only_when_online' => (bool) $request->input('only_when_online'),
             'next_run_at' => $this->getNextRunAt($request),
-        ]);
+        ] + $this->trigger($request));
+
+        // Hydra: the node watches for the states and console lines.
+        $this->triggers->sync($server);
 
         Activity::event('server:schedule.create')
             ->subject($model)
@@ -113,7 +121,7 @@ class ScheduleController extends ClientApiController
             'is_active' => $active,
             'only_when_online' => (bool) $request->input('only_when_online'),
             'next_run_at' => $this->getNextRunAt($request),
-        ];
+        ] + $this->trigger($request);
 
         // Toggle the processing state of the scheduled task when it is enabled or disabled so that an
         // invalid state can be reset without manual database intervention.
@@ -124,6 +132,7 @@ class ScheduleController extends ClientApiController
         }
 
         $this->repository->update($schedule->id, $data);
+        $this->triggers->sync($server);
 
         Activity::event('server:schedule.update')
             ->subject($schedule)
@@ -162,6 +171,7 @@ class ScheduleController extends ClientApiController
     public function delete(DeleteScheduleRequest $request, Server $server, Schedule $schedule): JsonResponse
     {
         $this->repository->delete($schedule->id);
+        $this->triggers->sync($server);
 
         Activity::event('server:schedule.delete')->subject($schedule)->property('name', $schedule->name)->log();
 
@@ -173,8 +183,13 @@ class ScheduleController extends ClientApiController
      *
      * @throws DisplayException
      */
-    protected function getNextRunAt(Request $request): Carbon
+    protected function getNextRunAt(Request $request): ?Carbon
     {
+        // Hydra: schedules started by a state or a console line have no next time.
+        if (($request->input('trigger') ?? Schedule::TRIGGER_CRON) !== Schedule::TRIGGER_CRON) {
+            return null;
+        }
+
         try {
             return Utilities::getScheduleNextRunDate(
                 $request->input('minute'),
@@ -186,5 +201,20 @@ class ScheduleController extends ClientApiController
         } catch (\Exception $exception) {
             throw new DisplayException('The cron data provided does not evaluate to a valid expression.');
         }
+    }
+
+    /**
+     * Hydra: what starts the schedule.
+     */
+    private function trigger(Request $request): array
+    {
+        $type = $request->input('trigger') ?? Schedule::TRIGGER_CRON;
+
+        return [
+            'hydra_trigger' => $type,
+            'hydra_trigger_value' => $type === Schedule::TRIGGER_CRON ? null : (string) $request->input('trigger_value'),
+            'hydra_trigger_regex' => $type === Schedule::TRIGGER_CONSOLE && $request->boolean('trigger_regex'),
+            'hydra_trigger_cooldown' => (int) ($request->input('trigger_cooldown') ?? 60),
+        ];
     }
 }

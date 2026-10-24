@@ -113,7 +113,8 @@ return [
 
         'schedules' => [
             // The total number of tasks that can exist for any given schedule at once.
-            'per_schedule_task_limit' => env('PTERODACTYL_PER_SCHEDULE_TASK_LIMIT', 10),
+            // Hydra: can be changed under Settings > Advanced.
+            'per_schedule_task_limit' => env('PTERODACTYL_PER_SCHEDULE_TASK_LIMIT', 100),
         ],
 
         'allocations' => [

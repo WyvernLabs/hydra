@@ -3,6 +3,7 @@
 namespace Pterodactyl\Services\Servers;
 
 use Pterodactyl\Models\Server;
+use Pterodactyl\Models\Schedule;
 
 class ServerConfigurationStructureService
 {
@@ -78,6 +79,8 @@ class ServerConfigurationStructureService
             ],
             // Hydra: mounts were removed, the key stays for Wings.
             'mounts' => [],
+            // Hydra: schedules the node starts on state changes and console lines.
+            'hydra_triggers' => $server->schedules()->get()->map(fn (Schedule $schedule) => $schedule->toTrigger())->filter()->values()->all(),
             'egg' => [
                 'id' => $server->egg->uuid,
                 'file_denylist' => $server->egg->inherit_file_denylist,

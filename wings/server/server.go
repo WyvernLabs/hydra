@@ -73,8 +73,14 @@ type Server struct {
 	wsBag       *WebsocketBag
 	wsBagLocker sync.Mutex
 	sftpBag     *system.ContextBag
+	// transferBag (Hydra) holds running file downloads and uploads by user.
+	transferBag *system.ContextBag
 
 	sinks map[system.SinkName]*system.SinkPool
+
+	// Hydra: schedules started by states and console lines.
+	triggerState *scheduleTriggers
+	triggerOnce  sync.Once
 }
 
 // New returns a new server instance with a context and all of the default
@@ -331,6 +337,8 @@ func (s *Server) OnStateChange() {
 	if prevState != s.Environment.State() {
 		s.Log().WithField("status", st).Debug("saw server status change event")
 		s.Events().Publish(StatusEvent, st)
+		// Hydra: schedules waiting for this state.
+		s.checkStateTriggers(st)
 	}
 
 	// Reset the resource usage to 0 when the process fully stops so that all the UI

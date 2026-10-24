@@ -26,11 +26,29 @@ class EggConfigurationService
             json_decode($server->egg->inherit_config_files)
         );
 
+        $startup = $this->convertStartupToNewFormat(json_decode($server->egg->inherit_config_startup, true));
+        // Hydra: the user may choose other messages that mark the server as running.
+        if ($done = $server->startupDone()) {
+            $startup['done'] = $done;
+        }
+
         return [
-            'startup' => $this->convertStartupToNewFormat(json_decode($server->egg->inherit_config_startup, true)),
+            'startup' => $startup,
             'stop' => $this->convertStopToNewFormat($server->egg->inherit_config_stop),
             'configs' => $configs,
         ];
+    }
+
+    /**
+     * Hydra: messages of the egg that mark a server as running.
+     *
+     * @return string[]
+     */
+    public static function eggDone(Server $server): array
+    {
+        $done = Arr::get(json_decode($server->egg->inherit_config_startup ?? '{}', true) ?? [], 'done');
+
+        return array_values(array_filter(is_string($done) ? [$done] : (array) $done, 'is_string'));
     }
 
     /**

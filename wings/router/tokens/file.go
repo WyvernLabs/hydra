@@ -12,6 +12,10 @@ type FilePayload struct {
 	ServerUuid string `json:"server_uuid"`
 	UserUuid   string `json:"user_uuid"`
 	UniqueId   string `json:"unique_id"`
+	// Preview (Hydra) lets the file manager show images, videos and music
+	// inline. These links can be used more than once until they expire, since
+	// players request a file in parts.
+	Preview bool `json:"hydra_preview"`
 }
 
 // Returns the JWT payload.

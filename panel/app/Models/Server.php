@@ -26,6 +26,9 @@ use Pterodactyl\Exceptions\Http\Server\ServerStateConflictException;
  * @property string $description
  * @property string|null $status
  * @property \Carbon\Carbon|null $hydra_suspended_at
+ * @property \Carbon\Carbon|null $hydra_lockdown_at
+ * @property string|null $hydra_startup_done
+ * @property array|null $hydra_minecraft
  * @property bool $skip_scripts
  * @property int $owner_id
  * @property int $memory
@@ -43,6 +46,11 @@ use Pterodactyl\Exceptions\Http\Server\ServerStateConflictException;
  * @property int|null $allocation_limit
  * @property int|null $database_limit
  * @property int $backup_limit
+ * @property int $backup_storage_limit
+ * @property bool $hydra_dedicated
+ * @property int|null $hydra_subdomain_limit
+ * @property int|null $hydra_proxy_limit
+ * @property SftpBackupTarget|null $sftpBackupTarget
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $installed_at
@@ -171,6 +179,12 @@ class Server extends Model implements Identifiable
         'database_limit' => 'present|nullable|integer|min:0',
         'allocation_limit' => 'sometimes|nullable|integer|min:0',
         'backup_limit' => 'present|nullable|integer|min:0',
+        // Hydra: space for backups in MiB, 0 means none.
+        'backup_storage_limit' => 'sometimes|integer|min:0',
+        // Hydra: the owner picks the ports; limits of subdomains and proxies (null = addon default).
+        'hydra_dedicated' => 'sometimes|boolean',
+        'hydra_subdomain_limit' => 'sometimes|nullable|integer|min:0',
+        'hydra_proxy_limit' => 'sometimes|nullable|integer|min:0',
     ];
 
     /**
@@ -192,11 +206,15 @@ class Server extends Model implements Identifiable
         'database_limit' => 'integer',
         'allocation_limit' => 'integer',
         'backup_limit' => 'integer',
+        'backup_storage_limit' => 'integer',
+        'hydra_dedicated' => 'boolean',
         self::CREATED_AT => 'datetime',
         self::UPDATED_AT => 'datetime',
         'deleted_at' => 'datetime',
         'installed_at' => 'datetime',
         'hydra_suspended_at' => 'datetime',
+        'hydra_lockdown_at' => 'datetime',
+        'hydra_minecraft' => 'array',
     ];
 
     /**
@@ -217,6 +235,38 @@ class Server extends Model implements Identifiable
     public function isSuspended(): bool
     {
         return $this->status === self::STATUS_SUSPENDED;
+    }
+
+    /**
+     * Hydra: console messages the user set on the startup page that mark the
+     * server as running, or null when those of the egg are used.
+     *
+     * @return string[]|null
+     */
+    public function startupDone(): ?array
+    {
+        $lines = array_values(array_filter(preg_split('/\r\n|\r|\n/', (string) $this->hydra_startup_done), fn ($line) => $line !== ''));
+
+        return empty($lines) ? null : $lines;
+    }
+
+    /**
+     * Hydra: whether the owner has put this server into lockdown. It stays in
+     * place while the server is suspended and only ends when it is lifted.
+     * Without the lockdown addon it is kept but has no effect.
+     */
+    public function isLockedDown(): bool
+    {
+        return !is_null($this->hydra_lockdown_at) && (bool) config('hydra.addons.lockdown.enabled', false);
+    }
+
+    /**
+     * Hydra: whether the user may still use this server, which during a
+     * lockdown is only the owner and admins allowed to use locked servers.
+     */
+    public function lockdownAllows(User $user): bool
+    {
+        return !$this->isLockedDown() || $user->id === $this->owner_id || $user->canUseLockedDownServers();
     }
 
     /**
@@ -370,6 +420,40 @@ class Server extends Model implements Identifiable
     public function backups(): HasMany
     {
         return $this->hasMany(Backup::class);
+    }
+
+    /**
+     * Hydra: the own SFTP server of the users of this server for backups.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne<\Pterodactyl\Models\SftpBackupTarget, $this>
+     */
+    public function sftpBackupTarget(): HasOne
+    {
+        return $this->hasOne(SftpBackupTarget::class);
+    }
+
+    /**
+     * Hydra: game profiles of the server (addon "games").
+     */
+    public function gameProfiles(): HasMany
+    {
+        return $this->hasMany(HydraGameProfile::class);
+    }
+
+    /**
+     * Hydra: subdomains of the server (addon "subdomains").
+     */
+    public function subdomains(): HasMany
+    {
+        return $this->hasMany(HydraSubdomain::class);
+    }
+
+    /**
+     * Hydra: reverse proxies of the server (addon "proxy").
+     */
+    public function proxies(): HasMany
+    {
+        return $this->hasMany(HydraProxy::class);
     }
 
     /**

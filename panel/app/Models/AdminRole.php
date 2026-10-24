@@ -36,10 +36,11 @@ class AdminRole extends Model
         'api' => ['view', 'create', 'delete'],
         'databases' => ['view', 'create', 'update', 'delete'],
         'locations' => ['view', 'create', 'update', 'delete'],
-        'nodes' => ['view', 'create', 'update', 'allocations', 'configuration', 'database', 'firewall', 'delete'],
-        'servers' => ['view', 'create', 'details', 'build', 'startup', 'databases', 'manage', 'transfer', 'delete', 'access', 'suspended'],
+        'nodes' => ['view', 'create', 'update', 'allocations', 'configuration', 'database', 'firewall', 'backups', 'delete'],
+        'servers' => ['view', 'create', 'details', 'build', 'startup', 'databases', 'manage', 'transfer', 'delete', 'access', 'suspended', 'lockdown'],
         'users' => ['view', 'create', 'update', 'warn', 'ban', 'delete'],
         'roles' => ['view', 'create', 'update', 'delete', 'assign'],
+        'tickets' => ['view', 'reply', 'manage', 'delete'],
         'nests' => ['view', 'create', 'update', 'delete'],
         'eggs' => ['view', 'create', 'update', 'import', 'delete'],
     ];

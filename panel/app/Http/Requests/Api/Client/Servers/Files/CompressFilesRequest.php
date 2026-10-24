@@ -21,6 +21,8 @@ class CompressFilesRequest extends ClientApiRequest
             'root' => 'sometimes|nullable|string',
             'files' => 'required|array',
             'files.*' => 'string',
+            // Hydra: id the daemon reports the progress under, picked by the browser.
+            'progress' => ['sometimes', 'nullable', 'string', 'regex:/^[A-Za-z0-9-]{8,64}$/'],
         ];
     }
 }

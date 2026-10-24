@@ -68,6 +68,8 @@ export default ({ backup }: Props) => {
                     false
                 )
             )
+            // Hydra: reloads the backup space.
+            .then(() => mutate())
             .catch((error) => {
                 console.error(error);
                 clearAndAddHttpError({ key: 'backups', error });

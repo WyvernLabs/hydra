@@ -3,6 +3,7 @@
 namespace Pterodactyl\Http\Controllers\Api\Remote\Backups;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Pterodactyl\Models\Backup;
 use Illuminate\Http\JsonResponse;
@@ -67,12 +68,15 @@ class BackupStatusController extends Controller
                 'checksum' => $successful ? ($request->input('checksum_type') . ':' . $request->input('checksum')) : null,
                 'bytes' => $successful ? $request->input('size') : 0,
                 'completed_at' => CarbonImmutable::now(),
+                // Hydra: why the backup failed ("storage_full", "sftp: …", "error").
+                'hydra_error' => $successful ? null : Str::limit((string) $request->input('hydra_error', 'error'), 180, ''),
             ])->save();
 
             // Check if we are using the s3 backup adapter. If so, make sure we mark the backup as
-            // being completed in S3 correctly.
+            // being completed in S3 correctly. Hydra: only for backups that went to S3, the
+            // node may store its backups on an SFTP server instead.
             $adapter = $this->backupManager->adapter();
-            if ($adapter instanceof S3Filesystem) {
+            if ($adapter instanceof S3Filesystem && $model->disk === Backup::ADAPTER_AWS_S3) {
                 $this->completeMultipartUpload($model, $adapter, $successful, $request->input('parts'));
             }
         });

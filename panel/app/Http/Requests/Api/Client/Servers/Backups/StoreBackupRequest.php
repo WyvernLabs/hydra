@@ -18,6 +18,8 @@ class StoreBackupRequest extends ClientApiRequest
             'name' => 'nullable|string|max:191',
             'is_locked' => 'nullable|boolean',
             'ignored' => 'nullable|string',
+            // Hydra: "own_sftp" stores the backup on the own SFTP server (addon).
+            'location' => 'nullable|string|in:default,own_sftp',
         ];
     }
 }

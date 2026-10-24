@@ -124,11 +124,14 @@
                         <p class="text-muted small">{{ __('admin/servers.fields.allocation_limit_help') }}</p>
                     </div>
                     <div class="form-group col-xs-6">
-                        <label for="pBackupLimit" class="control-label">{{ __('admin/servers.fields.backup_limit') }}</label>
-                        <div>
-                            <input type="text" id="pBackupLimit" name="backup_limit" class="form-control" value="{{ old('backup_limit', 0) }}"/>
+                        <label for="pBackupStorage" class="control-label">{{ __('admin/servers.fields.backup_storage') }}</label>
+                        <div class="input-group">
+                            <input type="number" min="0" step="0.1" id="pBackupStorage" name="backup_storage_gb" class="form-control" value="{{ old('backup_storage_gb', 0) }}"/>
+                            <span class="input-group-addon">GB</span>
                         </div>
-                        <p class="text-muted small">{{ __('admin/servers.fields.backup_limit_help') }}</p>
+                        {{-- Hydra: the number of backups is no longer limited, kept for the API. --}}
+                        <input type="hidden" name="backup_limit" value="0"/>
+                        <p class="text-muted small">{{ __('admin/servers.fields.backup_storage_help') }}</p>
                     </div>
                 </div>
             </div>

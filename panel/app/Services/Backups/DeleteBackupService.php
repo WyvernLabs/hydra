@@ -7,7 +7,9 @@ use Pterodactyl\Models\Backup;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Database\ConnectionInterface;
 use Pterodactyl\Extensions\Backups\BackupManager;
+use Pterodactyl\Repositories\Wings\DaemonSftpRepository;
 use Pterodactyl\Repositories\Wings\DaemonBackupRepository;
+use Pterodactyl\Exceptions\Service\Backup\SftpBackupException;
 use Pterodactyl\Exceptions\Service\Backup\BackupLockedException;
 use Pterodactyl\Exceptions\Http\Connection\DaemonConnectionException;
 
@@ -17,6 +19,7 @@ class DeleteBackupService
         private ConnectionInterface $connection,
         private BackupManager $manager,
         private DaemonBackupRepository $daemonBackupRepository,
+        private DaemonSftpRepository $sftp,
     ) {
     }
 
@@ -44,6 +47,12 @@ class DeleteBackupService
             return;
         }
 
+        if ($backup->disk === Backup::ADAPTER_SFTP) {
+            $this->deleteFromSftp($backup);
+
+            return;
+        }
+
         $this->connection->transaction(function () use ($backup) {
             try {
                 $this->daemonBackupRepository->setServer($backup->server)->delete($backup);
@@ -65,6 +74,30 @@ class DeleteBackupService
      *
      * @throws \Throwable
      */
+    /**
+     * Hydra: deletes the archive from the SFTP server through the node. Failed
+     * backups left nothing there. When the user's own server cannot be reached
+     * the backup is removed from the panel anyway, it is their storage; a
+     * backup on the node's SFTP server is kept so no file is left behind.
+     *
+     * @throws \Throwable
+     */
+    protected function deleteFromSftp(Backup $backup): void
+    {
+        $target = $backup->sftpTarget;
+        if ($target && $backup->is_successful) {
+            try {
+                $this->sftp->setNode($backup->server->node)->delete($target->toDaemon(), $backup->sftpFile());
+            } catch (SftpBackupException|DaemonConnectionException $exception) {
+                if (is_null($target->server_id)) {
+                    throw $exception;
+                }
+            }
+        }
+
+        $backup->delete();
+    }
+
     protected function deleteFromS3(Backup $backup): void
     {
         $this->connection->transaction(function () use ($backup) {

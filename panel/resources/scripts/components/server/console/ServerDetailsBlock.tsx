@@ -1,14 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import {
-    faClock,
-    faCloudDownloadAlt,
-    faCloudUploadAlt,
-    faHdd,
-    faMemory,
-    faMicrochip,
-    faWifi,
-} from '@fortawesome/free-solid-svg-icons';
-import { bytesToString, ip, mbToBytes } from '@/lib/formatters';
+import React, { useEffect, useState } from 'react';
+import { faClock, faWifi } from '@fortawesome/free-solid-svg-icons';
+import { Cpu, HardDrive, MemoryStick } from 'lucide-react';
+import { ip, mbToBytes } from '@/lib/formatters';
+import { cpuValue as toCpuValue, gbOrMb, percentOf } from '@/lib/usage';
+import UsageRing from '@/components/server/console/UsageRing';
+import { useStoreState } from '@/state/hooks';
 import { ServerContext } from '@/state/server';
 import { SocketEvent, SocketRequest } from '@/components/server/events';
 import UptimeDuration from '@/components/server/UptimeDuration';
@@ -33,30 +29,16 @@ const getBackgroundColor = (value: number, max: number | null): string | undefin
     return undefined;
 };
 
-const Limit = ({ limit, children }: { limit: string | null; children: React.ReactNode }) => (
-    <>
-        {children}
-        <span className={'ml-1 text-gray-300 text-[70%] select-none'}>/ {limit || <>&infin;</>}</span>
-    </>
-);
-
 const ServerDetailsBlock = ({ className }: { className?: string }) => {
     const [stats, setStats] = useState<Stats>({ memory: 0, cpu: 0, disk: 0, uptime: 0, tx: 0, rx: 0 });
-    const { t } = useTranslation('client/server');
+    const { t, i18n } = useTranslation('client/server');
+    const cpuNormalized = useStoreState((state) => state.settings.data!.console.cpuNormalized);
+    const cpuValue = (value: number, limit: number) => toCpuValue(value, limit, cpuNormalized);
 
     const status = ServerContext.useStoreState((state) => state.status.value);
     const connected = ServerContext.useStoreState((state) => state.socket.connected);
     const instance = ServerContext.useStoreState((state) => state.socket.instance);
     const limits = ServerContext.useStoreState((state) => state.server.data!.limits);
-
-    const textLimits = useMemo(
-        () => ({
-            cpu: limits?.cpu ? `${limits.cpu}%` : null,
-            memory: limits?.memory ? bytesToString(mbToBytes(limits.memory)) : null,
-            disk: limits?.disk ? bytesToString(mbToBytes(limits.disk)) : null,
-        }),
-        [limits]
-    );
 
     const allocation = ServerContext.useStoreState((state) => {
         const match = state.server.data!.allocations.find((allocation) => allocation.isDefault);
@@ -90,63 +72,65 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
         });
     });
 
+    // Hydra: rings for CPU, memory and disk like the usage of the nodes.
+    const running = status !== null && status !== 'offline';
+    const cpu = running ? stats.cpu : 0;
+    const memory = running ? stats.memory : 0;
+    const cores = limits.cpu / 100;
+    const memoryLimit = mbToBytes(limits.memory);
+    const diskLimit = mbToBytes(limits.disk);
+    const of = (value: number, limit: number) =>
+        t('details.of', { value: gbOrMb(value), limit: limit > 0 ? gbOrMb(limit) : t('details.unlimited') });
+
     return (
-        <div className={classNames('grid grid-cols-6 gap-2 md:gap-4', className)}>
-            <StatBlock icon={faWifi} title={t('details.address')} copyOnClick={allocation || undefined}>
-                {allocation || t('details.not_available')}
-            </StatBlock>
-            <StatBlock
-                icon={faClock}
-                title={t('details.uptime')}
-                color={getBackgroundColor(status === 'running' ? 0 : status !== 'offline' ? 9 : 10, 10)}
-            >
-                {status === null ? (
-                    t('status.offline')
-                ) : stats.uptime > 0 ? (
-                    <UptimeDuration uptime={stats.uptime / 1000} />
-                ) : (
-                    t(`status.${status}`, capitalize(status))
-                )}
-            </StatBlock>
-            <StatBlock icon={faMicrochip} title={t('details.cpu')} color={getBackgroundColor(stats.cpu, limits.cpu)}>
-                {status === 'offline' ? (
-                    <span className={'text-gray-400'}>{t('status.offline')}</span>
-                ) : (
-                    <Limit limit={textLimits.cpu}>{stats.cpu.toFixed(2)}%</Limit>
-                )}
-            </StatBlock>
-            <StatBlock
-                icon={faMemory}
-                title={t('details.memory')}
-                color={getBackgroundColor(stats.memory / 1024, limits.memory * 1024)}
-            >
-                {status === 'offline' ? (
-                    <span className={'text-gray-400'}>{t('status.offline')}</span>
-                ) : (
-                    <Limit limit={textLimits.memory}>{bytesToString(stats.memory)}</Limit>
-                )}
-            </StatBlock>
-            <StatBlock
-                icon={faHdd}
-                title={t('details.disk')}
-                color={getBackgroundColor(stats.disk / 1024, limits.disk * 1024)}
-            >
-                <Limit limit={textLimits.disk}>{bytesToString(stats.disk)}</Limit>
-            </StatBlock>
-            <StatBlock icon={faCloudDownloadAlt} title={t('details.network_in')}>
-                {status === 'offline' ? (
-                    <span className={'text-gray-400'}>{t('status.offline')}</span>
-                ) : (
-                    bytesToString(stats.rx)
-                )}
-            </StatBlock>
-            <StatBlock icon={faCloudUploadAlt} title={t('details.network_out')}>
-                {status === 'offline' ? (
-                    <span className={'text-gray-400'}>{t('status.offline')}</span>
-                ) : (
-                    bytesToString(stats.tx)
-                )}
-            </StatBlock>
+        <div className={classNames('flex flex-col gap-2 md:gap-4', className)}>
+            <div className={'grid grid-cols-1 gap-2 sm:grid-cols-3 md:gap-4 lg:flex-1 lg:grid-cols-1 lg:grid-rows-3'}>
+                <UsageRing
+                    title={t('details.cpu')}
+                    icon={Cpu}
+                    fill={limits.cpu > 0 ? percentOf(cpu, limits.cpu) : Math.min(cpu, 100)}
+                    value={`${Math.round(cpuValue(cpu, limits.cpu))} %`}
+                    detail={
+                        limits.cpu > 0
+                            ? t(cores === 1 ? 'details.core' : 'details.cores', {
+                                  count: cores.toLocaleString(i18n.language) as unknown as number,
+                              })
+                            : t('details.cores_unlimited')
+                    }
+                />
+                <UsageRing
+                    title={t('details.memory')}
+                    icon={MemoryStick}
+                    fill={percentOf(memory, memoryLimit)}
+                    value={`${Math.round(percentOf(memory, memoryLimit))} %`}
+                    detail={of(memory, memoryLimit)}
+                />
+                <UsageRing
+                    title={t('details.disk')}
+                    icon={HardDrive}
+                    fill={percentOf(stats.disk, diskLimit)}
+                    value={`${Math.round(percentOf(stats.disk, diskLimit))} %`}
+                    detail={of(stats.disk, diskLimit)}
+                />
+            </div>
+            <div className={'grid grid-cols-2 gap-2 md:gap-4 lg:grid-cols-1'}>
+                <StatBlock icon={faWifi} title={t('details.address')} copyOnClick={allocation || undefined}>
+                    {allocation || t('details.not_available')}
+                </StatBlock>
+                <StatBlock
+                    icon={faClock}
+                    title={t('details.uptime')}
+                    color={getBackgroundColor(status === 'running' ? 0 : status !== 'offline' ? 9 : 10, 10)}
+                >
+                    {status === null ? (
+                        t('status.offline')
+                    ) : stats.uptime > 0 ? (
+                        <UptimeDuration uptime={stats.uptime / 1000} />
+                    ) : (
+                        t(`status.${status}`, capitalize(status))
+                    )}
+                </StatBlock>
+            </div>
         </div>
     );
 };

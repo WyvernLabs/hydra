@@ -6,6 +6,8 @@ interface RequestParameters {
     name?: string;
     ignored?: string;
     isLocked: boolean;
+    // Hydra: "own_sftp" stores it on the own SFTP server.
+    location?: 'default' | 'own_sftp';
 }
 
 export default async (uuid: string, params: RequestParameters): Promise<ServerBackup> => {
@@ -13,6 +15,7 @@ export default async (uuid: string, params: RequestParameters): Promise<ServerBa
         name: params.name,
         ignored: params.ignored,
         is_locked: params.isLocked,
+        location: params.location || 'default',
     });
 
     return rawDataToServerBackup(data);

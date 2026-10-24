@@ -38,7 +38,7 @@ func firewallFailure(c *gin.Context, err error) {
 			status = http.StatusUnprocessableEntity
 		case "rule_not_found":
 			status = http.StatusNotFound
-		case "ufw_missing", "unsupported_os":
+		case "ufw_missing", "unsupported_os", "caddy_missing":
 			status = http.StatusConflict
 		}
 		c.AbortWithStatusJSON(status, gin.H{"error": fe.Code, "code": fe.Code, "detail": fe.Detail})

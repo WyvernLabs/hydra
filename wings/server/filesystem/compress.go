@@ -27,9 +27,10 @@ import (
 //
 // All paths are relative to the dir that is passed in as the first argument,
 // and the compressed file will be placed at that location named
-// `archive-{date}.tar.gz`.
-func (fs *Filesystem) CompressFiles(dir string, paths []string) (ufs.FileInfo, error) {
-	a := &Archive{Filesystem: fs, BaseDirectory: dir, Files: paths}
+// `archive-{date}.zip` (Hydra: zip instead of tar.gz, since far more people
+// can open it). onProgress may be nil.
+func (fs *Filesystem) CompressFiles(dir string, paths []string, onProgress ProgressFunc) (ufs.FileInfo, error) {
+	a := &Archive{Filesystem: fs, BaseDirectory: dir, Files: paths, Zip: true, OnProgress: onProgress}
 	name := fmt.Sprintf("archive-%s", strings.ReplaceAll(time.Now().Format(time.RFC3339), ":", ""))
 
 	// Never write into an existing file, such as an archive created by another
@@ -40,9 +41,9 @@ func (fs *Filesystem) CompressFiles(dir string, paths []string) (ufs.FileInfo, e
 		err error
 	)
 	for i := 0; ; i++ {
-		d = path.Join(dir, name+".tar.gz")
+		d = path.Join(dir, name+".zip")
 		if i > 0 {
-			d = path.Join(dir, fmt.Sprintf("%s-%d.tar.gz", name, i))
+			d = path.Join(dir, fmt.Sprintf("%s-%d.zip", name, i))
 		}
 		f, err = fs.unixFS.OpenFile(d, ufs.O_WRONLY|ufs.O_CREATE|ufs.O_EXCL, 0o644)
 		if err == nil {
@@ -83,6 +84,14 @@ const maxArchiveEntryNameLength = 4096
 // The entries are read one at a time rather than opening the archive as a file
 // system, which is much faster for large archives.
 func (fs *Filesystem) SpaceAvailableForDecompression(ctx context.Context, dir string, file string) error {
+	return fs.SpaceAvailableForDecompressionWithProgress(ctx, dir, file, nil)
+}
+
+// SpaceAvailableForDecompressionWithProgress (Hydra) works like
+// SpaceAvailableForDecompression. onProgress is only called when the whole
+// archive has to be read for the check (e.g. a tar.gz), so the caller knows
+// that it takes about as long as the extraction itself.
+func (fs *Filesystem) SpaceAvailableForDecompressionWithProgress(ctx context.Context, dir string, file string, onProgress ProgressFunc) error {
 	// Don't waste time trying to determine this if we know the server will have the space for
 	// it since there is no limit.
 	if fs.MaxDisk() <= 0 {
@@ -148,7 +157,11 @@ func (fs *Filesystem) SpaceAvailableForDecompression(ctx context.Context, dir st
 		}
 		return nil
 	case archives.Extraction:
-		return ff.Extract(ctx, io.NewSectionReader(f, 0, info.Size()), func(ctx context.Context, e archives.FileInfo) error {
+		var r io.ReaderAt = f
+		if onProgress != nil {
+			r = newProgressFile(f, info.Size(), onProgress)
+		}
+		return ff.Extract(ctx, io.NewSectionReader(r, 0, info.Size()), func(ctx context.Context, e archives.FileInfo) error {
 			return add(e.NameInArchive, e.Size())
 		})
 	case archives.Compression:
@@ -165,25 +178,41 @@ func (fs *Filesystem) SpaceAvailableForDecompression(ctx context.Context, dir st
 // zip-slip attack being attempted by validating that the final path is within
 // the server data directory.
 func (fs *Filesystem) DecompressFile(ctx context.Context, dir string, file string) error {
-	return fs.decompressFile(ctx, dir, file, false)
+	return fs.decompressFile(ctx, dir, file, false, nil)
+}
+
+// DecompressFileWithProgress (Hydra) works like DecompressFile or, when
+// contained is set, DecompressFileContained, and calls onProgress with the
+// number of bytes of the archive that were read so far.
+func (fs *Filesystem) DecompressFileWithProgress(ctx context.Context, dir string, file string, contained bool, onProgress ProgressFunc) error {
+	return fs.decompressFile(ctx, dir, file, contained, onProgress)
 }
 
 // DecompressFileContained (Hydra) works like DecompressFile, but leaves out
 // every entry that would end up outside of dir as well as links. It is used
 // for subusers who may only work in certain folders.
 func (fs *Filesystem) DecompressFileContained(ctx context.Context, dir string, file string) error {
-	return fs.decompressFile(ctx, dir, file, true)
+	return fs.decompressFile(ctx, dir, file, true, nil)
 }
 
-func (fs *Filesystem) decompressFile(ctx context.Context, dir string, file string, contained bool) error {
+func (fs *Filesystem) decompressFile(ctx context.Context, dir string, file string, contained bool, onProgress ProgressFunc) error {
 	f, err := fs.unixFS.Open(filepath.Join(dir, file))
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
+	var source ufs.File = f
+	if onProgress != nil {
+		info, err := f.Stat()
+		if err != nil {
+			return err
+		}
+		source = newProgressFile(f, info.Size(), onProgress)
+	}
+
 	// Identify the type of archive we are dealing with.
-	format, input, err := archives.Identify(ctx, filepath.Base(file), f)
+	format, input, err := archives.Identify(ctx, filepath.Base(file), source)
 	if err != nil {
 		if errors.Is(err, archives.NoMatch) {
 			return newFilesystemError(ErrCodeUnknownArchive, err)

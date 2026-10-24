@@ -35,6 +35,13 @@ class ScheduleTransformer extends BaseClientTransformer
             'is_active' => $model->is_active,
             'is_processing' => $model->is_processing,
             'only_when_online' => $model->only_when_online,
+            // Hydra: what starts the schedule.
+            'trigger' => [
+                'type' => $model->hydra_trigger ?: Schedule::TRIGGER_CRON,
+                'value' => $model->hydra_trigger_value,
+                'regex' => $model->hydra_trigger_regex,
+                'cooldown' => $model->hydra_trigger_cooldown,
+            ],
             'last_run_at' => $model->last_run_at?->toAtomString(),
             'next_run_at' => $model->next_run_at?->toAtomString(),
             'created_at' => $model->created_at->toAtomString(),

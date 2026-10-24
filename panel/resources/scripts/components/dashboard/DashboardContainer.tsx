@@ -127,19 +127,20 @@ export default () => {
                             groupByOwner(items).map((group) => (
                                 <div key={group.key} className={'hydra-dashboard-group'}>
                                     <div className={'hydra-nav-title'}>{group.title || t('unknown_owner')}</div>
-                                    {group.servers.map((server, index) => (
-                                        <ServerRow
-                                            key={server.uuid}
-                                            server={server}
-                                            css={index > 0 ? tw`mt-2` : undefined}
-                                        />
-                                    ))}
+                                    <div className={'grid grid-cols-1 gap-4 xl:grid-cols-2'}>
+                                        {group.servers.map((server) => (
+                                            <ServerRow key={server.uuid} server={server} />
+                                        ))}
+                                    </div>
                                 </div>
                             ))
                         ) : (
-                            items.map((server, index) => (
-                                <ServerRow key={server.uuid} server={server} css={index > 0 ? tw`mt-2` : undefined} />
-                            ))
+                            // Hydra: two cards per row on wide screens.
+                            <div className={'grid grid-cols-1 gap-4 xl:grid-cols-2'}>
+                                {items.map((server) => (
+                                    <ServerRow key={server.uuid} server={server} />
+                                ))}
+                            </div>
                         )
                     }
                 </Pagination>

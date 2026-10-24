@@ -69,5 +69,15 @@ func Scheduler(ctx context.Context, m *server.Manager) (*gocron.Scheduler, error
 		}
 	})
 
+	// Hydra: removes the files that have been in the trash of the file manager
+	// for longer than they are kept.
+	_, _ = s.Tag("hydra-trash").Every(time.Hour).Do(func() {
+		for _, srv := range m.All() {
+			if n := srv.Filesystem().PurgeExpiredTrash(time.Now()); n > 0 {
+				l.WithField("cron", "hydra-trash").WithField("server", srv.ID()).WithField("removed", n).Debug("removed expired trash entries")
+			}
+		}
+	})
+
 	return s, nil
 }

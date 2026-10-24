@@ -16,6 +16,9 @@
         __('admin/common.nav.community') => [
             ['admin.users', __('admin/common.nav.users'), 'users', starts_with($route, 'admin.users'), 'users.view'],
             ['admin.roles', __('admin/common.nav.roles'), 'shield-check', starts_with($route, 'admin.roles'), 'roles.view'],
+            ...(config('hydra.addons.tickets.enabled') ? [
+                ['admin.tickets', __('admin/common.nav.tickets'), 'life-buoy', starts_with($route, 'admin.tickets'), 'tickets.view', fn () => \Pterodactyl\Models\Ticket::query()->where('status', 'open')->count()],
+            ] : []),
         ],
         __('admin/common.nav.service') => [
             ['admin.databases', __('admin/common.nav.databases'), 'database', starts_with($route, 'admin.databases'), 'databases.view'],
@@ -75,10 +78,15 @@
                     @foreach($navigation as $title => $items)
                         <div class="hydra-nav-section">
                             <div class="hydra-nav-title">{{ $title }}</div>
-                            @foreach($items as [$name, $label, $icon, $active])
+                            @foreach($items as $item)
+                                @php([$name, $label, $icon, $active] = $item)
+                                @php($badge = isset($item[5]) ? ($item[5])() : 0)
                                 <a href="{{ route($name) }}" class="hydra-nav-item @if($active) active @endif">
                                     <x-hydra.icon :name="$icon" />
                                     <span>{{ $label }}</span>
+                                    @if($badge > 0)
+                                        <span class="hydra-nav-badge">{{ $badge }}</span>
+                                    @endif
                                 </a>
                             @endforeach
                         </div>

@@ -19,6 +19,8 @@ class DeleteFileRequest extends ClientApiRequest implements ClientPermissionsReq
             'root' => 'required|nullable|string',
             'files' => 'required|array',
             'files.*' => 'string',
+            // Hydra: skip the trash and delete the files for good.
+            'permanent' => 'sometimes|boolean',
         ];
     }
 }

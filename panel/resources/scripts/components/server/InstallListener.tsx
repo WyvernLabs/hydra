@@ -1,8 +1,7 @@
 import useWebsocketEvent from '@/plugins/useWebsocketEvent';
 import { ServerContext } from '@/state/server';
 import { SocketEvent } from '@/components/server/events';
-import { mutate } from 'swr';
-import { getDirectorySwrKey } from '@/plugins/useFileManagerSwr';
+import { FILES_REFRESH_EVENT } from '@/components/server/files/ide/events';
 
 const InstallListener = () => {
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
@@ -10,7 +9,8 @@ const InstallListener = () => {
     const setServerFromState = ServerContext.useStoreActions((actions) => actions.server.setServerFromState);
 
     useWebsocketEvent(SocketEvent.BACKUP_RESTORE_COMPLETED, () => {
-        mutate(getDirectorySwrKey(uuid, '/'), undefined);
+        // Hydra: the file manager reloads its folders.
+        window.dispatchEvent(new Event(FILES_REFRESH_EVENT));
         setServerFromState((s) => ({ ...s, status: null }));
     });
 

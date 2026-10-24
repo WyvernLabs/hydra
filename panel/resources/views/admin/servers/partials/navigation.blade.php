@@ -30,7 +30,7 @@
                     </li>
                     @endif
                 @endif
-                @if(Auth::user()->hasAdminPermission('servers.manage') || Auth::user()->hasAdminPermission('servers.transfer'))
+                @if(Auth::user()->hasAdminPermission('servers.manage') || Auth::user()->hasAdminPermission('servers.transfer') || Auth::user()->hasAdminPermission('servers.lockdown'))
                 <li class="{{ $router->currentRouteNamed('admin.servers.view.manage') ? 'active' : '' }}">
                     <a href="{{ route('admin.servers.view.manage', $server->id) }}">{{ __('admin/servers.tabs.manage') }}</a>
                 </li>

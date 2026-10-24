@@ -12,9 +12,10 @@ import {
     Gauge,
     HardDrive,
     KeyRound,
+    Lock,
+    LockOpen,
     MemoryStick,
     Network,
-    Plus,
     Server as ServerIcon,
     Cpu,
 } from 'lucide-react';
@@ -32,6 +33,9 @@ import getServerDatabases from '@/api/server/databases/getServerDatabases';
 import getServerBackups from '@/api/swr/getServerBackups';
 import { useActivityLogs } from '@/api/server/activity';
 import ActivityLogEntry from '@/components/elements/activity/ActivityLogEntry';
+import { useCpuValue } from '@/lib/usage';
+import FlashMessageRender from '@/components/FlashMessageRender';
+import { useLockdownToggle } from '@/components/server/lockdown/Lockdown';
 
 // Hydra: overview page of a server (addon "Server Dashboard").
 
@@ -123,10 +127,11 @@ const Meter = ({
     );
 };
 
-const BackupCount = ({ limit }: { limit: number }) => {
+// Hydra: backups are limited by their space.
+const BackupStorage = ({ limit }: { limit: number }) => {
     const { data } = getServerBackups();
 
-    return <>{data ? `${data.backupCount} / ${limit}` : `– / ${limit}`}</>;
+    return <>{`${data ? bytesToString(data.storageUsed) : '–'} / ${bytesToString(limit * 1024 * 1024)}`}</>;
 };
 
 const RecentActivity = () => {
@@ -155,6 +160,43 @@ const countdown = (ms: number): string => {
     )}`;
 
     return days > 0 ? `${days}d ${time}` : time;
+};
+
+/**
+ * Hydra: lockdown of the server, which only the owner and admins may start
+ * or lift (addon "Server Lockdown").
+ */
+const LockdownCard = () => {
+    const { t } = useTranslation('client/server');
+    const lockdown = useLockdownToggle('server:dashboard');
+
+    if (!lockdown.canToggle) return null;
+
+    const Icon = lockdown.active ? LockOpen : Lock;
+
+    return (
+        <Card title={t('lockdown.title')} icon={Lock}>
+            {lockdown.dialog}
+            <FlashMessageRender byKey={'server:dashboard'} className={'mb-3'} />
+            <p className={'text-sm text-gray-300'}>
+                {lockdown.active && lockdown.since
+                    ? t('lockdown.active', { date: formatDate(lockdown.since) })
+                    : t('lockdown.text')}
+            </p>
+            {lockdown.suspended && <p className={'mt-2 text-xs text-gray-400'}>{t('lockdown.suspended')}</p>}
+            <button
+                type={'button'}
+                onClick={lockdown.request}
+                disabled={lockdown.disabled}
+                className={`mt-3 flex w-full items-center justify-center gap-2 rounded px-3 py-2 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                    lockdown.active ? 'bg-primary-500 hover:bg-primary-400' : 'bg-red-600 hover:bg-red-500'
+                }`}
+            >
+                <Icon className={'h-4 w-4 shrink-0'} />
+                {t(lockdown.active ? 'lockdown.disable' : 'lockdown.enable')}
+            </button>
+        </Card>
+    );
 };
 
 /**
@@ -268,6 +310,7 @@ export default () => {
         'schedule.read',
     ]);
     const [stats, setStats] = useState<Stats>({ cpu: 0, memory: 0, disk: 0, rx: 0, tx: 0, uptime: 0 });
+    const cpuValue = useCpuValue();
     const [databaseCount, setDatabaseCount] = useState<number | null>(null);
 
     useEffect(() => {
@@ -347,21 +390,6 @@ export default () => {
                 </div>
             </div>
 
-            {/* Placeholder for buttons that come later. */}
-            <div className={'mb-4 flex justify-end'}>
-                <button
-                    type={'button'}
-                    disabled
-                    title={t('dashboard.placeholder_help')}
-                    className={
-                        'flex cursor-not-allowed items-center gap-2 rounded border border-dashed border-gray-600 px-3 py-1.5 text-sm text-gray-500'
-                    }
-                >
-                    <Plus className={'h-4 w-4 shrink-0'} />
-                    {t('dashboard.placeholder')}
-                </button>
-            </div>
-
             <div className={'grid grid-cols-1 gap-4 lg:grid-cols-3'}>
                 {/* SFTP */}
                 {canSftp && (
@@ -421,8 +449,8 @@ export default () => {
                             label={t('details.cpu')}
                             value={running ? stats.cpu : 0}
                             max={server.limits.cpu || null}
-                            text={`${(running ? stats.cpu : 0).toFixed(1)} % / ${
-                                server.limits.cpu ? `${server.limits.cpu} %` : '∞'
+                            text={`${cpuValue(running ? stats.cpu : 0, server.limits.cpu).toFixed(1)} % / ${
+                                server.limits.cpu ? `${cpuValue(server.limits.cpu, server.limits.cpu)} %` : '∞'
                             }`}
                         />
                         <Meter
@@ -457,43 +485,46 @@ export default () => {
                     </Card>
                 )}
 
-                {/* Limits */}
-                <Card title={t('dashboard.limits')} icon={Network}>
-                    <Row
-                        label={t('dashboard.allocations')}
-                        value={`${server.allocations.length} / ${
-                            server.featureLimits.allocations || server.allocations.length
-                        }`}
-                    />
-                    <Row
-                        label={t('dashboard.databases')}
-                        value={
-                            <span className={'inline-flex items-center gap-1'}>
-                                <Database className={'h-3.5 w-3.5 text-gray-400'} />
-                                {databaseCount !== null
-                                    ? `${databaseCount} / ${server.featureLimits.databases}`
-                                    : `– / ${server.featureLimits.databases}`}
-                            </span>
-                        }
-                    />
-                    <Row
-                        label={t('dashboard.backups')}
-                        value={
-                            <span className={'inline-flex items-center gap-1'}>
-                                <Archive className={'h-3.5 w-3.5 text-gray-400'} />
-                                {canBackups && server.featureLimits.backups > 0 ? (
-                                    <BackupCount limit={server.featureLimits.backups} />
-                                ) : (
-                                    `– / ${server.featureLimits.backups}`
-                                )}
-                            </span>
-                        }
-                    />
-                    <Row
-                        label={t('dashboard.image')}
-                        value={<span className={'font-mono text-xs'}>{server.dockerImage}</span>}
-                    />
-                </Card>
+                {/* Lockdown and limits, next to the schedules */}
+                <div className={'flex flex-col gap-4'}>
+                    <LockdownCard />
+                    <Card title={t('dashboard.limits')} icon={Network}>
+                        <Row
+                            label={t('dashboard.allocations')}
+                            value={`${server.allocations.length} / ${
+                                server.featureLimits.allocations || server.allocations.length
+                            }`}
+                        />
+                        <Row
+                            label={t('dashboard.databases')}
+                            value={
+                                <span className={'inline-flex items-center gap-1'}>
+                                    <Database className={'h-3.5 w-3.5 text-gray-400'} />
+                                    {databaseCount !== null
+                                        ? `${databaseCount} / ${server.featureLimits.databases}`
+                                        : `– / ${server.featureLimits.databases}`}
+                                </span>
+                            }
+                        />
+                        <Row
+                            label={t('dashboard.backups')}
+                            value={
+                                <span className={'inline-flex items-center gap-1'}>
+                                    <Archive className={'h-3.5 w-3.5 text-gray-400'} />
+                                    {canBackups && server.featureLimits.backup_storage > 0 ? (
+                                        <BackupStorage limit={server.featureLimits.backup_storage} />
+                                    ) : (
+                                        `– / ${bytesToString(server.featureLimits.backup_storage * 1024 * 1024)}`
+                                    )}
+                                </span>
+                            }
+                        />
+                        <Row
+                            label={t('dashboard.image')}
+                            value={<span className={'font-mono text-xs'}>{server.dockerImage}</span>}
+                        />
+                    </Card>
+                </div>
 
                 {/* Recent activity */}
                 {canActivity && (

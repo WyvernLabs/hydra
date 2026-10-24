@@ -10,6 +10,7 @@ use Pterodactyl\Models\Server;
 use Illuminate\Http\JsonResponse;
 use Pterodactyl\Facades\Activity;
 use Pterodactyl\Services\Files\AllowedPaths;
+use Pterodactyl\Services\Hydra\Addons\TrashAddon;
 use Pterodactyl\Services\Nodes\NodeJWTService;
 use Pterodactyl\Repositories\Wings\DaemonFileRepository;
 use Pterodactyl\Transformers\Api\Client\FileObjectTransformer;
@@ -111,6 +112,40 @@ class FileController extends ClientApiController
     }
 
     /**
+     * Hydra: a link that shows an image, video or music file in the file
+     * manager. Unlike a download link it can be used more than once until it
+     * expires, since players load files in parts.
+     *
+     * @throws \Throwable
+     */
+    public function preview(GetFileContentsRequest $request, Server $server): array
+    {
+        $this->paths($request, $server)->assertAllowed($request->get('file'));
+
+        $token = $this->jwtService
+            ->setExpiresAt(CarbonImmutable::now()->addMinutes(30))
+            ->setUser($request->user())
+            ->setClaims([
+                'file_path' => $request->get('file'),
+                'server_uuid' => $server->uuid,
+                'hydra_preview' => true,
+            ])
+            ->setScopes(JwtScope::FileDownload)
+            ->handle($server->node, $request->user()->id . $server->uuid);
+
+        return [
+            'object' => 'signed_url',
+            'attributes' => [
+                'url' => sprintf(
+                    '%s/download/file?token=%s',
+                    $server->node->getConnectionAddress(),
+                    $token->toString()
+                ),
+            ],
+        ];
+    }
+
+    /**
      * Writes the contents of the specified file to the server.
      *
      * @throws \Pterodactyl\Exceptions\Http\Connection\DaemonConnectionException
@@ -197,11 +232,14 @@ class FileController extends ClientApiController
      */
     public function compress(CompressFilesRequest $request, Server $server): array
     {
+        set_time_limit(900);
+
         $this->assertFilesAllowed($request, $server, $request->input('files'));
 
         $file = $this->fileRepository->setServer($server)->compressFiles(
             $request->input('root'),
-            $request->input('files')
+            $request->input('files'),
+            $request->input('progress')
         );
 
         Activity::event('server:file.compress')
@@ -219,7 +257,7 @@ class FileController extends ClientApiController
      */
     public function decompress(DecompressFilesRequest $request, Server $server): JsonResponse
     {
-        set_time_limit(300);
+        set_time_limit(900);
 
         $paths = $this->paths($request, $server);
         $paths->assertAllowed($request->input('root'), AllowedPaths::join($request->input('root'), $request->input('file')));
@@ -227,7 +265,8 @@ class FileController extends ClientApiController
         $this->fileRepository->setServer($server)->decompressFile(
             $request->input('root'),
             $request->input('file'),
-            $paths->isRestricted()
+            $paths->isRestricted(),
+            $request->input('progress')
         );
 
         Activity::event('server:file.decompress')
@@ -247,12 +286,16 @@ class FileController extends ClientApiController
     {
         $this->assertFilesAllowed($request, $server, $request->input('files'));
 
+        // Hydra: the files go into the trash unless the user deletes them for good.
+        $trash = $request->boolean('permanent') ? null : app(TrashAddon::class)->keepSeconds();
+
         $this->fileRepository->setServer($server)->deleteFiles(
             $request->input('root'),
-            $request->input('files')
+            $request->input('files'),
+            $trash
         );
 
-        Activity::event('server:file.delete')
+        Activity::event(is_null($trash) ? 'server:file.delete' : 'server:file.trash')
             ->property('directory', $request->input('root'))
             ->property('files', $request->input('files'))
             ->log();
@@ -292,7 +335,7 @@ class FileController extends ClientApiController
         $this->fileRepository->setServer($server)->pull(
             $request->input('url'),
             $request->input('directory'),
-            $request->safe(['filename', 'use_header', 'foreground'])
+            [...$request->safe(['filename', 'use_header', 'foreground']), 'user' => $request->user()->uuid]
         );
 
         Activity::event('server:file.pull')

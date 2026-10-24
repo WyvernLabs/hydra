@@ -16,6 +16,8 @@ class ReportBackupCompleteRequest extends FormRequest
             'parts' => 'nullable|array',
             'parts.*.etag' => 'required|string',
             'parts.*.part_number' => 'required|numeric',
+            // Hydra: why the backup failed.
+            'hydra_error' => 'nullable|string|max:255',
         ];
     }
 }

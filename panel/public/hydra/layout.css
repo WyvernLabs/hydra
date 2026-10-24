@@ -638,6 +638,14 @@ a { color: rgb(var(--hydra-accent-400)); }
 
 .hydra-markdown .md-subtext { color: var(--hydra-muted); font-size: .8em; }
 
+/* Images of tickets: shown in their size, at most as wide as the message. */
+.hydra-markdown img {
+    max-width: 100%;
+    max-height: 480px;
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius-sm);
+}
+
 .hydra-markdown .md-spoiler {
     padding: 0 3px;
     background: var(--hydra-panel-3);

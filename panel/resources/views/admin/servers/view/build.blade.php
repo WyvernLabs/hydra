@@ -91,6 +91,33 @@
         </div>
         <div class="col-sm-7">
             <div class="row">
+                {{-- Hydra: dedicated node, subdomains and reverse proxies. --}}
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">{{ __('admin/servers.hydra_network.title') }}</h3>
+                        </div>
+                        <div class="box-body">
+                            <input type="hidden" name="hydra_limits" value="1">
+                            <div class="checkbox checkbox-primary no-margin-top">
+                                <input type="checkbox" id="hydraDedicated" name="hydra_dedicated" value="1" @checked(old('hydra_dedicated', $server->hydra_dedicated))>
+                                <label for="hydraDedicated">{{ __('admin/servers.hydra_network.dedicated') }}</label>
+                            </div>
+                            <p class="text-muted small">{{ __('admin/servers.hydra_network.dedicated_help') }}</p>
+                            <div class="row">
+                                <div class="form-group col-xs-6">
+                                    <label for="hydraSubdomainLimit" class="control-label">{{ __('admin/servers.hydra_network.subdomain_limit') }}</label>
+                                    <input type="number" min="0" id="hydraSubdomainLimit" name="hydra_subdomain_limit" class="form-control" value="{{ old('hydra_subdomain_limit', $server->hydra_subdomain_limit) }}" placeholder="{{ __('admin/servers.hydra_network.default', ['value' => app(\Pterodactyl\Services\Hydra\Addons\SubdomainsAddon::class)->defaultLimit()]) }}">
+                                </div>
+                                <div class="form-group col-xs-6">
+                                    <label for="hydraProxyLimit" class="control-label">{{ __('admin/servers.hydra_network.proxy_limit') }}</label>
+                                    <input type="number" min="0" id="hydraProxyLimit" name="hydra_proxy_limit" class="form-control" value="{{ old('hydra_proxy_limit', $server->hydra_proxy_limit) }}" placeholder="{{ __('admin/servers.hydra_network.default', ['value' => app(\Pterodactyl\Services\Hydra\Addons\ProxyAddon::class)->defaultLimit()]) }}">
+                                </div>
+                            </div>
+                            <p class="text-muted small no-margin">{{ __('admin/servers.hydra_network.limits_help') }}</p>
+                        </div>
+                    </div>
+                </div>
                 <div class="col-xs-12">
                     <div class="box">
                         <div class="box-header with-border">
@@ -113,11 +140,14 @@
                                     <p class="text-muted small">{{ __('admin/servers.fields.allocation_limit_help') }}</p>
                                 </div>
                                 <div class="form-group col-xs-6">
-                                    <label for="backup_limit" class="control-label">{{ __('admin/servers.fields.backup_limit') }}</label>
-                                    <div>
-                                        <input type="text" name="backup_limit" class="form-control" value="{{ old('backup_limit', $server->backup_limit) }}"/>
+                                    <label for="backup_storage_gb" class="control-label">{{ __('admin/servers.fields.backup_storage') }}</label>
+                                    <div class="input-group">
+                                        <input type="number" min="0" step="0.1" id="backup_storage_gb" name="backup_storage_gb" class="form-control" value="{{ old('backup_storage_gb', round($server->backup_storage_limit / 1024, 2)) }}"/>
+                                        <span class="input-group-addon">GB</span>
                                     </div>
-                                    <p class="text-muted small">{{ __('admin/servers.fields.backup_limit_help') }}</p>
+                                    {{-- Hydra: the number of backups is no longer limited, kept for the API. --}}
+                                    <input type="hidden" name="backup_limit" value="{{ $server->backup_limit }}"/>
+                                    <p class="text-muted small">{{ __('admin/servers.fields.backup_storage_help') }}</p>
                                 </div>
                             </div>
                         </div>

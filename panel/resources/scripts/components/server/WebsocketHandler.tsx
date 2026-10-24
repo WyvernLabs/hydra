@@ -7,6 +7,7 @@ import { CSSTransition } from 'react-transition-group';
 import Spinner from '@/components/elements/Spinner';
 import tw from 'twin.macro';
 import { useTranslation } from 'react-i18next';
+import { isLockedDownError } from '@/components/server/lockdown/Lockdown';
 
 const reconnectErrors = ['jwt: exp claim is invalid', 'jwt: created too far in past (denylist)'];
 
@@ -17,7 +18,17 @@ export default () => {
     const { connected, instance } = ServerContext.useStoreState((state) => state.socket);
     const uuid = ServerContext.useStoreState((state) => state.server.data?.uuid);
     const setServerStatus = ServerContext.useStoreActions((actions) => actions.status.setServerStatus);
+    const getServer = ServerContext.useStoreActions((actions) => actions.server.getServer);
     const { setInstance, setConnectionState } = ServerContext.useStoreActions((actions) => actions.socket);
+
+    // Hydra: once the server went into lockdown for this user, reload it so the
+    // panel shows why it cannot be used anymore.
+    const onTokenError = (uuid: string, error: any) => {
+        console.error(error);
+        if (isLockedDownError(error)) {
+            getServer(uuid).catch(console.error);
+        }
+    };
 
     const updateToken = (uuid: string, socket: Websocket) => {
         if (updatingToken) return;
@@ -25,7 +36,7 @@ export default () => {
         updatingToken = true;
         getWebsocketToken(uuid)
             .then((data) => socket.setToken(data.token, true))
-            .catch((error) => console.error(error))
+            .catch((error) => onTokenError(uuid, error))
             .then(() => {
                 updatingToken = false;
             });
@@ -84,7 +95,7 @@ export default () => {
                 // Once that is done, set the instance.
                 setInstance(socket);
             })
-            .catch((error) => console.error(error));
+            .catch((error) => onTokenError(uuid, error));
     };
 
     useEffect(() => {

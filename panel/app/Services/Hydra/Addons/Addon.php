@@ -34,6 +34,15 @@ abstract class Addon
     }
 
     /**
+     * Cleans up the validated values of the settings form before they are
+     * stored, e.g. to drop empty entries of a list.
+     */
+    public function prepare(array $values): array
+    {
+        return $values;
+    }
+
+    /**
      * Settings that are stored encrypted, e.g. secret keys. They are only
      * replaced when the admin enters a new value.
      */
@@ -104,6 +113,9 @@ abstract class Addon
      */
     public function settings(): array
     {
-        return array_values(array_unique(array_merge(['enabled'], array_keys($this->rules()), $this->booleans())));
+        // Rules for the entries of a list ("categories.*") are no settings of their own.
+        $keys = array_filter(array_keys($this->rules()), fn (string $key) => !str_contains($key, '.'));
+
+        return array_values(array_unique(array_merge(['enabled'], $keys, $this->booleans())));
     }
 }

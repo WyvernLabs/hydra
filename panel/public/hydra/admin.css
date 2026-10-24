@@ -1217,3 +1217,50 @@
 .hydra-navitem-icon { display: inline-flex; }
 .hydra-navitem-label { width: 140px; color: var(--hydra-text); font-weight: 600; }
 .hydra-navitem-eggs { flex: 1; min-width: 160px; }
+
+/* ---------------------------------------------------------------- Tickets (Community > Tickets) */
+
+.hydra-ticket-message-header { display: flex; align-items: center; gap: 10px; }
+.hydra-ticket-message.is-staff { border-left: 3px solid rgb(var(--hydra-accent-500)); }
+.hydra-ticket-message.is-internal { border-left: 3px solid #f0ad4e; background: rgb(240 173 78 / 0.06); }
+
+.hydra-ticket-editor { margin-bottom: 10px; }
+.hydra-ticket-editor-toolbar { margin-bottom: 8px; overflow: hidden; }
+.hydra-ticket-editor-toolbar .btn svg { width: 14px; height: 14px; vertical-align: -2px; }
+.hydra-ticket-editor-input { min-height: 160px; font-family: var(--hydra-font-mono); resize: vertical; }
+.hydra-ticket-editor-preview {
+    min-height: 160px;
+    padding: 12px 14px;
+    border: 1px dashed var(--hydra-border-strong);
+    border-radius: var(--hydra-radius-sm);
+}
+.hydra-ticket-editor-hint { margin: 6px 0 0; }
+
+/* Number next to a navigation entry, e.g. tickets waiting for the team. */
+.hydra-nav-badge {
+    margin-left: auto;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: rgb(var(--hydra-accent-500));
+    color: rgb(var(--hydra-accent-ink));
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 18px;
+}
+
+/* ---------------------------------------------------------------- Console texts (Design > Console) */
+
+.hydra-console-preview {
+    margin: 0;
+    padding: 10px 12px;
+    background: rgb(var(--hydra-black));
+    border: 1px solid var(--hydra-border);
+    color: #d0d0d0;
+    font-family: var(--hydra-font-mono);
+    font-size: 12px;
+    white-space: pre-wrap;
+}
+
+.hydra-console-preview-prefix { color: #faed70; font-weight: 700; }
+.hydra-console-input { font-family: var(--hydra-font-mono); font-size: 12px; white-space: pre; overflow-x: auto; resize: vertical; }
+.hydra-console-preview { min-height: 120px; max-height: 480px; overflow: auto; white-space: pre; }

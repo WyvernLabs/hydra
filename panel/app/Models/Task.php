@@ -44,6 +44,18 @@ class Task extends Model
     public const POWER_ACTIONS = ['start', 'stop', 'restart', 'kill'];
 
     /**
+     * Hydra: more actions and the flow control of a schedule, see
+     * \Pterodactyl\Services\Hydra\Schedules\TaskPayload for their payloads.
+     */
+    public const ACTION_WAIT_STATE = 'wait_state';
+    public const ACTION_DELETE_FILES = 'delete_files';
+    public const ACTION_WEBHOOK = 'webhook';
+    public const ACTION_IF = 'if';
+    public const ACTION_ELSE = 'else';
+    public const ACTION_ENDIF = 'endif';
+    public const ACTION_STOP = 'stop';
+
+    /**
      * The table associated with the model.
      */
     protected $table = 'tasks';
@@ -91,7 +103,7 @@ class Task extends Model
         'schedule_id' => 'required|numeric|exists:schedules,id',
         'sequence_id' => 'required|numeric|min:1',
         'action' => 'required|string',
-        'payload' => 'required_unless:action,backup|string',
+        'payload' => 'nullable|string',
         'time_offset' => 'required|numeric|between:0,900',
         'is_queued' => 'boolean',
         'continue_on_failure' => 'boolean',
@@ -104,6 +116,11 @@ class Task extends Model
                 return Permission::ACTION_CONTROL_CONSOLE;
             case self::ACTION_BACKUP:
                 return Permission::ACTION_BACKUP_CREATE;
+            case self::ACTION_DELETE_FILES:
+                return Permission::ACTION_FILE_DELETE;
+            case self::ACTION_IF:
+                // Checking for a file reveals whether it exists.
+                return (json_decode((string) $payload, true)['check'] ?? null) === 'file' ? Permission::ACTION_FILE_READ : null;
             case self::ACTION_POWER:
                 switch (trim((string) $payload)) {
                     case 'start':

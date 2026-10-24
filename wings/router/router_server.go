@@ -240,6 +240,14 @@ func deleteServer(c *gin.Context) {
 		if err := os.RemoveAll(p); err != nil {
 			log.WithFields(log.Fields{"path": p, "error": err}).Warn("failed to remove server files during deletion process")
 		}
+		// Hydra: the game profiles of the server go with it.
+		if err := fs.DeleteProfiles(); err != nil {
+			log.WithFields(log.Fields{"path": fs.ProfilesPath(), "error": err}).Warn("failed to remove game profiles during deletion process")
+		}
+		// Hydra: and so does its trash.
+		if err := os.RemoveAll(fs.TrashPath()); err != nil {
+			log.WithFields(log.Fields{"path": fs.TrashPath(), "error": err}).Warn("failed to remove the trash during deletion process")
+		}
 	}(s)
 
 	middleware.ExtractManager(c).Remove(func(server *server.Server) bool {

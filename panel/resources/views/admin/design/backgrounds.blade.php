@@ -55,48 +55,7 @@
     </form>
     <div class="row">
         <div class="col-xs-12">
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">{{ __('admin/design.backgrounds.eggs') }}</h3>
-                </div>
-                <div class="box-body">
-                    <p class="text-muted small no-margin">{{ __('admin/design.backgrounds.eggs_help') }}</p>
-                </div>
-                <div class="box-body table-responsive no-padding">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>{{ __('admin/design.backgrounds.egg_name') }}</th>
-                                <th>{{ __('admin/design.backgrounds.nest') }}</th>
-                                <th>{{ __('admin/design.backgrounds.egg_status') }}</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($eggs as ['egg' => $egg, 'background' => $background])
-                                <tr>
-                                    <td>{{ $egg->name }}</td>
-                                    <td>{{ $egg->nest->name }}</td>
-                                    <td>
-                                        @if(is_null($background))
-                                            <span class="text-muted">{{ __('admin/design.backgrounds.egg_inherits') }}</span>
-                                        @else
-                                            <span class="hydra-bg-thumb" style="{{ $background['image'] ? "background-image: url('" . $background['image'] . "')" : '' }}"></span>
-                                            {{ $background['image'] ? __('admin/design.backgrounds.custom') : __('admin/design.backgrounds.default') }}
-                                            <span class="text-muted small">&middot; {{ $background['blur'] }} px &middot; {{ $background['dim'] }} %</span>
-                                        @endif
-                                    </td>
-                                    <td class="text-right">
-                                        @if(Auth::user()->hasAdminPermission('eggs.view'))
-                                            <a href="{{ route('admin.nests.egg.view', $egg->id) }}#egg-background" class="btn btn-xs btn-default">{{ __('admin/design.backgrounds.egg_edit') }}</a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <p class="text-muted small">{!! __('admin/design.backgrounds.eggs_hint', ['url' => route('admin.design.eggs')]) !!}</p>
         </div>
     </div>
 @endsection

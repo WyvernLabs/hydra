@@ -32,7 +32,14 @@ type AdapterType string
 const (
 	LocalBackupAdapter AdapterType = "wings"
 	S3BackupAdapter    AdapterType = "s3"
+	// SftpBackupAdapter (Hydra) stores backups on an SFTP server.
+	SftpBackupAdapter AdapterType = "sftp"
 )
+
+// ProgressFunc (Hydra) receives the progress of a backup. phase is "archive"
+// while the archive is written and "upload" while it is moved to a remote
+// storage.
+type ProgressFunc func(phase string, done, total int64)
 
 // RestoreCallback is a generic restoration callback that exists for both local
 // and remote backups allowing the files to be restored.
@@ -69,6 +76,10 @@ type BackupInterface interface {
 	// the given source. Not every backup implementation will support this nor
 	// will every implementation require a reader be provided.
 	Restore(context.Context, io.Reader, RestoreCallback) error
+	// SetProgress (Hydra) sets the receiver of the progress.
+	SetProgress(ProgressFunc)
+	// SetMaxSize (Hydra) limits the size of the archive in bytes, 0 is no limit.
+	SetMaxSize(int64)
 }
 
 type Backup struct {
@@ -83,10 +94,48 @@ type Backup struct {
 	client     remote.Client
 	adapter    AdapterType
 	logContext map[string]interface{}
+	progress   ProgressFunc
+	maxSize    int64
 }
 
 func (b *Backup) SetClient(c remote.Client) {
 	b.client = c
+}
+
+func (b *Backup) SetProgress(fn ProgressFunc) {
+	b.progress = fn
+}
+
+func (b *Backup) SetMaxSize(n int64) {
+	b.maxSize = n
+}
+
+// phase returns the progress receiver for one phase, nil without one.
+func (b *Backup) phase(name string) filesystem.ProgressFunc {
+	if b.progress == nil {
+		return nil
+	}
+	return func(done, total int64) {
+		b.progress(name, done, total)
+	}
+}
+
+// createArchive (Hydra) writes the archive of the server to Path(), reporting
+// the progress and keeping it below the size limit.
+func (b *Backup) createArchive(ctx context.Context, fsys *filesystem.Filesystem, ignore string) error {
+	a := &filesystem.Archive{
+		Filesystem: fsys,
+		Ignore:     ignore,
+		OnProgress: b.phase("archive"),
+		MaxSize:    b.maxSize,
+	}
+	b.log().WithField("path", b.Path()).Info("creating backup for server")
+	if err := a.Create(ctx, b.Path()); err != nil {
+		_ = os.Remove(b.Path())
+		return err
+	}
+	b.log().Info("created backup successfully")
+	return nil
 }
 
 func (b *Backup) Identifier() string {

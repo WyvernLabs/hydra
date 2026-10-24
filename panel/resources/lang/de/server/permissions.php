@@ -82,6 +82,7 @@ return [
             'delete' => 'Erlaubt das Löschen von Backups.',
             'download' => 'Erlaubt das Herunterladen von Backups. Achtung: Damit sind alle Dateien des Servers im Backup zugänglich.',
             'restore' => 'Erlaubt das Wiederherstellen von Backups. Achtung: Dabei können alle Serverdateien gelöscht werden.',
+            'sftp' => 'Erlaubt das Einrichten des eigenen SFTP-Servers für Backups. Achtung: Backups enthalten alle Dateien des Servers.',
         ],
         'labels' => [
             'create' => 'Erstellen',
@@ -89,6 +90,7 @@ return [
             'delete' => 'Löschen',
             'download' => 'Herunterladen',
             'restore' => 'Wiederherstellen',
+            'sftp' => 'Eigener SFTP-Server',
         ],
     ],
 
@@ -176,10 +178,14 @@ return [
         'keys' => [
             'rename' => 'Erlaubt das Umbenennen des Servers und das Ändern seiner Beschreibung.',
             'reinstall' => 'Erlaubt das Neuinstallieren des Servers.',
+            'game' => 'Erlaubt das Wechseln des Spiels sowie das Laden und Löschen von Spielprofilen. Achtung: Dabei werden die Dateien des Servers ersetzt.',
+            'version' => 'Erlaubt das Installieren einer anderen Minecraft-Software oder -Version. Achtung: Dabei können Dateien des Servers ersetzt oder gelöscht werden.',
         ],
         'labels' => [
             'rename' => 'Umbenennen',
             'reinstall' => 'Neu installieren',
+            'game' => 'Spiel wechseln',
+            'version' => 'Minecraft-Version wechseln',
         ],
     ],
 

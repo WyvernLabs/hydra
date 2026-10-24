@@ -23,6 +23,7 @@ return [
         'servers' => 'Server',
         'users' => 'Benutzer',
         'roles' => 'Rollen',
+        'tickets' => 'Tickets',
         'nests' => 'Nests',
         'exit' => 'Administration verlassen',
         'logout' => 'Abmelden',

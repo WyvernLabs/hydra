@@ -24,7 +24,12 @@ class DatabaseExportController extends Controller
             throw new NotFoundHttpException();
         }
 
-        $database = Database::query()->with('host')->findOrFail($data['database']);
+        $database = Database::query()->with('host', 'server')->findOrFail($data['database']);
+        // Hydra: the server may have gone into lockdown since the link was made.
+        if (!$database->server->lockdownAllows($request->user())) {
+            throw new NotFoundHttpException();
+        }
+
         $writer = $transfer->export($database);
 
         @set_time_limit(0);

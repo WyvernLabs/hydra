@@ -46,6 +46,10 @@ export const useServerNavigation = () => {
     const suspendedAccess = ServerContext.useStoreState((state) => state.server.suspendedAccess);
 
     const dashboard = useStoreState((state) => state.settings.data!.dashboard?.enabled || false);
+    const properties = useStoreState((state) => state.settings.data!.properties?.enabled || false);
+    const games = useStoreState((state) => state.settings.data!.games || false);
+    const versions = useStoreState((state) => state.settings.data!.versions || false);
+    const env = useStoreState((state) => state.settings.data!.env?.enabled || false);
 
     const buttons = navigation.flatMap((category) => category.items);
 
@@ -53,6 +57,10 @@ export const useServerNavigation = () => {
     // navigation does not know (yet) stay visible. The dashboard is an addon.
     const isVisible = (navKey: string): boolean => {
         if (navKey === 'dashboard' && !dashboard) return false;
+        if (navKey === 'properties' && !properties) return false;
+        if (navKey === 'games' && !games) return false;
+        if (navKey === 'versions' && !versions) return false;
+        if (navKey === 'env' && !env) return false;
         const button = buttons.find((item) => item.key === navKey);
 
         return !button || !button.eggs || eggId === undefined || button.eggs.indexOf(eggId) >= 0;

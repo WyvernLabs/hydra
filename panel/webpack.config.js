@@ -70,6 +70,12 @@ module.exports = {
                 type: 'asset/resource',
             },
             {
+                // Hydra: SQLite of the file manager (sql.js), loaded by its URL.
+                test: /\.wasm$/,
+                type: 'asset/resource',
+                generator: { filename: 'wasm/[name].[contenthash:8][ext]' },
+            },
+            {
                 test: /\.svg$/,
                 loader: 'svg-url-loader',
             },
@@ -93,6 +99,8 @@ module.exports = {
             '@feature': path.join(__dirname, '/resources/scripts/components/server/features'),
         },
         symlinks: false,
+        // Hydra: sql.js only uses these when it runs in Node.js.
+        fallback: { fs: false, path: false, crypto: false },
     },
     externals: {
         // Mark moment as an external to exclude it from the Chart.js build since we don't need to use

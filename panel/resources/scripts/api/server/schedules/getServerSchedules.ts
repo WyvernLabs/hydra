@@ -13,12 +13,23 @@ export interface Schedule {
     isActive: boolean;
     isProcessing: boolean;
     onlyWhenOnline: boolean;
+    // Hydra: what starts the schedule.
+    trigger: ScheduleTrigger;
     lastRunAt: Date | null;
     nextRunAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
 
     tasks: Task[];
+}
+
+export type ScheduleTriggerType = 'cron' | 'state' | 'console';
+
+export interface ScheduleTrigger {
+    type: ScheduleTriggerType;
+    value: string | null;
+    regex: boolean;
+    cooldown: number;
 }
 
 export interface Task {
@@ -58,6 +69,12 @@ export const rawDataToServerSchedule = (data: any): Schedule => ({
     isActive: data.is_active,
     isProcessing: data.is_processing,
     onlyWhenOnline: data.only_when_online,
+    trigger: {
+        type: data.trigger?.type || 'cron',
+        value: data.trigger?.value ?? null,
+        regex: !!data.trigger?.regex,
+        cooldown: data.trigger?.cooldown ?? 60,
+    },
     lastRunAt: data.last_run_at ? new Date(data.last_run_at) : null,
     nextRunAt: data.next_run_at ? new Date(data.next_run_at) : null,
     createdAt: new Date(data.created_at),

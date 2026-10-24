@@ -69,16 +69,9 @@ func (b *LocalBackup) Generate(ctx context.Context, fsys *filesystem.Filesystem,
 	if err := b.validateIdentifier(); err != nil {
 		return nil, err
 	}
-	a := &filesystem.Archive{
-		Filesystem: fsys,
-		Ignore:     ignore,
-	}
-
-	b.log().WithField("path", b.Path()).Info("creating backup for server")
-	if err := a.Create(ctx, b.Path()); err != nil {
+	if err := b.createArchive(ctx, fsys, ignore); err != nil {
 		return nil, err
 	}
-	b.log().Info("created backup successfully")
 
 	ad, err := b.Details(ctx, nil)
 	if err != nil {

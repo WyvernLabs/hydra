@@ -46,6 +46,8 @@ class UpdateServerBuildConfigurationRequest extends ServerWriteRequest
             'feature_limits.databases' => $rules['database_limit'],
             'feature_limits.allocations' => $rules['allocation_limit'],
             'feature_limits.backups' => $rules['backup_limit'],
+            // Hydra: backup space in MiB, replaces the number of backups.
+            'feature_limits.backup_storage' => 'sometimes|nullable|integer|min:0',
         ];
     }
 
@@ -60,6 +62,9 @@ class UpdateServerBuildConfigurationRequest extends ServerWriteRequest
         $data['database_limit'] = $data['feature_limits']['databases'] ?? null;
         $data['allocation_limit'] = $data['feature_limits']['allocations'] ?? null;
         $data['backup_limit'] = $data['feature_limits']['backups'] ?? null;
+        if (isset($data['feature_limits']['backup_storage'])) {
+            $data['backup_storage_limit'] = $data['feature_limits']['backup_storage'];
+        }
         unset($data['allocation'], $data['feature_limits']);
 
         // Adjust the limits field to match what is expected by the model.

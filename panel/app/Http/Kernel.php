@@ -8,6 +8,7 @@ use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Http\Middleware\TrustProxies;
 use Pterodactyl\Http\Middleware\TrimStrings;
 use Pterodactyl\Http\Middleware\TrackLastSeen;
+use Pterodactyl\Http\Middleware\Hydra\RequireAddon;
 use Pterodactyl\Http\Middleware\Hydra\EnsureUserIsNotBanned;
 use Illuminate\Session\Middleware\StartSession;
 use Pterodactyl\Http\Middleware\EncryptCookies;
@@ -110,6 +111,7 @@ class Kernel extends HttpKernel
         'can' => Authorize::class,
         'bindings' => SubstituteBindings::class,
         'captcha' => VerifyTurnstile::class,
+        'addon' => RequireAddon::class,
         'node.maintenance' => MaintenanceMiddleware::class,
         'admin.can' => RequireAdminPermission::class,
     ];

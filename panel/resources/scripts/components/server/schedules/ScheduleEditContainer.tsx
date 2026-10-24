@@ -15,20 +15,14 @@ import { Button } from '@/components/elements/button/index';
 import ScheduleTaskRow from '@/components/server/schedules/ScheduleTaskRow';
 import isEqual from 'react-fast-compare';
 import { formatDate } from '@/lib/date';
-import ScheduleCronRow from '@/components/server/schedules/ScheduleCronRow';
+import ScheduleTriggerText from '@/components/server/schedules/ScheduleTriggerText';
+import { taskDepths } from '@/components/server/schedules/taskActions';
 import RunScheduleButton from '@/components/server/schedules/RunScheduleButton';
 import { useTranslation } from 'react-i18next';
 
 interface Params {
     id: string;
 }
-
-const CronBox = ({ title, value }: { title: string; value: string }) => (
-    <div css={tw`bg-neutral-700 rounded p-3`}>
-        <p css={tw`text-neutral-300 text-sm`}>{title}</p>
-        <p css={tw`text-xl font-medium text-neutral-100`}>{value}</p>
-    </div>
-);
 
 const ActivePill = ({ active }: { active: boolean }) => {
     const { t } = useTranslation('client/server');
@@ -83,6 +77,10 @@ export default () => {
         setShowEditModal((s) => !s);
     }, []);
 
+    // Hydra: tasks in order, indented inside the blocks of conditions.
+    const sorted = (schedule?.tasks || []).slice().sort((a, b) => a.sequenceId - b.sequenceId);
+    const depths = taskDepths(sorted);
+
     return (
         <PageContentBlock title={t('schedules.title')}>
             <FlashMessageRender byKey={'schedules'} css={tw`mb-4`} />
@@ -90,7 +88,6 @@ export default () => {
                 <Spinner size={'large'} centered />
             ) : (
                 <>
-                    <ScheduleCronRow cron={schedule.cron} css={tw`sm:hidden bg-neutral-700 rounded mb-4 p-3`} />
                     <div css={tw`rounded shadow`}>
                         <div
                             css={tw`sm:flex items-center bg-neutral-900 p-3 sm:p-6 border-b-4 border-neutral-600 rounded-t`}
@@ -133,27 +130,22 @@ export default () => {
                                 </Can>
                             </div>
                         </div>
-                        <div css={tw`hidden sm:grid grid-cols-5 md:grid-cols-5 gap-4 mb-4 mt-4`}>
-                            <CronBox title={t('schedules.minute')} value={schedule.cron.minute} />
-                            <CronBox title={t('schedules.hour')} value={schedule.cron.hour} />
-                            <CronBox title={t('schedules.day_month_short')} value={schedule.cron.dayOfMonth} />
-                            <CronBox title={t('schedules.month')} value={schedule.cron.month} />
-                            <CronBox title={t('schedules.day_week_short')} value={schedule.cron.dayOfWeek} />
+                        {/* Hydra: when the schedule runs, as a sentence. */}
+                        <div className={'my-4 rounded bg-neutral-700 p-4'}>
+                            <p className={'text-2xs uppercase text-neutral-400'}>{t('schedules.trigger.runs')}</p>
+                            <ScheduleTriggerText schedule={schedule} className={'mt-1 text-gray-100'} />
                         </div>
                         <div css={tw`bg-neutral-700 rounded-b`}>
-                            {schedule.tasks.length > 0
-                                ? schedule.tasks
-                                      .sort((a, b) =>
-                                          a.sequenceId === b.sequenceId ? 0 : a.sequenceId > b.sequenceId ? 1 : -1
-                                      )
-                                      .map((task) => (
-                                          <ScheduleTaskRow
-                                              key={`${schedule.id}_${task.id}`}
-                                              task={task}
-                                              schedule={schedule}
-                                          />
-                                      ))
-                                : null}
+                            {sorted.map((task, index) => (
+                                <ScheduleTaskRow
+                                    key={`${schedule.id}_${task.id}`}
+                                    task={task}
+                                    schedule={schedule}
+                                    depth={depths[task.id]}
+                                    first={index === 0}
+                                    last={index === sorted.length - 1}
+                                />
+                            ))}
                         </div>
                     </div>
                     <EditScheduleModal visible={showEditModal} schedule={schedule} onModalDismissed={toggleEditModal} />

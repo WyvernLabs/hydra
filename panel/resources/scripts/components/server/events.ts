@@ -11,6 +11,8 @@ export enum SocketEvent {
     TRANSFER_STATUS = 'transfer status',
     BACKUP_COMPLETED = 'backup completed',
     BACKUP_RESTORE_COMPLETED = 'backup restore completed',
+    HYDRA_FILE_PROGRESS = 'hydra file progress',
+    HYDRA_BACKUP_PROGRESS = 'hydra backup progress',
 }
 
 export enum SocketRequest {

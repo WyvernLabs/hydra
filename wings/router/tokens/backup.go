@@ -12,6 +12,9 @@ type BackupPayload struct {
 	UserUuid   string `json:"user_uuid"`
 	BackupUuid string `json:"backup_uuid"`
 	UniqueId   string `json:"unique_id"`
+	// HydraSftpDownload is the id of a download from an SFTP server the panel
+	// announced before.
+	HydraSftpDownload string `json:"hydra_sftp_download"`
 }
 
 // Returns the JWT payload.

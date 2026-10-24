@@ -6,6 +6,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Pterodactyl\Models\Server;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Pterodactyl\Exceptions\Http\Server\ServerLockedDownException;
 use Pterodactyl\Exceptions\Http\Server\ServerStateConflictException;
 
 class AuthenticateServerAccess
@@ -51,6 +52,12 @@ class AuthenticateServerAccess
             if (!$server->subusers->contains('user_id', $user->id)) {
                 throw new NotFoundHttpException(trans('exceptions.api.resource_not_found'));
             }
+        }
+
+        // Hydra: during a lockdown everyone else only gets the server itself, so
+        // the panel can tell them why they cannot use it.
+        if (!$server->lockdownAllows($user) && !$request->routeIs('api:client:server.view')) {
+            throw new ServerLockedDownException();
         }
 
         try {

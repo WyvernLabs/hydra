@@ -17,3 +17,16 @@ func (s *Server) Sftp() *system.ContextBag {
 
 	return s.sftpBag
 }
+
+// FileTransfers returns the bag of running file downloads and uploads of the
+// server by user, so they can be stopped when a user loses access (Hydra).
+func (s *Server) FileTransfers() *system.ContextBag {
+	s.Lock()
+	defer s.Unlock()
+
+	if s.transferBag == nil {
+		s.transferBag = system.NewContextBag(s.Context())
+	}
+
+	return s.transferBag
+}

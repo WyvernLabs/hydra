@@ -11,7 +11,9 @@ use Illuminate\Database\ConnectionInterface;
 use Pterodactyl\Extensions\Backups\BackupManager;
 use Pterodactyl\Repositories\Eloquent\BackupRepository;
 use Pterodactyl\Repositories\Wings\DaemonBackupRepository;
-use Pterodactyl\Exceptions\Service\Backup\TooManyBackupsException;
+use Pterodactyl\Services\Hydra\Backups\BackupStorage;
+use Pterodactyl\Services\Hydra\Addons\SftpBackupsAddon;
+use Pterodactyl\Exceptions\Service\Backup\BackupStorageException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 class InitiateBackupService
@@ -19,6 +21,8 @@ class InitiateBackupService
     private array $ignoredFiles = [];
 
     private bool $isLocked = false;
+
+    private bool $ownSftp = false;
 
     /**
      * InitiateBackupService constructor.
@@ -29,7 +33,19 @@ class InitiateBackupService
         private DaemonBackupRepository $daemonBackupRepository,
         private DeleteBackupService $deleteBackupService,
         private BackupManager $backupManager,
+        private SftpBackupsAddon $sftpAddon,
     ) {
+    }
+
+    /**
+     * Hydra: store the backup on the own SFTP server of the server's users
+     * instead of the backup space of the server.
+     */
+    public function setOwnSftp(bool $ownSftp): self
+    {
+        $this->ownSftp = $ownSftp;
+
+        return $this;
     }
 
     /**
@@ -70,7 +86,7 @@ class InitiateBackupService
      * Initiates the backup process for a server on Wings.
      *
      * @throws \Throwable
-     * @throws TooManyBackupsException
+     * @throws BackupStorageException
      * @throws TooManyRequestsHttpException
      */
     public function handle(Server $server, ?string $name = null, bool $override = false): Backup
@@ -86,42 +102,77 @@ class InitiateBackupService
             }
         }
 
-        // Check if the server has reached or exceeded its backup limit.
-        // completed_at == null will cover any ongoing backups, while is_successful == true will cover any completed backups.
-        $successful = $this->repository->getNonFailedBackups($server);
-        if (!$server->backup_limit || $successful->count() >= $server->backup_limit) {
-            // Do not allow the user to continue if this server is already at its limit and can't override.
-            if (!$override || $server->backup_limit <= 0) {
-                throw new TooManyBackupsException($server->backup_limit);
+        // Hydra: the backup goes to the user's own SFTP server, the SFTP server of
+        // the node or the default adapter. Only the latter two use the backup space.
+        $target = null;
+        $maxSize = 0;
+        if ($this->ownSftp) {
+            $target = $server->sftpBackupTarget;
+            if (!$this->sftpAddon->usersAllowed() || !$target || !$target->host_key) {
+                throw new BackupStorageException('no_sftp');
             }
-
-            // Get the oldest backup the server has that is not "locked" (indicating a backup that should
-            // never be automatically purged). If we find a backup we will delete it and then continue with
-            // this process. If no backup is found that can be used an exception is thrown.
-            $oldest = $successful->where('is_locked', false)->orderBy('created_at')->first();
-            if (!$oldest) {
-                throw new TooManyBackupsException($server->backup_limit);
-            }
-
-            $this->deleteBackupService->handle($oldest);
+        } else {
+            $target = $this->sftpAddon->nodeTarget($server->node);
+            $maxSize = $this->reserveSpace($server, $override);
         }
 
-        return $this->connection->transaction(function () use ($server, $name) {
+        return $this->connection->transaction(function () use ($server, $name, $target, $maxSize) {
+            $disk = $target ? Backup::ADAPTER_SFTP : $this->backupManager->getDefaultAdapter();
+
             /** @var Backup $backup */
             $backup = $this->repository->create([
                 'server_id' => $server->id,
                 'uuid' => Uuid::uuid4()->toString(),
-                'name' => trim($name) ?: sprintf('Backup at %s', CarbonImmutable::now()->toDateTimeString()),
+                'name' => trim($name ?? '') ?: sprintf('Backup at %s', CarbonImmutable::now()->toDateTimeString()),
                 'ignored_files' => array_values($this->ignoredFiles),
-                'disk' => $this->backupManager->getDefaultAdapter(),
+                'disk' => $disk,
+                'hydra_sftp_target_id' => $target?->id,
                 'is_locked' => $this->isLocked,
             ], true, true);
 
             $this->daemonBackupRepository->setServer($server)
-                ->setBackupAdapter($this->backupManager->getDefaultAdapter())
-                ->backup($backup);
+                ->setBackupAdapter($disk)
+                ->backup($backup, $maxSize);
 
             return $backup;
         });
+    }
+
+    /**
+     * Hydra: makes sure there is backup space left and returns how many bytes
+     * the new backup may use. Scheduled backups (override) delete the oldest
+     * unlocked backups until a backup as large as the last one fits.
+     *
+     * @throws BackupStorageException
+     * @throws \Throwable
+     */
+    private function reserveSpace(Server $server, bool $override): int
+    {
+        $limit = BackupStorage::limit($server);
+        if ($limit <= 0) {
+            throw new BackupStorageException('disabled');
+        }
+
+        $used = BackupStorage::used($server);
+        if ($override) {
+            $estimate = (int) BackupStorage::counted($server)->where('is_successful', true)->latest('created_at')->value('bytes');
+            while ($used + $estimate > $limit) {
+                /** @var Backup|null $oldest */
+                $oldest = BackupStorage::counted($server)->where('is_successful', true)
+                    ->where('is_locked', false)->orderBy('created_at')->first();
+                if (!$oldest) {
+                    break;
+                }
+
+                $this->deleteBackupService->handle($oldest);
+                $used = BackupStorage::used($server);
+            }
+        }
+
+        if ($used >= $limit) {
+            throw new BackupStorageException('full');
+        }
+
+        return $limit - $used;
     }
 }

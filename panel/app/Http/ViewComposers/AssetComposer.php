@@ -9,6 +9,12 @@ use Pterodactyl\Services\Hydra\Icons;
 use Pterodactyl\Services\Hydra\BrandingService;
 use Pterodactyl\Services\Hydra\ServerNavigation;
 use Pterodactyl\Services\Hydra\PhpMyAdminService;
+use Pterodactyl\Services\Hydra\ConsoleSettings;
+use Pterodactyl\Services\Hydra\Addons\CpuAddon;
+use Pterodactyl\Services\Hydra\Addons\McLogsAddon;
+use Pterodactyl\Services\Hydra\Addons\TicketsAddon;
+use Pterodactyl\Services\Hydra\Addons\PropertiesAddon;
+use Pterodactyl\Services\Hydra\Addons\SftpBackupsAddon;
 use Pterodactyl\Services\Hydra\Addons\DashboardAddon;
 use Pterodactyl\Services\Hydra\BackgroundService;
 use Pterodactyl\Services\Hydra\Addons\TurnstileAddon;
@@ -57,6 +63,24 @@ class AssetComposer
             'phpMyAdmin' => app(PhpMyAdminService::class)->isOffered(),
             // Hydra: overview page of the servers (Design > Addons).
             'dashboard' => app(DashboardAddon::class)->toArray(),
+            // Hydra: support tickets in the account (Design > Addons).
+            'tickets' => app(TicketsAddon::class)->toArray(),
+            // Hydra: .properties file as a form (Design > Addons).
+            'properties' => app(PropertiesAddon::class)->toArray(),
+            // Hydra: users may keep backups on their own SFTP server (Design > Addons).
+            'sftpBackups' => app(SftpBackupsAddon::class)->usersAllowed(),
+            // Hydra: .env editor and Minecraft version changer (Design > Addons).
+            'env' => app(\Pterodactyl\Services\Hydra\Addons\EnvAddon::class)->toArray(),
+            'versions' => app(\Pterodactyl\Services\Hydra\Addons\VersionsAddon::class)->enabled(),
+            // Hydra: trash of the file manager (Design > Addons).
+            'trash' => app(\Pterodactyl\Services\Hydra\Addons\TrashAddon::class)->toArray(),
+            // Hydra: game library (Design > Addons).
+            'games' => app(\Pterodactyl\Services\Hydra\Addons\GamesAddon::class)->enabled(),
+            // Hydra: console texts (Design > Console) and console addons.
+            'console' => app(ConsoleSettings::class)->toFrontend(app()->getLocale()) + [
+                'cpuNormalized' => app(CpuAddon::class)->enabled(),
+                'mclogs' => app(McLogsAddon::class)->enabled() ? app(McLogsAddon::class)->path() : null,
+            ],
             'branding' => $this->branding->toArray(),
             // Hydra: largest profile picture or banner in megabytes.
             'profileUploadLimit' => ProfileMediaService::uploadLimit(),

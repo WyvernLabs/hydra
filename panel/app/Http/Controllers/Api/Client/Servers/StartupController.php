@@ -3,13 +3,19 @@
 namespace Pterodactyl\Http\Controllers\Api\Client\Servers;
 
 use Pterodactyl\Models\Server;
+use Illuminate\Http\JsonResponse;
 use Pterodactyl\Facades\Activity;
+use Pterodactyl\Services\Eggs\EggConfigurationService;
+use Pterodactyl\Services\Hydra\Addons\StartupCommandAddon;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Pterodactyl\Services\Servers\StartupCommandService;
 use Pterodactyl\Repositories\Eloquent\ServerVariableRepository;
 use Pterodactyl\Transformers\Api\Client\EggVariableTransformer;
 use Pterodactyl\Http\Controllers\Api\Client\ClientApiController;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Pterodactyl\Http\Requests\Api\Client\Servers\Startup\GetStartupRequest;
+use Pterodactyl\Http\Requests\Api\Client\Servers\Startup\UpdateStartupDoneRequest;
+use Pterodactyl\Http\Requests\Api\Client\Servers\Startup\UpdateStartupCommandRequest;
 use Pterodactyl\Http\Requests\Api\Client\Servers\Startup\UpdateStartupVariableRequest;
 
 class StartupController extends ClientApiController
@@ -39,8 +45,59 @@ class StartupController extends ClientApiController
                 'startup_command' => $startup,
                 'docker_images' => $server->egg->docker_images,
                 'raw_startup_command' => $server->startup,
+                // Hydra: messages that mark the server as running.
+                'startup_done' => $server->startupDone(),
+                'egg_startup_done' => EggConfigurationService::eggDone($server),
+                // Hydra: the command of the egg and whether users may change it (addon).
+                'egg_startup_command' => $server->egg->startup,
+                'startup_editable' => app(StartupCommandAddon::class)->enabled(),
             ])
             ->toArray();
+    }
+
+    /**
+     * Hydra: sets the console messages that mark the server as running, or
+     * goes back to those of the egg. Wings picks them up on the next start.
+     */
+    public function done(UpdateStartupDoneRequest $request, Server $server): JsonResponse
+    {
+        $original = $server->startupDone();
+        $done = array_values(array_filter(array_map('trim', $request->input('done') ?? []), fn ($line) => $line !== ''));
+
+        $server->forceFill(['hydra_startup_done' => empty($done) ? null : implode("\n", $done)])->saveOrFail();
+
+        if ($original !== $server->startupDone()) {
+            Activity::event('server:startup.done')
+                ->property(['old' => implode(' | ', $original ?? EggConfigurationService::eggDone($server)), 'new' => implode(' | ', $server->startupDone() ?? EggConfigurationService::eggDone($server))])
+                ->log();
+        }
+
+        return new JsonResponse(['startup_done' => $server->startupDone()]);
+    }
+
+    /**
+     * Hydra: changes the startup command of the server, or goes back to the
+     * one of the egg (addon "Startup Command"). Wings uses it from the next start.
+     */
+    public function command(UpdateStartupCommandRequest $request, Server $server): array
+    {
+        if (!app(StartupCommandAddon::class)->enabled()) {
+            throw new NotFoundHttpException();
+        }
+
+        $original = $server->startup;
+        $startup = trim((string) $request->input('startup')) ?: $server->egg->startup;
+
+        if ($startup !== $original) {
+            $server->forceFill(['startup' => $startup])->saveOrFail();
+
+            Activity::event('server:startup.command')->property(['old' => $original, 'new' => $startup])->log();
+        }
+
+        return [
+            'startup_command' => $this->startupCommandService->handle($server->refresh()),
+            'raw_startup_command' => $server->startup,
+        ];
     }
 
     /**

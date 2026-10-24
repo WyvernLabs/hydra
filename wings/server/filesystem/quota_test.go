@@ -76,7 +76,7 @@ func TestParallelArchivesRespectDiskLimit(t *testing.T) {
 		wg.Add(1)
 		go func(dir string) {
 			defer wg.Done()
-			_, _ = fs.CompressFiles(dir, []string{"data.bin"})
+			_, _ = fs.CompressFiles(dir, []string{"data.bin"}, nil)
 		}(fmt.Sprintf("/dir%d", i))
 	}
 	wg.Wait()

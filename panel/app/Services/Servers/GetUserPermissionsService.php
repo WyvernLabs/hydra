@@ -14,6 +14,11 @@ class GetUserPermissionsService
      */
     public function handle(Server $server, User $user): array
     {
+        // Hydra: nobody but the owner and allowed admins may use a server in lockdown.
+        if (!$server->lockdownAllows($user)) {
+            return [];
+        }
+
         if ($user->canAccessAllServers() || $user->id === $server->owner_id) {
             $permissions = ['*'];
 

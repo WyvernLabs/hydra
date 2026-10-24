@@ -22,6 +22,10 @@ use Pterodactyl\Contracts\Extensions\HashidsInterface;
  * @property bool $is_active
  * @property bool $is_processing
  * @property bool $only_when_online
+ * @property string $hydra_trigger
+ * @property string|null $hydra_trigger_value
+ * @property bool $hydra_trigger_regex
+ * @property int $hydra_trigger_cooldown
  * @property \Carbon\Carbon|null $last_run_at
  * @property \Carbon\Carbon|null $next_run_at
  * @property \Carbon\Carbon $created_at
@@ -40,6 +44,17 @@ class Schedule extends Model
      * API representation using fractal.
      */
     public const RESOURCE_NAME = 'server_schedule';
+
+    /**
+     * Hydra: what starts a schedule. "cron" runs it at the times of the cron
+     * fields, "state" when the server reaches a state, "console" when a line in
+     * its console matches.
+     */
+    public const TRIGGER_CRON = 'cron';
+    public const TRIGGER_STATE = 'state';
+    public const TRIGGER_CONSOLE = 'console';
+    public const TRIGGERS = [self::TRIGGER_CRON, self::TRIGGER_STATE, self::TRIGGER_CONSOLE];
+    public const TRIGGER_STATES = ['running', 'offline', 'starting', 'stopping'];
 
     /**
      * The table associated with the model.
@@ -67,6 +82,10 @@ class Schedule extends Model
         'only_when_online',
         'last_run_at',
         'next_run_at',
+        'hydra_trigger',
+        'hydra_trigger_value',
+        'hydra_trigger_regex',
+        'hydra_trigger_cooldown',
     ];
 
     protected $casts = [
@@ -75,6 +94,8 @@ class Schedule extends Model
         'is_active' => 'boolean',
         'is_processing' => 'boolean',
         'only_when_online' => 'boolean',
+        'hydra_trigger_regex' => 'boolean',
+        'hydra_trigger_cooldown' => 'integer',
         'last_run_at' => 'datetime',
         'next_run_at' => 'datetime',
     ];
@@ -89,6 +110,9 @@ class Schedule extends Model
         'is_active' => true,
         'is_processing' => false,
         'only_when_online' => false,
+        'hydra_trigger' => self::TRIGGER_CRON,
+        'hydra_trigger_regex' => false,
+        'hydra_trigger_cooldown' => 60,
     ];
 
     public static array $validationRules = [
@@ -104,7 +128,37 @@ class Schedule extends Model
         'only_when_online' => 'boolean',
         'last_run_at' => 'nullable|date',
         'next_run_at' => 'nullable|date',
+        'hydra_trigger' => 'string|in:cron,state,console',
+        'hydra_trigger_value' => 'nullable|string|max:255',
+        'hydra_trigger_regex' => 'boolean',
+        'hydra_trigger_cooldown' => 'integer|min:5|max:86400',
     ];
+
+    /**
+     * Hydra: the schedule runs at the times of its cron fields.
+     */
+    public function isCron(): bool
+    {
+        return ($this->hydra_trigger ?: self::TRIGGER_CRON) === self::TRIGGER_CRON;
+    }
+
+    /**
+     * Hydra: the trigger as the node expects it, null for time based schedules.
+     */
+    public function toTrigger(): ?array
+    {
+        if ($this->isCron() || !$this->is_active || empty($this->hydra_trigger_value)) {
+            return null;
+        }
+
+        return [
+            'schedule' => $this->id,
+            'type' => $this->hydra_trigger,
+            'value' => $this->hydra_trigger_value,
+            'regex' => $this->hydra_trigger_regex,
+            'cooldown' => $this->hydra_trigger_cooldown,
+        ];
+    }
 
     public function getRouteKeyName(): string
     {

@@ -2,6 +2,8 @@
 
 namespace Pterodactyl\Http\Controllers\Api\Client\Servers;
 
+use Pterodactyl\Services\Hydra\Network\NetworkCleanup;
+use Pterodactyl\Services\Hydra\Network\DedicatedPortService;
 use Pterodactyl\Models\Server;
 use Illuminate\Http\JsonResponse;
 use Pterodactyl\Facades\Activity;
@@ -27,6 +29,8 @@ class NetworkAllocationController extends ClientApiController
         protected readonly ConnectionInterface $connection,
         private FindAssignableAllocationService $assignableAllocationService,
         private ServerRepository $serverRepository,
+        private NetworkCleanup $networkCleanup,
+        private DedicatedPortService $dedicatedPorts,
     ) {
         parent::__construct();
     }
@@ -120,7 +124,7 @@ class NetworkAllocationController extends ClientApiController
     {
         // Don't allow the deletion of allocations if the server does not have an
         // allocation limit set.
-        if (empty($server->allocation_limit)) {
+        if (empty($server->allocation_limit) && !$server->hydra_dedicated) {
             throw new DisplayException('You cannot delete allocations for this server: no allocation limit is set.');
         }
 
@@ -128,10 +132,9 @@ class NetworkAllocationController extends ClientApiController
             throw new DisplayException('You cannot delete the primary allocation for this server.');
         }
 
-        Allocation::query()->where('id', $allocation->id)->update([
-            'notes' => null,
-            'server_id' => null,
-        ]);
+        // Hydra: its subdomains and proxies go with it; a port the server added itself on its
+        // dedicated node is removed.
+        $this->networkCleanup->release($allocation);
 
         Activity::event('server:allocation.delete')
             ->subject($allocation)
@@ -139,5 +142,27 @@ class NetworkAllocationController extends ClientApiController
             ->log();
 
         return new JsonResponse([], JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * Hydra: the owner of a server with a dedicated node adds a port of their
+     * choice.
+     *
+     * @throws \Throwable
+     */
+    public function storeDedicated(NewAllocationRequest $request, Server $server): array
+    {
+        $port = (int) $request->validate(['port' => 'required|integer'])['port'];
+
+        $allocation = Activity::event('server:allocation.create')->transaction(function ($log) use ($server, $port) {
+            $allocation = $this->dedicatedPorts->add($server, $port);
+            $log->subject($allocation)->property('allocation', $allocation->toString());
+
+            return $allocation;
+        });
+
+        return $this->fractal->item($allocation)
+            ->transformWith($this->getTransformer(AllocationTransformer::class))
+            ->toArray();
     }
 }

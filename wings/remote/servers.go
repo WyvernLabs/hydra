@@ -190,6 +190,17 @@ func (c *client) SendActivityLogs(ctx context.Context, activity []models.Activit
 	return nil
 }
 
+// TriggerSchedule (Hydra) asks the Panel to run a schedule of a server, because
+// the state or console line it waits for was seen.
+func (c *client) TriggerSchedule(ctx context.Context, uuid string, schedule int, reason string) error {
+	resp, err := c.Post(ctx, fmt.Sprintf("/servers/%s/schedules/%d/trigger", uuid, schedule), d{"reason": reason})
+	if err != nil {
+		return err
+	}
+	_ = resp.Body.Close()
+	return nil
+}
+
 // getServersPaged returns a subset of servers from the Panel API using the
 // pagination query parameters.
 func (c *client) getServersPaged(ctx context.Context, page, limit int) ([]RawServerData, Pagination, error) {

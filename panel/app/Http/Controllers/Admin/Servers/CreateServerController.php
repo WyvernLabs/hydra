@@ -13,6 +13,7 @@ use Pterodactyl\Repositories\Eloquent\NestRepository;
 use Pterodactyl\Repositories\Eloquent\NodeRepository;
 use Pterodactyl\Http\Requests\Admin\ServerFormRequest;
 use Pterodactyl\Services\Servers\ServerCreationService;
+use Pterodactyl\Services\Hydra\Backups\BackupStorage;
 
 class CreateServerController extends Controller
 {
@@ -69,7 +70,9 @@ class CreateServerController extends Controller
      */
     public function store(ServerFormRequest $request): RedirectResponse
     {
-        $data = $request->except(['_token']);
+        $data = $request->except(['_token', 'backup_storage_gb']);
+        // Hydra: the backup space is entered in GB.
+        $data['backup_storage_limit'] = BackupStorage::mbFromGb($request->input('backup_storage_gb'));
         if (!empty($data['custom_image'])) {
             $data['image'] = $data['custom_image'];
             unset($data['custom_image']);

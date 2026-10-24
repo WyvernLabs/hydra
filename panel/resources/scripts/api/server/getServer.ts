@@ -58,11 +58,20 @@ export interface Server {
         databases: number;
         allocations: number;
         backups: number;
+        // Hydra: backup space in MiB.
+        backup_storage: number;
     };
     isTransferring: boolean;
     skipScripts: boolean;
     // Hydra: whether this user keeps full access while the server is suspended.
     canUseSuspended: boolean;
+    // Hydra: lockdown by the owner. "lockedOut" users may not use the server meanwhile.
+    lockdown: {
+        active: boolean;
+        since: Date | null;
+        canToggle: boolean;
+        lockedOut: boolean;
+    };
     variables: ServerEggVariable[];
     allocations: Allocation[];
     // Hydra: only filled in for users who may open every server.
@@ -71,6 +80,8 @@ export interface Server {
     background: HydraBackground | null;
     // Hydra: for the server dashboard (addon).
     banner: string | null;
+    // Hydra: picture in the server list (Design > Eggs).
+    listImage: string | null;
     eggName: string;
     location: string | null;
     createdAt: Date | null;
@@ -86,6 +97,7 @@ export const rawDataToServerObject = ({ attributes: data }: FractalResponseData)
     owner: data.owner || null,
     background: data.background || null,
     banner: data.banner || null,
+    listImage: data.list_image || null,
     eggName: data.egg_name || '',
     location: data.location || null,
     createdAt: data.created_at ? new Date(data.created_at) : null,
@@ -106,6 +118,12 @@ export const rawDataToServerObject = ({ attributes: data }: FractalResponseData)
     isTransferring: data.is_transferring,
     skipScripts: data.skip_scripts,
     canUseSuspended: data.can_use_suspended || false,
+    lockdown: {
+        active: data.lockdown?.active || false,
+        since: data.lockdown?.since ? new Date(data.lockdown.since) : null,
+        canToggle: data.lockdown?.can_toggle || false,
+        lockedOut: data.lockdown?.locked_out || false,
+    },
     variables: ((data.relationships?.variables as FractalResponseList | undefined)?.data || []).map(
         rawDataToServerEggVariable
     ),

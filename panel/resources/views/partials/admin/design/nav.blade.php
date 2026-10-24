@@ -6,6 +6,8 @@
                 <ul class="nav nav-tabs">
                     <li @if($activeTab === 'general')class="active"@endif><a href="{{ route('admin.design') }}">{{ __('admin/design.tabs.general') }}</a></li>
                     <li @if($activeTab === 'backgrounds')class="active"@endif><a href="{{ route('admin.design.backgrounds') }}">{{ __('admin/design.tabs.backgrounds') }}</a></li>
+                    <li @if($activeTab === 'eggs')class="active"@endif><a href="{{ route('admin.design.eggs') }}">{{ __('admin/design.tabs.eggs') }}</a></li>
+                    <li @if($activeTab === 'console')class="active"@endif><a href="{{ route('admin.design.console') }}">{{ __('admin/design.tabs.console') }}</a></li>
                     <li @if($activeTab === 'links')class="active"@endif><a href="{{ route('admin.design.links') }}">{{ __('admin/design.tabs.links') }}</a></li>
                     <li @if($activeTab === 'navigation')class="active"@endif><a href="{{ route('admin.design.navigation') }}">{{ __('admin/design.tabs.navigation') }}</a></li>
                     @if(Auth::user()->hasAdminPermission('addons.view'))

@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'title' => 'Dashboard',
+    'title' => 'Server',
     'my_servers' => 'Meine Server',
     'others_servers' => 'Server von anderen',
     'unknown_owner' => 'Unbekannter Besitzer',
@@ -18,12 +18,16 @@ return [
 
     'server' => [
         'suspended' => 'Gesperrt',
+        'lockdown' => 'Lockdown',
         'connection_error' => 'Verbindungsfehler',
         'maintenance' => 'In Wartung',
         'transferring' => 'Wird übertragen',
         'installing' => 'Wird installiert',
         'restoring_backup' => 'Backup wird wiederhergestellt',
         'unavailable' => 'Nicht verfügbar',
+        'cpu' => 'CPU',
+        'memory' => 'Arbeitsspeicher',
+        'storage' => 'Speicher',
         'of_limit' => 'von :limit',
     ],
 

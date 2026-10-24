@@ -67,9 +67,14 @@ class ServerDashboardTest extends HttpTestCase
         [$user, $server] = $this->generateTestAccount();
         $egg = $server->egg;
 
-        $this->actingAs($admin)->patch("/admin/nests/egg/$egg->id/banner", [
-            'banner_image' => UploadedFile::fake()->image('banner.png', 1600, 400),
+        $this->actingAs($admin)->patch("/admin/design/eggs/$egg->id/banner", [
+            'image_image' => UploadedFile::fake()->image('banner.png', 1600, 400),
         ])->assertRedirect();
+        $this->actingAs($admin, 'web')->patch("/admin/design/eggs/$egg->id/list", [
+            'image_image' => UploadedFile::fake()->image('list.png', 800, 450),
+        ])->assertRedirect();
+        $list = app(BackgroundService::class)->imageForEgg($egg->refresh(), 'list');
+        $this->assertMatchesRegularExpression('#^/backgrounds/list-egg-' . $egg->id . '-[a-z0-9]+\.png$#', $list);
 
         $banner = app(BackgroundService::class)->bannerForEgg($egg->refresh());
         $this->assertMatchesRegularExpression('#^/backgrounds/banner-egg-' . $egg->id . '-[a-z0-9]+\.png$#', $banner);
@@ -77,13 +82,14 @@ class ServerDashboardTest extends HttpTestCase
         $this->actingAs($user)->getJson("/api/client/servers/$server->uuid")
             ->assertOk()
             ->assertJsonPath('attributes.banner', $banner)
+            ->assertJsonPath('attributes.list_image', $list)
             ->assertJsonPath('attributes.egg_name', $egg->name);
 
-        $this->actingAs($admin, 'web')->patch("/admin/nests/egg/$egg->id/banner", ['reset_banner' => 1])->assertRedirect();
+        $this->actingAs($admin, 'web')->patch("/admin/design/eggs/$egg->id/banner", ['reset' => 1])->assertRedirect();
         $this->assertNull($egg->refresh()->hydra_banner);
         $this->assertFileDoesNotExist(BackgroundService::directory() . '/' . basename($banner));
 
         // An upload is required unless the banner is removed.
-        $this->actingAs($admin, 'web')->patchJson("/admin/nests/egg/$egg->id/banner", [])->assertStatus(422);
+        $this->actingAs($admin, 'web')->patchJson("/admin/design/eggs/$egg->id/banner", [])->assertStatus(422);
     }
 }

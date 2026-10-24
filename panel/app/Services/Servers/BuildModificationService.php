@@ -2,6 +2,7 @@
 
 namespace Pterodactyl\Services\Servers;
 
+use Pterodactyl\Services\Hydra\Network\NetworkCleanup;
 use Illuminate\Support\Arr;
 use Pterodactyl\Models\Server;
 use Pterodactyl\Models\Allocation;
@@ -21,6 +22,7 @@ class BuildModificationService
         private ConnectionInterface $connection,
         private DaemonServerRepository $daemonServerRepository,
         private ServerConfigurationStructureService $structureService,
+        private NetworkCleanup $networkCleanup,
     ) {
     }
 
@@ -46,12 +48,18 @@ class BuildModificationService
 
             // If any of these values are passed through in the data array go ahead and set
             // them correctly on the server model.
-            $merge = Arr::only($data, ['oom_disabled', 'memory', 'swap', 'io', 'cpu', 'threads', 'disk', 'allocation_id']);
+            $merge = Arr::only($data, [
+                'oom_disabled', 'memory', 'swap', 'io', 'cpu', 'threads', 'disk', 'allocation_id',
+                // Hydra: dedicated node and limits of subdomains and proxies.
+                'hydra_dedicated', 'hydra_subdomain_limit', 'hydra_proxy_limit',
+            ]);
 
             $server->forceFill(array_merge($merge, [
                 'database_limit' => Arr::get($data, 'database_limit', 0) ?? null,
                 'allocation_limit' => Arr::get($data, 'allocation_limit', 0) ?? null,
                 'backup_limit' => Arr::get($data, 'backup_limit', 0) ?? 0,
+                // Hydra: backup space in MiB, kept when it is not sent.
+                'backup_storage_limit' => max(0, (int) (Arr::get($data, 'backup_storage_limit') ?? $server->backup_storage_limit)),
             ]))->saveOrFail();
 
             return $server->refresh();
@@ -118,14 +126,15 @@ class BuildModificationService
             // Remove any of the allocations we got that are currently assigned to this server on
             // this node. Also set the notes to null, otherwise when re-allocated to a new server those
             // notes will be carried over.
+            //
+            // Hydra: their subdomains and proxies go with them, and ports the server added itself
+            // on its dedicated node are removed.
             Allocation::query()->where('node_id', $server->node_id)
                 ->where('server_id', $server->id)
                 // Only remove the allocations that we didn't also attempt to add to the server...
                 ->whereIn('id', array_diff($data['remove_allocations'], $data['add_allocations'] ?? []))
-                ->update([
-                    'notes' => null,
-                    'server_id' => null,
-                ]);
+                ->get()
+                ->each(fn (Allocation $allocation) => $this->networkCleanup->release($allocation));
         }
     }
 }

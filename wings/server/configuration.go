@@ -61,6 +61,8 @@ type configurationData struct {
 	CrashDetectionEnabled bool                    `json:"crash_detection_enabled"`
 	Mounts                []Mount                 `json:"mounts"`
 	Egg                   EggConfiguration        `json:"egg,omitempty"`
+	// HydraTriggers (Hydra) start schedules on state changes and console lines.
+	HydraTriggers []ScheduleTrigger `json:"hydra_triggers"`
 
 	Container struct {
 		// Defines the Docker image that will be used for this server

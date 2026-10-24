@@ -125,6 +125,7 @@ export const ServerContext = createContextStore<ServerStore>(
             state.subusers.data = [];
             state.files.directory = '/';
             state.files.selectedFiles = [];
+            state.files.transfers = {};
             state.schedules.data = [];
 
             if (state.socket.instance) {

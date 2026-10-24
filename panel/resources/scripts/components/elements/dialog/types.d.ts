@@ -19,6 +19,8 @@ export interface DialogIconProps {
 export interface RenderDialogProps extends DialogProps {
     hideCloseIcon?: boolean;
     preventExternalClose?: boolean;
+    // Hydra: wider panel, e.g. for tables.
+    wide?: boolean;
     title?: string;
     description?: string | undefined;
     children?: React.ReactNode;

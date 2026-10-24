@@ -115,6 +115,11 @@ func Configure(m *wserver.Manager, client remote.Client) *gin.Engine {
 	protected.PUT("/api/system/firewall/mysql", putFirewallMysql)
 	protected.GET("/api/system/database", getDatabase)
 	protected.POST("/api/system/database/setup", postDatabaseSetup)
+	protected.GET("/api/system/proxies", getProxies)
+	protected.PUT("/api/system/proxies", putProxies)
+	protected.POST("/api/hydra/sftp/test", postSftpTest)
+	protected.POST("/api/hydra/sftp/list", postSftpList)
+	protected.POST("/api/hydra/sftp/delete", postSftpDelete)
 	protected.GET("/api/servers", getAllServers)
 	protected.POST("/api/servers", postCreateServer)
 	protected.DELETE("/api/transfers/:server", deleteTransfer)
@@ -164,7 +169,15 @@ func Configure(m *wserver.Manager, client remote.Client) *gin.Engine {
 			backup.POST("", postServerBackup)
 			backup.POST("/:backup/restore", postServerRestoreBackup)
 			backup.DELETE("/:backup", deleteServerBackup)
+			backup.POST("/:backup/sftp-download", postServerSftpDownload)
 		}
+
+		// Hydra: game profiles (addon "games").
+		server.POST("/hydra/profiles", postServerProfile)
+		// Hydra: trash of the file manager.
+		server.GET("/hydra/trash", getServerTrash)
+		server.POST("/hydra/trash/restore", postServerTrashRestore)
+		server.POST("/hydra/trash/delete", postServerTrashDelete)
 	}
 
 	return router

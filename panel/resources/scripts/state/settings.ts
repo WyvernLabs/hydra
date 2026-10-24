@@ -17,6 +17,35 @@ export interface SiteSettings {
     phpMyAdmin: boolean;
     // Hydra: overview page of the servers; with landing servers open on it.
     dashboard: { enabled: boolean; landing: boolean };
+    // Hydra: support tickets in the account (addon) in the support languages, with
+    // the categories named per language; images up to uploadLimit MB.
+    tickets: {
+        enabled: boolean;
+        languages: { code: string; name: string }[];
+        categories: { id: string; names: Record<string, string> }[];
+        uploadLimit: number;
+    };
+    // Hydra: .properties file as a form (addon), path inside the server.
+    properties: { enabled: boolean; path: string };
+    // Hydra: users may keep backups on their own SFTP server (addon).
+    sftpBackups: boolean;
+    // Hydra: .env file of a server as a form (addon), path inside the server.
+    env: { enabled: boolean; path: string };
+    // Hydra: Minecraft version changer (addon).
+    versions: boolean;
+    // Hydra: trash of the file manager (addon), files are kept for "days".
+    trash: { enabled: boolean; days: number };
+    // Hydra: game library (addon).
+    games: boolean;
+    // Hydra: console texts (Design > Console) and console addons.
+    console: {
+        offlineMessage: string | null;
+        prefix: string;
+        daemonPrefix: string | null;
+        cpuNormalized: boolean;
+        // Hydra: log file uploaded to mclo.gs, null while the addon is off.
+        mclogs: string | null;
+    };
     branding: {
         accent: string;
         logo: string;

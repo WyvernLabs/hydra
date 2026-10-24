@@ -28,12 +28,14 @@ export const useWorkspaceSection = (): SidebarSection => {
 
 export const useAccountSection = (): SidebarSection => {
     const { t } = useTranslation();
+    const settings = useStoreState((state) => state.settings.data!);
 
     return {
         key: 'account',
         title: t('nav.account'),
         items: routes.account
-            .filter((route) => !!route.name)
+            // Hydra: pages of addons that are off are hidden.
+            .filter((route) => !!route.name && (!route.addon || settings[route.addon].enabled))
             .map(({ path, name, icon, exact = false }) => ({
                 key: path,
                 name: t(name!),

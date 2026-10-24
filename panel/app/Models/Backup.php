@@ -20,6 +20,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string|null $checksum
  * @property int $bytes
  * @property string|null $upload_id
+ * @property int|null $hydra_sftp_target_id
+ * @property string|null $hydra_sftp_file
+ * @property string|null $hydra_error
+ * @property SftpBackupTarget|null $sftpTarget
  * @property \Carbon\CarbonImmutable|null $completed_at
  * @property \Carbon\CarbonImmutable $created_at
  * @property \Carbon\CarbonImmutable $updated_at
@@ -39,6 +43,8 @@ class Backup extends Model implements Identifiable
 
     public const ADAPTER_WINGS = 'wings';
     public const ADAPTER_AWS_S3 = 's3';
+    // Hydra: stored on an SFTP server (addon "sftp_backups"), see $sftpTarget.
+    public const ADAPTER_SFTP = 'sftp';
 
     protected $table = 'backups';
 
@@ -74,6 +80,9 @@ class Backup extends Model implements Identifiable
         'checksum' => 'nullable|string',
         'bytes' => 'numeric',
         'upload_id' => 'nullable|string',
+        'hydra_sftp_target_id' => 'nullable|integer',
+        'hydra_sftp_file' => 'nullable|string|max:255',
+        'hydra_error' => 'nullable|string|max:191',
     ];
 
     /**
@@ -82,5 +91,36 @@ class Backup extends Model implements Identifiable
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
+    }
+
+    /**
+     * Hydra: the SFTP server of a backup with the sftp adapter.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\Pterodactyl\Models\SftpBackupTarget, $this>
+     */
+    public function sftpTarget(): BelongsTo
+    {
+        return $this->belongsTo(SftpBackupTarget::class, 'hydra_sftp_target_id');
+    }
+
+    /**
+     * Hydra: name of the archive on the SFTP server.
+     */
+    public function sftpFile(): string
+    {
+        return $this->hydra_sftp_file ?: $this->uuid . '.tar.gz';
+    }
+
+    /**
+     * Hydra: where the backup is kept, "panel" (the node or S3), "node_sftp"
+     * (the SFTP server of the node) or "own_sftp" (the user's own server).
+     */
+    public function location(): string
+    {
+        if ($this->disk !== self::ADAPTER_SFTP) {
+            return 'panel';
+        }
+
+        return $this->sftpTarget && !is_null($this->sftpTarget->server_id) ? 'own_sftp' : 'node_sftp';
     }
 }

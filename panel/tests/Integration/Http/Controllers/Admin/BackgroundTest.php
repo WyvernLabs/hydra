@@ -72,7 +72,7 @@ class BackgroundTest extends HttpTestCase
         $service = $this->app->make(BackgroundService::class);
         $this->assertNull($service->forEgg($egg));
 
-        $this->actingAs($admin)->patch("/admin/nests/egg/$egg->id/background", [
+        $this->actingAs($admin)->patch("/admin/design/eggs/$egg->id/background", [
             'bg_egg_image' => UploadedFile::fake()->createWithContent('egg.gif', base64_decode(self::GIF)),
             'bg_egg_blur' => 4,
             'bg_egg_dim' => 60,
@@ -83,9 +83,11 @@ class BackgroundTest extends HttpTestCase
         $this->assertSame(60, $background['dim']);
 
         // Egg exports stay compatible with Pterodactyl.
-        $this->actingAs($admin)->get("/admin/nests/egg/$egg->id/export")->assertOk()->assertDontSee('hydra_background');
+        $this->actingAs($admin)->get("/admin/nests/egg/$egg->id/export")->assertOk()->assertDontSee('hydra_background')->assertDontSee('hydra_list_image');
+        $this->actingAs($admin)->get('/admin/design/eggs')->assertOk()->assertSee($egg->name);
+        $this->actingAs($admin)->get("/admin/design/eggs/$egg->id")->assertOk();
 
-        $this->actingAs($admin)->patch("/admin/nests/egg/$egg->id/background", ['reset_background' => 1])->assertRedirect();
+        $this->actingAs($admin)->patch("/admin/design/eggs/$egg->id/background", ['reset_background' => 1])->assertRedirect();
         $this->assertNull($service->forEgg($egg->refresh()));
     }
 }

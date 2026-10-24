@@ -6,7 +6,6 @@ import UsersContainer from '@/components/server/users/UsersContainer';
 import BackupContainer from '@/components/server/backups/BackupContainer';
 import NetworkContainer from '@/components/server/network/NetworkContainer';
 import StartupContainer from '@/components/server/startup/StartupContainer';
-import FileManagerContainer from '@/components/server/files/FileManagerContainer';
 import SettingsContainer from '@/components/server/settings/SettingsContainer';
 import AccountOverviewContainer from '@/components/dashboard/AccountOverviewContainer';
 import AccountApiContainer from '@/components/dashboard/AccountApiContainer';
@@ -17,6 +16,7 @@ import {
     Code as CodeIcon,
     History as ClockIcon,
     KeyRound as KeyIcon,
+    LifeBuoy as LifeBuoyIcon,
     CircleUser as UserCircleIcon,
 } from 'lucide-react';
 
@@ -25,10 +25,18 @@ import {
 //
 // These specific lazy loaded routes are to avoid loading in heavy screens
 // for the server dashboard when they're only needed for specific instances.
-const FileEditContainer = lazy(() => import('@/components/server/files/FileEditContainer'));
+const FileIde = lazy(() => import('@/components/server/files/ide/FileIde'));
+const FileRedirect = lazy(() => import('@/components/server/files/ide/FileRedirect'));
 const ScheduleEditContainer = lazy(() => import('@/components/server/schedules/ScheduleEditContainer'));
 const DatabaseManagerContainer = lazy(() => import('@/components/server/databases/DatabaseManagerContainer'));
 const ServerDashboardContainer = lazy(() => import('@/components/server/dashboard/ServerDashboardContainer'));
+const PropertiesContainer = lazy(() => import('@/components/server/properties/PropertiesContainer'));
+const GamesContainer = lazy(() => import('@/components/server/games/GamesContainer'));
+const VersionsContainer = lazy(() => import('@/components/server/versions/VersionsContainer'));
+const EnvContainer = lazy(() => import('@/components/server/env/EnvContainer'));
+const TicketsContainer = lazy(() => import('@/components/dashboard/tickets/TicketsContainer'));
+const NewTicketContainer = lazy(() => import('@/components/dashboard/tickets/NewTicketContainer'));
+const TicketContainer = lazy(() => import('@/components/dashboard/tickets/TicketContainer'));
 
 interface RouteDefinition {
     path: string;
@@ -40,6 +48,8 @@ interface RouteDefinition {
     exact?: boolean;
     // Icon shown next to the name in the Hydra sidebar.
     icon?: React.ComponentType<{ className?: string }>;
+    // Hydra: only reachable while this addon is on.
+    addon?: 'tickets';
 }
 
 interface ServerRouteDefinition extends RouteDefinition {
@@ -82,6 +92,26 @@ export default {
             icon: ClockIcon,
             component: ActivityLogContainer,
         },
+        {
+            path: '/tickets',
+            name: 'routes.tickets',
+            icon: LifeBuoyIcon,
+            component: TicketsContainer,
+            addon: 'tickets',
+        },
+        {
+            // Before "/tickets/:id", which would match it too.
+            path: '/tickets/new',
+            name: undefined,
+            component: NewTicketContainer,
+            addon: 'tickets',
+        },
+        {
+            path: '/tickets/:id',
+            name: undefined,
+            component: TicketContainer,
+            addon: 'tickets',
+        },
     ],
     server: [
         {
@@ -105,14 +135,14 @@ export default {
             navKey: 'files',
             permission: 'file.*',
             name: 'routes.files',
-            component: FileManagerContainer,
+            component: FileIde,
         },
         {
             path: '/files/:action(edit|new)',
             navKey: 'files',
             permission: 'file.*',
             name: undefined,
-            component: FileEditContainer,
+            component: FileRedirect,
         },
         {
             path: '/databases',
@@ -169,6 +199,38 @@ export default {
             permission: 'startup.*',
             name: 'routes.startup',
             component: StartupContainer,
+        },
+        {
+            // Hydra: only reachable while the addon "Properties" is on.
+            path: '/properties',
+            navKey: 'properties',
+            permission: 'file.read-content',
+            name: 'routes.properties',
+            component: PropertiesContainer,
+        },
+        {
+            // Hydra: only reachable while the addon "Game library" is on.
+            path: '/games',
+            navKey: 'games',
+            permission: 'settings.game',
+            name: 'routes.games',
+            component: GamesContainer,
+        },
+        {
+            // Hydra: only reachable while the addon "Minecraft versions" is on.
+            path: '/versions',
+            navKey: 'versions',
+            permission: 'settings.version',
+            name: 'routes.versions',
+            component: VersionsContainer,
+        },
+        {
+            // Hydra: only reachable while the addon ".env editor" is on.
+            path: '/env',
+            navKey: 'env',
+            permission: 'file.read-content',
+            name: 'routes.env',
+            component: EnvContainer,
         },
         {
             path: '/settings',

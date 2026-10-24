@@ -30,6 +30,7 @@ export type SubuserPermission =
     | 'database.import'
     | 'database.export'
     | 'database.phpmyadmin'
+    | 'backup.sftp'
     | 'schedule.create'
     | 'schedule.read'
     | 'schedule.update'

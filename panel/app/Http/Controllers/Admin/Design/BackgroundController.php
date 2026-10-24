@@ -3,7 +3,6 @@
 namespace Pterodactyl\Http\Controllers\Admin\Design;
 
 use Illuminate\View\View;
-use Pterodactyl\Models\Egg;
 use Illuminate\Http\RedirectResponse;
 use Prologue\Alerts\AlertsMessageBag;
 use Pterodactyl\Http\Controllers\Controller;
@@ -11,8 +10,8 @@ use Pterodactyl\Services\Hydra\BackgroundService;
 use Pterodactyl\Http\Requests\Admin\Design\BackgroundsFormRequest;
 
 /**
- * Hydra: backgrounds of the login page and the dashboard, and an overview of
- * the backgrounds of all eggs (Design > Backgrounds).
+ * Hydra: backgrounds of the login page and the dashboard (Design >
+ * Backgrounds). Those of the eggs are set under Design > Eggs.
  */
 class BackgroundController extends Controller
 {
@@ -26,8 +25,6 @@ class BackgroundController extends Controller
             'backgrounds' => collect(BackgroundService::SLOTS)
                 ->mapWithKeys(fn (string $slot) => [$slot => $this->backgrounds->forSlot($slot)])
                 ->all(),
-            'eggs' => Egg::query()->with('nest')->orderBy('nest_id')->orderBy('name')->get()
-                ->map(fn (Egg $egg) => ['egg' => $egg, 'background' => $this->backgrounds->forEgg($egg)]),
         ]);
     }
 

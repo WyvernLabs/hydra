@@ -1,0 +1,33 @@
+/* Hydra: styles of the file manager editor that CodeMirror needs as global classes. */
+.hydra-ide-editor .CodeMirror {
+    height: 100%;
+    font-size: 13px;
+    line-height: 1.5;
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.hydra-ide-editor .CodeMirror-linenumber {
+    padding: 0 10px 0 12px !important;
+}
+
+.hydra-ide-editor .CodeMirror-activeline-background {
+    background: rgb(255 255 255 / 0.04);
+}
+
+.hydra-ide-editor .CodeMirror-foldmarker {
+    color: #cbccc6;
+    text-shadow: none;
+    margin: 0 0.25rem;
+}
+
+.hydra-ide-editor .cm-hydra-match {
+    background: rgb(var(--hydra-accent-400) / 0.28);
+    border-radius: 2px;
+}
+
+.hydra-ide-editor .hydra-match-current,
+.hydra-ide-editor .hydra-match-current .cm-hydra-match {
+    background: rgb(250 204 21 / 0.55);
+    outline: 1px solid rgb(250 204 21 / 0.9);
+    border-radius: 2px;
+}

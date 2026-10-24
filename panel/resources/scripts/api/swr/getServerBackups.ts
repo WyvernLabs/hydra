@@ -12,7 +12,13 @@ interface ctx {
 
 export const Context = createContext<ctx>({ page: 1, setPage: () => 1 });
 
-type BackupResponse = PaginatedResult<ServerBackup> & { backupCount: number };
+// Hydra: backup space in bytes, and whether the own SFTP server can be used.
+type BackupResponse = PaginatedResult<ServerBackup> & {
+    backupCount: number;
+    storageUsed: number;
+    storageLimit: number;
+    ownSftp: boolean;
+};
 
 export default () => {
     const { page } = useContext(Context);
@@ -25,6 +31,9 @@ export default () => {
             items: (data.data || []).map(rawDataToServerBackup),
             pagination: getPaginationSet(data.meta.pagination),
             backupCount: data.meta.backup_count,
+            storageUsed: data.meta.storage_used || 0,
+            storageLimit: data.meta.storage_limit || 0,
+            ownSftp: !!data.meta.own_sftp,
         };
     });
 };

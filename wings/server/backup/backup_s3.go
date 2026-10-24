@@ -61,16 +61,9 @@ func (s *S3Backup) Generate(ctx context.Context, fsys *filesystem.Filesystem, ig
 		}
 	}()
 
-	a := &filesystem.Archive{
-		Filesystem: fsys,
-		Ignore:     ignore,
-	}
-
-	s.log().WithField("path", s.Path()).Info("creating backup for server")
-	if err := a.Create(ctx, s.Path()); err != nil {
+	if err := s.createArchive(ctx, fsys, ignore); err != nil {
 		return nil, err
 	}
-	s.log().Info("created backup successfully")
 
 	rc, err := os.Open(s.Path())
 	if err != nil {
@@ -136,7 +129,8 @@ func (s *S3Backup) generateRemoteRequest(ctx context.Context, rc io.ReadCloser) 
 	s.log().Debug("got S3 upload urls from the Panel")
 	s.log().WithField("parts", len(urls.Parts)).Info("attempting to upload backup to s3 endpoint...")
 
-	uploader := newS3FileUploader(rc)
+	// Hydra: the upload reports its progress as well.
+	uploader := newS3FileUploader(Reader{Reader: filesystem.NewProgressReader(rc, size, s.phase("upload"))})
 	for i, part := range urls.Parts {
 		// Get the size for the current part.
 		var partSize int64

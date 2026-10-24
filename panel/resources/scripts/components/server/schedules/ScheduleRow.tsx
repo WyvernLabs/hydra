@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
 import { formatDate } from '@/lib/date';
 import tw from 'twin.macro';
-import ScheduleCronRow from '@/components/server/schedules/ScheduleCronRow';
+import ScheduleTriggerText from '@/components/server/schedules/ScheduleTriggerText';
 import { useTranslation } from 'react-i18next';
 
 export default ({ schedule }: { schedule: Schedule }) => {
@@ -33,7 +33,11 @@ export default ({ schedule }: { schedule: Schedule }) => {
                     {schedule.isActive ? t('schedules.active') : t('schedules.inactive')}
                 </p>
             </div>
-            <ScheduleCronRow cron={schedule.cron} css={tw`mx-auto sm:mx-8 w-full sm:w-auto mt-4 sm:mt-0`} />
+            {/* Hydra: when the schedule runs, as a sentence. */}
+            <ScheduleTriggerText
+                schedule={schedule}
+                className={'mt-4 w-full text-sm text-gray-200 sm:mx-8 sm:mt-0 sm:w-auto sm:max-w-xs sm:truncate'}
+            />
             <div>
                 <p
                     css={[

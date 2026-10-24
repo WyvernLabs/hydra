@@ -43,6 +43,17 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function () 
 
     Route::get('/activity', Client\ActivityLogController::class)->name('api:client.account.activity');
 
+    // Hydra: support tickets (tickets addon).
+    Route::prefix('/tickets')->middleware('addon:tickets')->group(function () {
+        Route::get('/', [Client\TicketController::class, 'index'])->name('api:client.account.tickets');
+        Route::post('/', [Client\TicketController::class, 'store'])->middleware('throttle:10,1');
+        Route::post('/attachments', [Client\TicketController::class, 'upload'])->middleware('throttle:30,1');
+        Route::post('/preview', [Client\TicketController::class, 'preview'])->middleware('throttle:60,1');
+        Route::get('/{ticket}', [Client\TicketController::class, 'view'])->whereNumber('ticket');
+        Route::post('/{ticket}/messages', [Client\TicketController::class, 'reply'])->whereNumber('ticket')->middleware('throttle:20,1');
+        Route::post('/{ticket}/close', [Client\TicketController::class, 'close'])->whereNumber('ticket');
+    });
+
     Route::get('/api-keys', [Client\ApiKeyController::class, 'index']);
     Route::post('/api-keys', [Client\ApiKeyController::class, 'store']);
     Route::delete('/api-keys/{identifier}', [Client\ApiKeyController::class, 'delete']);
@@ -104,7 +115,14 @@ Route::group([
     Route::group(['prefix' => '/files'], function () {
         Route::get('/list', [Client\Servers\FileController::class, 'directory']);
         Route::get('/contents', [Client\Servers\FileController::class, 'contents']);
+        // Hydra: uploads the log file to mclo.gs (addon).
+        Route::post('/mclogs', Client\Servers\McLogsController::class)->middleware(['addon:mclogs', 'throttle:5,1']);
         Route::get('/download', [Client\Servers\FileController::class, 'download']);
+        // Hydra: images, videos and music in the file manager, and its trash.
+        Route::get('/preview', [Client\Servers\FileController::class, 'preview']);
+        Route::get('/trash', [Client\Servers\FileTrashController::class, 'index']);
+        Route::post('/trash/restore', [Client\Servers\FileTrashController::class, 'restore']);
+        Route::post('/trash/delete', [Client\Servers\FileTrashController::class, 'delete']);
         Route::put('/rename', [Client\Servers\FileController::class, 'rename']);
         Route::post('/copy', [Client\Servers\FileController::class, 'copy']);
         Route::post('/write', [Client\Servers\FileController::class, 'write']);
@@ -139,6 +157,13 @@ Route::group([
         Route::post('/allocations/{allocation}', [Client\Servers\NetworkAllocationController::class, 'update']);
         Route::post('/allocations/{allocation}/primary', [Client\Servers\NetworkAllocationController::class, 'setPrimary']);
         Route::delete('/allocations/{allocation}', [Client\Servers\NetworkAllocationController::class, 'delete']);
+        // Hydra: own ports on a dedicated node, subdomains and reverse proxies (addons).
+        Route::post('/allocations-dedicated', [Client\Servers\NetworkAllocationController::class, 'storeDedicated'])->middleware('throttle:20,1');
+        Route::get('/hydra', [Client\Servers\NetworkHydraController::class, 'index']);
+        Route::post('/subdomains', [Client\Servers\NetworkHydraController::class, 'storeSubdomain'])->middleware('throttle:10,1');
+        Route::delete('/subdomains/{subdomain}', [Client\Servers\NetworkHydraController::class, 'deleteSubdomain'])->whereNumber('subdomain');
+        Route::post('/proxies', [Client\Servers\NetworkHydraController::class, 'storeProxy'])->middleware('throttle:10,1');
+        Route::delete('/proxies/{proxy}', [Client\Servers\NetworkHydraController::class, 'deleteProxy'])->whereNumber('proxy');
     });
 
     Route::group(['prefix' => '/users'], function () {
@@ -153,6 +178,14 @@ Route::group([
     Route::group(['prefix' => '/backups'], function () {
         Route::get('/', [Client\Servers\BackupController::class, 'index']);
         Route::post('/', [Client\Servers\BackupController::class, 'store']);
+        // Hydra: own SFTP server for backups (addon).
+        Route::prefix('/sftp')->middleware('addon:sftp_backups')->group(function () {
+            Route::get('/', [Client\Servers\SftpBackupController::class, 'show']);
+            Route::put('/', [Client\Servers\SftpBackupController::class, 'update'])->middleware('throttle:10,1');
+            Route::delete('/', [Client\Servers\SftpBackupController::class, 'delete']);
+            Route::get('/files', [Client\Servers\SftpBackupController::class, 'files'])->middleware('throttle:20,1');
+            Route::post('/import', [Client\Servers\SftpBackupController::class, 'import']);
+        });
         Route::get('/{backup}', [Client\Servers\BackupController::class, 'view']);
         Route::get('/{backup}/download', [Client\Servers\BackupController::class, 'download']);
         Route::post('/{backup}/lock', [Client\Servers\BackupController::class, 'toggleLock']);
@@ -161,14 +194,35 @@ Route::group([
         Route::delete('/{backup}', [Client\Servers\BackupController::class, 'delete']);
     });
 
+    // Hydra: game library (addon "games").
+    Route::prefix('/games')->middleware('addon:games')->group(function () {
+        Route::get('/', [Client\Servers\GameController::class, 'index']);
+        Route::post('/switch', [Client\Servers\GameController::class, 'switch'])->middleware('throttle:5,1');
+        Route::post('/profiles/{profile}/load', [Client\Servers\GameController::class, 'load'])->whereNumber('profile')->middleware('throttle:5,1');
+        Route::delete('/profiles/{profile}', [Client\Servers\GameController::class, 'delete'])->whereNumber('profile');
+    });
+
+    // Hydra: Minecraft version changer (addon "versions").
+    Route::prefix('/versions')->middleware('addon:versions')->group(function () {
+        Route::get('/', [Client\Servers\MinecraftVersionController::class, 'index']);
+        Route::get('/icons/{type}', [Client\Servers\MinecraftVersionController::class, 'icon'])->where('type', '[A-Z0-9_]+');
+        Route::post('/install', [Client\Servers\MinecraftVersionController::class, 'install'])->middleware('throttle:5,1');
+        Route::get('/{type}', [Client\Servers\MinecraftVersionController::class, 'versions'])->where('type', '[A-Z0-9_]+');
+        Route::get('/{type}/{version}', [Client\Servers\MinecraftVersionController::class, 'builds'])
+            ->where(['type' => '[A-Z0-9_]+', 'version' => '[A-Za-z0-9._+-]+']);
+    });
+
     Route::group(['prefix' => '/startup'], function () {
         Route::get('/', [Client\Servers\StartupController::class, 'index']);
         Route::put('/variable', [Client\Servers\StartupController::class, 'update']);
+        Route::put('/done', [Client\Servers\StartupController::class, 'done']);
+        Route::put('/command', [Client\Servers\StartupController::class, 'command']);
     });
 
     Route::group(['prefix' => '/settings'], function () {
         Route::post('/rename', [Client\Servers\SettingsController::class, 'rename']);
         Route::post('/reinstall', [Client\Servers\SettingsController::class, 'reinstall']);
         Route::put('/docker-image', [Client\Servers\SettingsController::class, 'dockerImage']);
+        Route::post('/lockdown', [Client\Servers\SettingsController::class, 'lockdown']);
     });
 });

@@ -39,6 +39,13 @@ class ServerNavigation
         'backups' => 'archive',
         'network' => 'network',
         'startup' => 'play',
+        // Hydra: addon "Properties".
+        'properties' => 'sliders-horizontal',
+        // Hydra: addon "Game library".
+        'games' => 'gamepad-2',
+        // Hydra: addons "Minecraft versions" and ".env editor".
+        'versions' => 'package',
+        'env' => 'file-key',
         'settings' => 'settings',
         'activity' => 'rotate-ccw-clock',
     ];
@@ -88,6 +95,46 @@ class ServerNavigation
         config()->set('hydra.navigation.server', json_encode($navigation));
 
         return $navigation;
+    }
+
+    /**
+     * Eggs a button is shown for, null for every egg.
+     *
+     * @return int[]|null
+     */
+    public function buttonEggs(string $key): ?array
+    {
+        foreach ($this->get()['categories'] as $category) {
+            foreach ($category['items'] as $item) {
+                if ($item['key'] === $key) {
+                    return $item['eggs'];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Sets the eggs a button is shown for, null for every egg.
+     *
+     * @param int[]|null $eggs
+     *
+     * @throws ValidationException
+     */
+    public function setButtonEggs(string $key, ?array $eggs): void
+    {
+        $navigation = $this->get();
+        foreach ($navigation['categories'] as &$category) {
+            foreach ($category['items'] as &$item) {
+                if ($item['key'] === $key) {
+                    $item['eggs'] = $eggs;
+                }
+            }
+        }
+        unset($category, $item);
+
+        $this->save($navigation);
     }
 
     public function reset(): void

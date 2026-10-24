@@ -1,0 +1,51 @@
+<?php
+
+/*
+ * Hydra: Minecraft-Versionswechsler (Addon "versions").
+ */
+return [
+    'title' => 'Versionen',
+    'current' => 'Installiert',
+    'current_unknown' => 'Über den Versionswechsler wurde noch keine Software installiert. Wähle unten eine aus.',
+    'build' => 'Build :build',
+    'categories' => [
+        'recommended' => 'Empfohlen',
+        'established' => 'Etabliert',
+        'experimental' => 'Experimentell',
+        'miscellaneous' => 'Sonstiges',
+        'limbos' => 'Limbo-Server',
+    ],
+    'deprecated' => 'Wird nicht mehr gepflegt',
+    'experimental' => 'Experimentell',
+    'minecraft_versions_one' => '1 Minecraft-Version',
+    'minecraft_versions_other' => ':count Minecraft-Versionen',
+    'project_versions_one' => '1 Projektversion',
+    'project_versions_other' => ':count Projektversionen',
+    'builds_one' => '1 Build',
+    'builds_other' => ':count Builds',
+    'search' => 'Versionen suchen …',
+    'back' => 'Zurück',
+    'show_snapshots' => 'Snapshot-Versionen anzeigen',
+    'hide_snapshots' => 'Snapshot-Versionen ausblenden',
+    'version_types' => [
+        'RELEASE' => 'Release',
+        'SNAPSHOT' => 'Snapshot',
+    ],
+    'no_versions' => 'Keine Version passt.',
+    'latest' => 'Neueste',
+    'install' => 'Installieren',
+    'reinstall' => 'Neu installieren',
+    'install_wipe' => 'Dateien löschen und installieren',
+    'cancel' => 'Abbrechen',
+    'install_title' => ':name :version (:build) installieren',
+    'install_text' => 'Der Server wird gestoppt und die Software direkt auf ihn heruntergeladen. Welten, Plugins und Einstellungen bleiben erhalten, außer du löschst alle Dateien.',
+    'install_java' => 'Diese Version braucht Java :java. Bietet das Egg ein passendes Image an, wird es automatisch ausgewählt.',
+    'wipe' => 'Vorher alle Dateien löschen',
+    'wipe_help' => 'Alle Dateien des Servers werden endgültig gelöscht, auch Welten, Plugins und Konfigurationen. Mach vorher ein Backup, wenn du unsicher bist.',
+    'eula' => 'Minecraft-EULA akzeptieren',
+    'eula_help' => 'Schreibt eula=true in die eula.txt, damit der Server sofort startet. Mit dem Haken akzeptierst du die',
+    'eula_link' => 'Minecraft-Endbenutzer-Lizenzvereinbarung',
+    'installing' => 'Server wird gestoppt und installiert … das kann eine Minute dauern.',
+    'installed' => ':name :version (:build) wurde installiert.',
+    'installed_java' => 'Das Docker-Image wurde auf Java :java umgestellt.',
+];

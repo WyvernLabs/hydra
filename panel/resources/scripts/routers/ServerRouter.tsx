@@ -23,6 +23,9 @@ import { useWorkspaceSection } from '@/components/hydra/sections';
 import ServerSidebarHeader from '@/components/hydra/ServerSidebarHeader';
 import { useTranslation } from 'react-i18next';
 import SuspendedNotice, { SuspendedBanner } from '@/components/server/SuspendedNotice';
+import LockdownNotice, { LockdownBanner } from '@/components/server/lockdown/Lockdown';
+import ServerHeader from '@/components/server/ServerHeader';
+import FileTransfers from '@/components/server/files/FileTransfers';
 
 export default () => {
     const match = useRouteMatch<{ id: string }>();
@@ -39,7 +42,10 @@ export default () => {
     const uuid = ServerContext.useStoreState((state) => state.server.data?.uuid);
     const inConflictState = ServerContext.useStoreState((state) => state.server.inConflictState);
     const suspendedAccess = ServerContext.useStoreState((state) => state.server.suspendedAccess);
-    const { categories, isVisible } = useServerNavigation();
+    // Hydra: users locked out by a lockdown get neither pages nor navigation.
+    const lockedOut = ServerContext.useStoreState((state) => state.server.data?.lockdown.lockedOut || false);
+    const { categories: allCategories, isVisible } = useServerNavigation();
+    const categories = lockedOut ? [] : allCategories;
     // Hydra: on a suspended server, users without full access only see files, databases and backups.
     // Pages whose button is hidden for the egg of this server are not reachable either.
     const serverRoutes = routes.server.filter(
@@ -118,10 +124,13 @@ export default () => {
                 ) : (
                     <Spinner size={'large'} centered />
                 )
+            ) : lockedOut ? (
+                <LockdownNotice />
             ) : (
                 <>
                     <InstallListener />
                     <TransferListener />
+                    <FileTransfers />
                     {suspendedAccess !== 'limited' && <WebsocketHandler />}
                     {inConflictState &&
                     suspendedAccess === 'none' &&
@@ -129,7 +138,9 @@ export default () => {
                         <ConflictStateRenderer />
                     ) : (
                         <ErrorBoundary>
+                            <ServerHeader />
                             <SuspendedBanner />
+                            <LockdownBanner />
                             <TransitionRouter>
                                 <Switch location={location}>
                                     {suspendedAccess === 'limited' ? (

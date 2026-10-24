@@ -54,6 +54,11 @@ return [
         'outro' => 'If you did not try to create an account, you can ignore this email.',
     ],
     // Hydra: warnings and bans.
+    'ticket_answered' => [
+        'subject' => 'New answer to your ticket #:id',
+        'intro' => 'Our team has answered your ticket ":subject".',
+        'action' => 'Open ticket',
+    ],
     'account_warned' => [
         'subject' => 'You have received a warning',
         'intro' => 'An administrator has warned your account.',

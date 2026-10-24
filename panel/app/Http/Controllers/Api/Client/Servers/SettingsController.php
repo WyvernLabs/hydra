@@ -6,12 +6,14 @@ use Illuminate\Http\Response;
 use Pterodactyl\Models\Server;
 use Illuminate\Http\JsonResponse;
 use Pterodactyl\Facades\Activity;
+use Pterodactyl\Services\Hydra\ServerLockdownService;
 use Pterodactyl\Repositories\Eloquent\ServerRepository;
 use Pterodactyl\Services\Servers\ReinstallServerService;
 use Pterodactyl\Http\Controllers\Api\Client\ClientApiController;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Pterodactyl\Http\Requests\Api\Client\Servers\Settings\RenameServerRequest;
 use Pterodactyl\Http\Requests\Api\Client\Servers\Settings\SetDockerImageRequest;
+use Pterodactyl\Http\Requests\Api\Client\Servers\Settings\LockdownServerRequest;
 use Pterodactyl\Http\Requests\Api\Client\Servers\Settings\ReinstallServerRequest;
 
 class SettingsController extends ClientApiController
@@ -22,6 +24,7 @@ class SettingsController extends ClientApiController
     public function __construct(
         private ServerRepository $repository,
         private ReinstallServerService $reinstallServerService,
+        private ServerLockdownService $lockdownService,
     ) {
         parent::__construct();
     }
@@ -68,6 +71,27 @@ class SettingsController extends ClientApiController
         Activity::event('server:reinstall')->log();
 
         return new JsonResponse([], Response::HTTP_ACCEPTED);
+    }
+
+    /**
+     * Hydra: puts the server into lockdown or lifts it. A suspended server only
+     * gets this far for admins allowed to use suspended servers.
+     */
+    public function lockdown(LockdownServerRequest $request, Server $server): JsonResponse
+    {
+        if ($request->boolean('lockdown') === $server->isLockedDown()) {
+            return new JsonResponse([], Response::HTTP_NO_CONTENT);
+        }
+
+        if ($request->boolean('lockdown')) {
+            $this->lockdownService->enable($server);
+        } else {
+            $this->lockdownService->disable($server);
+        }
+
+        Activity::event($request->boolean('lockdown') ? 'server:settings.lockdown-enable' : 'server:settings.lockdown-disable')->log();
+
+        return new JsonResponse([], Response::HTTP_NO_CONTENT);
     }
 
     /**

@@ -68,6 +68,7 @@ return [
         'servers' => 'Server',
         'users' => 'Benutzer',
         'roles' => 'Rollen',
+        'tickets' => 'Tickets',
         'nests' => 'Nests',
         'eggs' => 'Eggs',
     ],
@@ -114,6 +115,7 @@ return [
             'configuration' => ['title' => 'Konfiguration', 'description' => 'Die Wings-Konfiguration sehen und Deploy-Tokens erzeugen. Enthält das Node-Geheimnis.'],
             'database' => ['title' => 'Datenbank einrichten', 'description' => 'MariaDB auf einer Node als Datenbank-Host einrichten. Installiert Pakete auf der Node und legt den Datenbank-Host im Panel an.'],
             'firewall' => ['title' => 'Firewall', 'description' => 'Die UFW-Firewall der Nodes sehen und ändern: Regeln hinzufügen und entfernen, ein- und ausschalten.'],
+            'backups' => ['title' => 'Backup-Speicher', 'description' => 'Die Backups einer Node auf einem SFTP-Server speichern (Addon „SFTP-Backups“). Enthält die Zugangsdaten dieses Servers.'],
             'delete' => ['title' => 'Löschen', 'description' => 'Nodes entfernen.'],
         ],
         'servers' => [
@@ -128,6 +130,7 @@ return [
             'delete' => ['title' => 'Löschen', 'description' => 'Server löschen.'],
             'access' => ['title' => 'Jeden Server öffnen', 'description' => 'Jeden Server im Kundenbereich mit vollen Rechten öffnen, wie der Besitzer.'],
             'suspended' => ['title' => 'Gesperrte Server nutzen', 'description' => 'Gesperrte Server weiter voll nutzen (Konsole, Starten, alle Reiter). Andere Benutzer behalten nur Dateien, Datenbanken und Backups. Zusammen mit „Jeden Server öffnen“ gilt das für alle Server.'],
+            'lockdown' => ['title' => 'Server-Lockdown', 'description' => 'Server in den Lockdown versetzen und ihn wieder aufheben (auch im Adminbereich unter „Verwalten“) sowie Server im Lockdown weiter nutzen. Ohne dieses Recht kann nur der Besitzer einen Server im Lockdown nutzen.'],
         ],
         'users' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Benutzer und ihre Daten sehen.'],
@@ -143,6 +146,12 @@ return [
             'update' => ['title' => 'Ändern', 'description' => 'Rollen bearbeiten, höchstens mit den eigenen Rechten.'],
             'delete' => ['title' => 'Löschen', 'description' => 'Rollen löschen.'],
             'assign' => ['title' => 'Zuweisen', 'description' => 'Benutzern Rollen geben und wieder wegnehmen.'],
+        ],
+        'tickets' => [
+            'view' => ['title' => 'Ansehen', 'description' => 'Alle Support-Tickets inklusive interner Notizen sehen (Community > Tickets, Addon Tickets).'],
+            'reply' => ['title' => 'Antworten', 'description' => 'Auf Tickets antworten, interne Notizen schreiben und Bilder hochladen.'],
+            'manage' => ['title' => 'Verwalten', 'description' => 'Status und Priorität ändern, Tickets schließen und wieder öffnen, Teammitgliedern zuweisen.'],
+            'delete' => ['title' => 'Löschen', 'description' => 'Tickets samt Nachrichten und Bildern löschen.'],
         ],
         'nests' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Nests sehen.'],

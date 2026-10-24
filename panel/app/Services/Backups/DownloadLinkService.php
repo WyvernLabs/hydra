@@ -8,14 +8,18 @@ use Pterodactyl\Enum\JwtScope;
 use Pterodactyl\Models\Backup;
 use Pterodactyl\Services\Nodes\NodeJWTService;
 use Pterodactyl\Extensions\Backups\BackupManager;
+use Pterodactyl\Repositories\Wings\DaemonBackupRepository;
 
 class DownloadLinkService
 {
     /**
      * DownloadLinkService constructor.
      */
-    public function __construct(private BackupManager $backupManager, private NodeJWTService $jwtService)
-    {
+    public function __construct(
+        private BackupManager $backupManager,
+        private NodeJWTService $jwtService,
+        private DaemonBackupRepository $daemon,
+    ) {
     }
 
     /**
@@ -34,7 +38,10 @@ class DownloadLinkService
             ->setClaims([
                 'backup_uuid' => $backup->uuid,
                 'server_uuid' => $backup->server->uuid,
-            ])
+            ] + ($backup->disk === Backup::ADAPTER_SFTP ? [
+                // Hydra: the node streams it from the SFTP server it was told about.
+                'hydra_sftp_download' => $this->daemon->setServer($backup->server)->sftpDownload($backup),
+            ] : []))
             ->setScopes(JwtScope::BackupDownload)
             ->handle($backup->server->node, $user->id . $backup->server->uuid);
 

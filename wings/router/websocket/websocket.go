@@ -36,6 +36,7 @@ const (
 	PermissionReceiveInstall   = "admin.websocket.install"
 	PermissionReceiveTransfer  = "admin.websocket.transfer"
 	PermissionReceiveBackups   = "backup.read"
+	PermissionReceiveFiles     = "file.read"
 	// Hydra: may use the console of a suspended server and start it.
 	PermissionSuspended = "admin.websocket.suspended"
 )
@@ -173,8 +174,15 @@ func (h *Handler) SendJson(v Message) error {
 
 	// If the user does not have permission to see backup events, do not emit
 	// them over the socket.
-	if strings.HasPrefix(string(v.Event), server.BackupCompletedEvent) {
+	if strings.HasPrefix(string(v.Event), server.BackupCompletedEvent) || v.Event == server.BackupProgressEvent {
 		if !j.HasPermission(PermissionReceiveBackups) {
+			return nil
+		}
+	}
+
+	// Hydra: file progress only goes to users who can see the files.
+	if v.Event == server.FileProgressEvent {
+		if !j.HasPermission(PermissionReceiveFiles) {
 			return nil
 		}
 	}

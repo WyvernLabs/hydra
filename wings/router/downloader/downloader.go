@@ -140,6 +140,9 @@ type DownloadRequest struct {
 	URL       *url.URL
 	FileName  string
 	UseHeader bool
+	// User (Hydra) is the UUID of the user who started the download, so it
+	// can be stopped when they lose access to the server.
+	User string
 }
 
 type Download struct {
@@ -274,6 +277,12 @@ func (dl *Download) Cancel() {
 		(*dl.cancelFunc)()
 	}
 	instance.remove(dl.Identifier)
+}
+
+// User returns the UUID of the user who started the download, empty if the
+// Panel did not send one.
+func (dl *Download) User() string {
+	return dl.req.User
 }
 
 // BelongsTo checks if the given download belongs to the provided server.

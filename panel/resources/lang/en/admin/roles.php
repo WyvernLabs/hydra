@@ -68,6 +68,7 @@ return [
         'servers' => 'Servers',
         'users' => 'Users',
         'roles' => 'Roles',
+        'tickets' => 'Tickets',
         'nests' => 'Nests',
         'eggs' => 'Eggs',
     ],
@@ -114,6 +115,7 @@ return [
             'configuration' => ['title' => 'Configuration', 'description' => 'See the Wings configuration and create deploy tokens. Contains the node secret.'],
             'database' => ['title' => 'Database setup', 'description' => 'Set up MariaDB on a node as database host. Installs packages on the node and adds the database host to the panel.'],
             'firewall' => ['title' => 'Firewall', 'description' => 'See and change the UFW firewall of the nodes: add and remove rules, switch it on and off.'],
+            'backups' => ['title' => 'Backup storage', 'description' => 'Store the backups of a node on an SFTP server (addon "SFTP Backups"). Includes the login data of that server.'],
             'delete' => ['title' => 'Delete', 'description' => 'Remove nodes.'],
         ],
         'servers' => [
@@ -128,6 +130,7 @@ return [
             'delete' => ['title' => 'Delete', 'description' => 'Delete servers.'],
             'access' => ['title' => 'Open any server', 'description' => 'Open every server in the client area with full rights, like the owner.'],
             'suspended' => ['title' => 'Use suspended servers', 'description' => 'Keep full access to suspended servers (console, start, every tab). Other users only keep files, databases and backups. Together with "Open any server" this works for every server.'],
+            'lockdown' => ['title' => 'Lockdown servers', 'description' => 'Put servers into lockdown and lift it again (also in the admin area under "Manage"), and keep using servers in lockdown. Without this only the owner can use a server in lockdown.'],
         ],
         'users' => [
             'view' => ['title' => 'View', 'description' => 'See users and their details.'],
@@ -143,6 +146,12 @@ return [
             'update' => ['title' => 'Change', 'description' => 'Edit roles with their own permissions at most.'],
             'delete' => ['title' => 'Delete', 'description' => 'Delete roles.'],
             'assign' => ['title' => 'Assign', 'description' => 'Give roles to users and take them away.'],
+        ],
+        'tickets' => [
+            'view' => ['title' => 'View', 'description' => 'See all support tickets including internal notes (Community > Tickets, tickets addon).'],
+            'reply' => ['title' => 'Answer', 'description' => 'Answer tickets, write internal notes and upload images.'],
+            'manage' => ['title' => 'Manage', 'description' => 'Change status and priority, close and reopen tickets, assign them to team members.'],
+            'delete' => ['title' => 'Delete', 'description' => 'Delete tickets together with their messages and images.'],
         ],
         'nests' => [
             'view' => ['title' => 'View', 'description' => 'See nests.'],

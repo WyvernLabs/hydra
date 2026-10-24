@@ -62,4 +62,5 @@ return [
     'api' => [
         'resource_not_found' => 'Die angeforderte Ressource existiert auf diesem Server nicht.',
     ],
+    'server_locked_down' => 'Der Besitzer hat diesen Server in den Lockdown versetzt. Bis er aufgehoben wird, können ihn nur der Besitzer und Administratoren nutzen.',
 ];

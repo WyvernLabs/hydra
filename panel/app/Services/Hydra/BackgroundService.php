@@ -16,10 +16,18 @@ use Pterodactyl\Contracts\Repository\SettingsRepositoryInterface;
  * Login and dashboard are stored as settings ("settings::hydra:backgrounds:*"),
  * eggs keep theirs in the "hydra_background" column. An egg without its own
  * background uses the dashboard background.
+ *
+ * Eggs also have a banner for the server dashboard and a picture for the
+ * server list (EGG_IMAGES), all set under Design > Eggs.
  */
 class BackgroundService
 {
     public const SLOTS = ['login', 'dashboard'];
+
+    /**
+     * Pictures of an egg besides its background, with their column.
+     */
+    public const EGG_IMAGES = ['banner' => 'hydra_banner', 'list' => 'hydra_list_image'];
 
     public const MAX_BLUR = 30;
 
@@ -166,22 +174,34 @@ class BackgroundService
      */
     public function bannerForEgg(?Egg $egg): ?string
     {
-        return $egg && self::path($egg->hydra_banner) ? '/backgrounds/' . $egg->hydra_banner : null;
+        return $this->imageForEgg($egg, 'banner');
+    }
+
+    /**
+     * URL of a picture of an egg ("banner" or "list"), or null.
+     */
+    public function imageForEgg(?Egg $egg, string $type): ?string
+    {
+        $file = $egg?->getAttribute(self::EGG_IMAGES[$type]);
+
+        return self::path($file) ? '/backgrounds/' . $file : null;
     }
 
     /**
      * @throws DisplayException
      */
-    public function saveEggBanner(Egg $egg, UploadedFile $file): void
+    public function saveEggImage(Egg $egg, string $type, UploadedFile $file): void
     {
-        $this->delete($egg->hydra_banner);
-        $egg->forceFill(['hydra_banner' => $this->store("banner-egg-$egg->id", $file)])->saveOrFail();
+        $column = self::EGG_IMAGES[$type];
+        $this->delete($egg->getAttribute($column));
+        $egg->forceFill([$column => $this->store("$type-egg-$egg->id", $file)])->saveOrFail();
     }
 
-    public function resetEggBanner(Egg $egg): void
+    public function resetEggImage(Egg $egg, string $type): void
     {
-        $this->delete($egg->hydra_banner);
-        $egg->forceFill(['hydra_banner' => null])->saveOrFail();
+        $column = self::EGG_IMAGES[$type];
+        $this->delete($egg->getAttribute($column));
+        $egg->forceFill([$column => null])->saveOrFail();
     }
 
     /**

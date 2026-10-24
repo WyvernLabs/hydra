@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import TitledGreyBox from '@/components/elements/TitledGreyBox';
 import tw from 'twin.macro';
 import VariableBox from '@/components/server/startup/VariableBox';
+import StartupDoneBox from '@/components/server/startup/StartupDoneBox';
+import StartupCommandBox from '@/components/server/startup/StartupCommandBox';
+import FlashMessageRender from '@/components/FlashMessageRender';
 import ServerContentBlock from '@/components/elements/ServerContentBlock';
 import getServerStartup from '@/api/swr/getServerStartup';
 import Spinner from '@/components/elements/Spinner';
@@ -88,9 +91,17 @@ const StartupContainer = () => {
         <ServerContentBlock title={t('startup.title')} showFlashKey={'startup:image'}>
             <div css={tw`md:flex`}>
                 <TitledGreyBox title={t('startup.command')} css={tw`flex-1`}>
-                    <div css={tw`px-1 py-2`}>
-                        <p css={tw`font-mono bg-neutral-900 rounded py-2 px-4`}>{data.invocation}</p>
-                    </div>
+                    <FlashMessageRender byKey={'startup:command'} css={tw`mb-2`} />
+                    <StartupCommandBox
+                        invocation={data.invocation}
+                        raw={data.rawStartupCommand || ''}
+                        eggCommand={data.eggStartupCommand || ''}
+                        editable={!!data.startupEditable}
+                        onSaved={(invocation, raw) => {
+                            mutate({ ...data, invocation, rawStartupCommand: raw }, false);
+                            setServerFromState((s) => ({ ...s, invocation }));
+                        }}
+                    />
                 </TitledGreyBox>
                 <TitledGreyBox
                     title={t('startup.docker_image')}
@@ -123,6 +134,11 @@ const StartupContainer = () => {
                     )}
                 </TitledGreyBox>
             </div>
+            <StartupDoneBox
+                done={data.startupDone || null}
+                eggDone={data.eggStartupDone || []}
+                onSaved={(done) => mutate({ ...data, startupDone: done }, false)}
+            />
             <h3 css={tw`mt-8 mb-2 text-2xl`}>{t('startup.variables')}</h3>
             <div css={tw`grid gap-8 md:grid-cols-2`}>
                 {data.variables.map((variable) => (

@@ -48,6 +48,8 @@ class Permission extends Model
     public const ACTION_BACKUP_DELETE = 'backup.delete';
     public const ACTION_BACKUP_DOWNLOAD = 'backup.download';
     public const ACTION_BACKUP_RESTORE = 'backup.restore';
+    // Hydra: set up the own SFTP server for backups (addon "sftp_backups").
+    public const ACTION_BACKUP_SFTP = 'backup.sftp';
 
     public const ACTION_ALLOCATION_READ = 'allocation.read';
     public const ACTION_ALLOCATION_CREATE = 'allocation.create';
@@ -68,6 +70,9 @@ class Permission extends Model
 
     public const ACTION_SETTINGS_RENAME = 'settings.rename';
     public const ACTION_SETTINGS_REINSTALL = 'settings.reinstall';
+    // Hydra: switch the game and manage game profiles (addon "games").
+    public const ACTION_SETTINGS_GAME = 'settings.game';
+    public const ACTION_SETTINGS_VERSION = 'settings.version';
 
     public const ACTION_ACTIVITY_READ = 'activity.read';
 
@@ -153,6 +158,7 @@ class Permission extends Model
                 'delete' => 'Allows a user to remove backups from the system.',
                 'download' => 'Allows a user to download a backup for the server. Danger: this allows a user to access all files for the server in the backup.',
                 'restore' => 'Allows a user to restore a backup for the server. Danger: this allows the user to delete all of the server files in the process.',
+                'sftp' => 'Allows a user to set up the own SFTP server backups can be stored on. Danger: the backups contain all files of the server.',
             ],
         ],
 
@@ -208,6 +214,8 @@ class Permission extends Model
             'keys' => [
                 'rename' => 'Allows a user to rename this server and change the description of it.',
                 'reinstall' => 'Allows a user to trigger a reinstall of this server.',
+                'game' => 'Allows a user to switch the game of this server and to load or delete game profiles. Danger: the files of the server are replaced.',
+                'version' => 'Allows a user to install another Minecraft software or version on this server. Danger: files of the server can be replaced or deleted.',
             ],
         ],
 

@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"emperror.dev/errors"
@@ -20,8 +21,10 @@ import (
 
 // Notifies the panel of a backup's state and returns an error if one is encountered
 // while performing this action.
-func (s *Server) notifyPanelOfBackup(uuid string, ad *backup.ArchiveDetails, successful bool) error {
-	if err := s.client.SetBackupStatus(s.Context(), uuid, ad.ToRequest(successful)); err != nil {
+func (s *Server) notifyPanelOfBackup(uuid string, ad *backup.ArchiveDetails, successful bool, reason string) error {
+	req := ad.ToRequest(successful)
+	req.Error = reason
+	if err := s.client.SetBackupStatus(s.Context(), uuid, req); err != nil {
 		if !remote.IsRequestError(err) {
 			s.Log().WithFields(log.Fields{
 				"backup": uuid,
@@ -73,9 +76,12 @@ func (s *Server) Backup(b backup.BackupInterface) error {
 		}
 	}
 
+	// Hydra: the progress is shown in the panel, at most twice a second.
+	b.SetProgress(s.backupProgress(b.Identifier()))
+
 	ad, err := b.Generate(s.Context(), s.Filesystem(), ignored)
 	if err != nil {
-		if err := s.notifyPanelOfBackup(b.Identifier(), &backup.ArchiveDetails{}, false); err != nil {
+		if err := s.notifyPanelOfBackup(b.Identifier(), &backup.ArchiveDetails{}, false, backupFailureReason(err)); err != nil {
 			s.Log().WithFields(log.Fields{
 				"backup": b.Identifier(),
 				"error":  err,
@@ -97,7 +103,7 @@ func (s *Server) Backup(b backup.BackupInterface) error {
 
 	// Try to notify the panel about the status of this backup. If for some reason this request
 	// fails, delete the archive from the daemon and return that error up the chain to the caller.
-	if notifyError := s.notifyPanelOfBackup(b.Identifier(), ad, true); notifyError != nil {
+	if notifyError := s.notifyPanelOfBackup(b.Identifier(), ad, true, ""); notifyError != nil {
 		_ = b.Remove()
 
 		s.Log().WithField("error", notifyError).Info("failed to notify panel of successful backup state")
@@ -117,6 +123,51 @@ func (s *Server) Backup(b backup.BackupInterface) error {
 	})
 
 	return nil
+}
+
+// BackupProgressEvent (Hydra) reports how far a backup is, with the fields
+// uuid, phase ("archive" or "upload"), done and total.
+const BackupProgressEvent = "hydra backup progress"
+
+// backupProgress returns a receiver that publishes the progress of a backup.
+func (s *Server) backupProgress(uuid string) backup.ProgressFunc {
+	var (
+		mu        sync.Mutex
+		last      time.Time
+		lastPhase string
+	)
+	return func(phase string, done, total int64) {
+		mu.Lock()
+		defer mu.Unlock()
+		now := time.Now()
+		if phase == lastPhase && done < total && now.Sub(last) < 500*time.Millisecond {
+			return
+		}
+		last, lastPhase = now, phase
+		s.Events().Publish(BackupProgressEvent, map[string]interface{}{
+			"uuid":  uuid,
+			"phase": phase,
+			"done":  done,
+			"total": total,
+		})
+	}
+}
+
+// backupFailureReason (Hydra) tells the panel why a backup failed, without
+// details of the node.
+func backupFailureReason(err error) string {
+	var sftpErr backup.SftpError
+	switch {
+	case errors.Is(err, filesystem.ErrArchiveTooLarge):
+		return "storage_full"
+	case errors.As(err, &sftpErr):
+		msg := sftpErr.Error()
+		if len(msg) > 180 {
+			msg = msg[:180]
+		}
+		return "sftp: " + msg
+	}
+	return "error"
 }
 
 // RestoreBackup calls the Restore function on the provided backup. Once this

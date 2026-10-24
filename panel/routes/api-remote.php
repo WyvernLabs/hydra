@@ -11,6 +11,8 @@ Route::post('/servers/reset', [Remote\Servers\ServerDetailsController::class, 'r
 Route::post('/activity', Remote\ActivityProcessingController::class);
 
 Route::group(['prefix' => '/servers/{uuid}'], function () {
+    // Hydra: a schedule waiting for a state or console line was triggered.
+    Route::post('/schedules/{schedule}/trigger', Remote\Servers\ScheduleTriggerController::class)->whereNumber('schedule')->middleware('throttle:60,1');
     Route::get('/', Remote\Servers\ServerDetailsController::class);
     Route::get('/install', [Remote\Servers\ServerInstallController::class, 'index']);
     Route::post('/install', [Remote\Servers\ServerInstallController::class, 'store']);

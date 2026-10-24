@@ -182,71 +182,10 @@
         </div>
     </div>
 </form>
-{{-- Hydra: background of the server pages of this egg. --}}
-<form action="{{ route('admin.nests.egg.background', $egg->id) }}" method="POST" enctype="multipart/form-data">
-    {!! csrf_field() !!}
-    {!! method_field('PATCH') !!}
-    <div class="row">
-        <div class="col-md-6" id="egg-background">
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">{{ __('admin/design.backgrounds.egg') }}</h3>
-                </div>
-                <div class="box-body">
-                    <p class="text-muted small">{{ __('admin/design.backgrounds.egg_help') }}</p>
-                    @include('partials.admin.hydra.background-editor', [
-                        'prefix' => 'bg_egg',
-                        'background' => app(\Pterodactyl\Services\Hydra\BackgroundService::class)->forEgg($egg) ?? ['image' => null, 'blur' => 0, 'dim' => 0],
-                        'resetName' => 'reset_background',
-                        'resetValue' => '1',
-                        'resetLabel' => __('admin/design.backgrounds.egg_reset'),
-                    ])
-                </div>
-                @if(Auth::user()->hasAdminPermission('eggs.update'))
-                    <div class="box-footer">
-                        <button type="submit" class="btn btn-sm btn-primary pull-right">{{ __('admin/common.actions.save') }}</button>
-                    </div>
-                @endif
-            </div>
-        </div>
-    </div>
-</form>
-{{-- Hydra: banner on the server dashboard (Design > Addons > Server Dashboard). --}}
-@php($banner = app(\Pterodactyl\Services\Hydra\BackgroundService::class)->bannerForEgg($egg))
-<form action="{{ route('admin.nests.egg.banner', $egg->id) }}" method="POST" enctype="multipart/form-data">
-    {!! csrf_field() !!}
-    {!! method_field('PATCH') !!}
-    <div class="row">
-        <div class="col-md-6" id="egg-banner">
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">{{ __('admin/design.banner.title') }}</h3>
-                </div>
-                <div class="box-body">
-                    <p class="text-muted small">{{ __('admin/design.banner.help') }}</p>
-                    @if($banner)
-                        <img src="{{ $banner }}" alt="" style="display: block; width: 100%; max-height: 160px; object-fit: cover; border-radius: 4px; margin-bottom: 10px;">
-                    @endif
-                    <input type="file" name="banner_image" accept="image/png,image/jpeg,image/gif,image/webp" class="form-control" @disabled(!Auth::user()->hasAdminPermission('eggs.update'))>
-                    <p class="text-muted small no-margin" style="margin-top: 6px;">{{ __('admin/design.banner.format') }}</p>
-                </div>
-                @if(Auth::user()->hasAdminPermission('eggs.update'))
-                    <div class="box-footer">
-                        @if($banner)
-                            <button type="submit" name="reset_banner" value="1" class="btn btn-sm btn-danger">{{ __('admin/design.banner.reset') }}</button>
-                        @endif
-                        <button type="submit" class="btn btn-sm btn-primary pull-right">{{ __('admin/common.actions.save') }}</button>
-                    </div>
-                @endif
-            </div>
-        </div>
-    </div>
-</form>
 @endsection
 
 @section('footer-scripts')
     @parent
-    @include('partials.admin.hydra.background-editor-script')
     <script>
     $('#pConfigFrom').select2();
     $('#deleteButton').on('mouseenter', function (event) {

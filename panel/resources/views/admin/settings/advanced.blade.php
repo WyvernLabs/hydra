@@ -74,6 +74,22 @@
                         </div>
                     </div>
                 </div>
+                <div class="box">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">{{ __('admin/settings.advanced.schedules') }}</h3>
+                    </div>
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="form-group col-md-4">
+                                <label class="control-label">{{ __('admin/settings.advanced.task_limit') }}</label>
+                                <div>
+                                    <input type="number" min="1" max="1000" class="form-control" name="pterodactyl:client_features:schedules:per_schedule_task_limit" value="{{ old('pterodactyl:client_features:schedules:per_schedule_task_limit', config('pterodactyl.client_features.schedules.per_schedule_task_limit')) }}">
+                                    <p class="text-muted small">{{ __('admin/settings.advanced.task_limit_help') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="box box-primary">
                     <div class="box-footer">
                         {{ csrf_field() }}

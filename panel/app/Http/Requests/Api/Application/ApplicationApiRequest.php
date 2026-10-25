@@ -37,8 +37,10 @@ abstract class ApplicationApiRequest extends FormRequest
             throw new PterodactylException('An ACL resource must be defined on API requests.');
         }
 
-        // Hydra: admins with roles may only use the API for what their roles allow.
-        if (!AdminAcl::userCan($this->user(), $this->resource, $this->permission)) {
+        // Hydra: admins with roles may only use the API for what their roles allow,
+        // write endpoints only check the permission of their own action.
+        $endpoint = $this->route()?->getActionName();
+        if (!AdminAcl::userCan($this->user(), $this->resource, $this->permission, $endpoint)) {
             return false;
         }
 
@@ -51,7 +53,7 @@ abstract class ApplicationApiRequest extends FormRequest
             return true;
         }
 
-        return AdminAcl::check($token, $this->resource, $this->permission);
+        return AdminAcl::check($token, $this->resource, $this->permission, $endpoint);
     }
 
     /**

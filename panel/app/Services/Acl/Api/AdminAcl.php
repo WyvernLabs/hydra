@@ -4,6 +4,13 @@ namespace Pterodactyl\Services\Acl\Api;
 
 use Pterodactyl\Models\User;
 use Pterodactyl\Models\ApiKey;
+use Pterodactyl\Http\Controllers\Api\Application\Nodes\NodeController;
+use Pterodactyl\Http\Controllers\Api\Application\Users\UserController;
+use Pterodactyl\Http\Controllers\Api\Application\Servers\ServerController;
+use Pterodactyl\Http\Controllers\Api\Application\Servers\StartupController;
+use Pterodactyl\Http\Controllers\Api\Application\Locations\LocationController;
+use Pterodactyl\Http\Controllers\Api\Application\Servers\ServerDetailsController;
+use Pterodactyl\Http\Controllers\Api\Application\Servers\ServerManagementController;
 
 class AdminAcl
 {
@@ -79,6 +86,32 @@ class AdminAcl
     ];
 
     /**
+     * Hydra: write endpoints that only need the admin permission of their own
+     * action instead of every write permission of the resource. So a role with
+     * "servers.manage" can suspend servers over the API without being allowed
+     * to delete them. Endpoints that are not listed need all of them.
+     */
+    public const ENDPOINT_PERMISSIONS = [
+        ServerController::class . '@store' => ['servers.create'],
+        ServerController::class . '@delete' => ['servers.delete'],
+        ServerDetailsController::class . '@details' => ['servers.details'],
+        ServerDetailsController::class . '@build' => ['servers.build'],
+        StartupController::class . '@index' => ['servers.startup'],
+        ServerManagementController::class . '@suspend' => ['servers.manage'],
+        ServerManagementController::class . '@unsuspend' => ['servers.manage'],
+        ServerManagementController::class . '@reinstall' => ['servers.manage'],
+        UserController::class . '@store' => ['users.create'],
+        UserController::class . '@update' => ['users.update'],
+        UserController::class . '@delete' => ['users.delete'],
+        NodeController::class . '@store' => ['nodes.create'],
+        NodeController::class . '@update' => ['nodes.update'],
+        NodeController::class . '@delete' => ['nodes.delete'],
+        LocationController::class . '@store' => ['locations.create'],
+        LocationController::class . '@update' => ['locations.update'],
+        LocationController::class . '@delete' => ['locations.delete'],
+    ];
+
+    /**
      * Determine if an API key has permission to perform a specific read/write operation.
      */
     public static function can(int $permission, int $action = self::READ): bool
@@ -94,9 +127,9 @@ class AdminAcl
      * Determine if an API Key model has permission to access a given resource
      * at a specific action level.
      */
-    public static function check(ApiKey $key, string $resource, int $action = self::READ): bool
+    public static function check(ApiKey $key, string $resource, int $action = self::READ, ?string $endpoint = null): bool
     {
-        if ($key->user && !self::userCan($key->user, $resource, $action)) {
+        if ($key->user && !self::userCan($key->user, $resource, $action, $endpoint)) {
             return false;
         }
 
@@ -104,15 +137,16 @@ class AdminAcl
     }
 
     /**
-     * Hydra: whether the user's admin permissions allow the action on the resource.
+     * Hydra: whether the user's admin permissions allow the action on the
+     * resource; with the endpoint ("Controller@method") only what it needs.
      */
-    public static function userCan(User $user, string $resource, int $action = self::READ): bool
+    public static function userCan(User $user, string $resource, int $action = self::READ, ?string $endpoint = null): bool
     {
         if ($user->root_admin) {
             return true;
         }
 
-        $needed = self::ADMIN_PERMISSIONS[$resource][$action] ?? null;
+        $needed = self::neededFor($resource, $action, $endpoint);
         if (is_null($needed)) {
             return false;
         }
@@ -121,15 +155,34 @@ class AdminAcl
     }
 
     /**
-     * Hydra: the highest access level for the resource the user may put on a key.
+     * Hydra: the admin permissions an endpoint needs, null if it cannot be used.
+     *
+     * @return string[]|null
+     */
+    public static function neededFor(string $resource, int $action, ?string $endpoint = null): ?array
+    {
+        if ($action === self::WRITE && !is_null($endpoint) && isset(self::ENDPOINT_PERMISSIONS[$endpoint])) {
+            return self::ENDPOINT_PERMISSIONS[$endpoint];
+        }
+
+        return self::ADMIN_PERMISSIONS[$resource][$action] ?? null;
+    }
+
+    /**
+     * Hydra: the highest access level for the resource the user may put on a
+     * key. Write access only needs one of the write permissions, each endpoint
+     * still checks its own one.
      */
     public static function maxFor(User $user, string $resource): int
     {
-        if (self::userCan($user, $resource, self::WRITE) && self::userCan($user, $resource, self::READ)) {
-            return self::READ | self::WRITE;
+        if (!self::userCan($user, $resource, self::READ)) {
+            return self::NONE;
         }
 
-        return self::userCan($user, $resource, self::READ) ? self::READ : self::NONE;
+        $write = $user->root_admin || collect(self::ADMIN_PERMISSIONS[$resource][self::WRITE] ?? [])
+            ->contains(fn (string $permission) => $user->hasAdminPermission($permission));
+
+        return $write ? self::READ | self::WRITE : self::READ;
     }
 
     /**

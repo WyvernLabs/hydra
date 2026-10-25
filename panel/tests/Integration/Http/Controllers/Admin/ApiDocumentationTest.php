@@ -68,7 +68,8 @@ class ApiDocumentationTest extends HttpTestCase
 
         $application = collect($documentation->endpoints('application'))->keyBy('key');
         $this->assertSame('servers: read', $application['GET servers']['permission']);
-        $this->assertSame('servers: read & write', $application['POST servers']['permission']);
+        $this->assertSame('servers: read & write · servers.create', $application['POST servers']['permission']);
+        $this->assertSame('servers: read & write · servers.manage', $application['POST servers/{server}/suspend']['permission']);
         $this->assertArrayHasKey('egg', $application['POST servers']['fields']);
 
         $client = collect($documentation->endpoints('client'))->keyBy('key');

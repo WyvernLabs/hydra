@@ -126,16 +126,18 @@ class ApiDocumentation
                 return [null, null];
             }
 
-            return [$request, $api === 'application' ? $this->aclPermission($request) : $this->clientPermission($request)];
+            return [$request, $api === 'application' ? $this->aclPermission($request, "$class@$method") : $this->clientPermission($request)];
         }
 
         return [null, null];
     }
 
     /**
-     * E.g. "servers: read" for a request of the application API.
+     * E.g. "servers: read" for a request of the application API, with the admin
+     * permission of the endpoint for write endpoints ("servers: read & write ·
+     * servers.manage").
      */
-    private function aclPermission(FormRequest $request): ?string
+    private function aclPermission(FormRequest $request, string $endpoint): ?string
     {
         if (!$request instanceof ApplicationApiRequest) {
             return null;
@@ -149,9 +151,11 @@ class ApiDocumentation
                 return null;
             }
 
-            $access = $level->getValue($request) >= AdminAcl::WRITE ? 'write' : 'read';
+            $write = $level->getValue($request) >= AdminAcl::WRITE;
+            $text = $resource->getValue($request) . ': ' . trans('admin/api_docs.access.' . ($write ? 'write' : 'read'));
+            $admin = $write ? (AdminAcl::ENDPOINT_PERMISSIONS[$endpoint] ?? null) : null;
 
-            return $resource->getValue($request) . ': ' . trans("admin/api_docs.access.$access");
+            return $admin ? $text . ' · ' . implode(', ', $admin) : $text;
         } catch (\Throwable) {
             return null;
         }

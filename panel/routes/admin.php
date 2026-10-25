@@ -276,6 +276,14 @@ Route::group(['prefix' => 'nodes'], function () {
         Route::post('/view/{node:id}/backups', [Admin\Nodes\NodeBackupController::class, 'update']);
         Route::delete('/view/{node:id}/backups', [Admin\Nodes\NodeBackupController::class, 'delete'])->name('admin.nodes.view.backups.delete');
     });
+    // Hydra: install Hydra Wings on a node over SSH or with an install command.
+    Route::group(['middleware' => 'admin.can:nodes.install'], function () {
+        Route::get('/view/{node:id}/install', [Admin\Nodes\NodeInstallController::class, 'index'])->name('admin.nodes.view.install');
+        Route::post('/view/{node:id}/install/command', [Admin\Nodes\NodeInstallController::class, 'command'])->name('admin.nodes.view.install.command');
+        Route::post('/view/{node:id}/install/ssh', [Admin\Nodes\NodeInstallController::class, 'start'])->name('admin.nodes.view.install.ssh');
+        Route::get('/view/{node:id}/install/status', [Admin\Nodes\NodeInstallController::class, 'status'])->name('admin.nodes.view.install.status');
+        Route::delete('/view/{node:id}/install/status', [Admin\Nodes\NodeInstallController::class, 'forget']);
+    });
     Route::group(['middleware' => 'admin.can:nodes.firewall'], function () {
         Route::get('/view/{node:id}/firewall', [Admin\Nodes\NodeFirewallController::class, 'index'])->name('admin.nodes.view.firewall');
         Route::get('/view/{node:id}/firewall/state', [Admin\Nodes\NodeFirewallController::class, 'state'])->name('admin.nodes.view.firewall.state');

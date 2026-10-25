@@ -114,6 +114,7 @@ return [
             'allocations' => ['title' => 'Zuweisungen', 'description' => 'IPs und Ports hinzufügen, benennen und entfernen.'],
             'configuration' => ['title' => 'Konfiguration', 'description' => 'Die Wings-Konfiguration sehen und Deploy-Tokens erzeugen. Enthält das Node-Geheimnis.'],
             'database' => ['title' => 'Datenbank einrichten', 'description' => 'MariaDB auf einer Node als Datenbank-Host einrichten. Installiert Pakete auf der Node und legt den Datenbank-Host im Panel an.'],
+            'install' => ['title' => 'Installieren', 'description' => 'Hydra Wings aus dem Panel heraus auf einem Node installieren, per SSH oder mit einem Installationsbefehl. Dabei entsteht ein API-Schlüssel mit Zugriff auf die Nodes.'],
             'firewall' => ['title' => 'Firewall', 'description' => 'Die UFW-Firewall der Nodes sehen und ändern: Regeln hinzufügen und entfernen, ein- und ausschalten.'],
             'backups' => ['title' => 'Backup-Speicher', 'description' => 'Die Backups einer Node auf einem SFTP-Server speichern (Addon „SFTP-Backups“). Enthält die Zugangsdaten dieses Servers.'],
             'delete' => ['title' => 'Löschen', 'description' => 'Nodes entfernen.'],

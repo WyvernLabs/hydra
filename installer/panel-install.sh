@@ -409,6 +409,18 @@ rsync -a --ignore-existing "$PANEL_SRC/storage/" "$INSTALL_DIR/storage/"
 install -d "$INSTALL_DIR/storage/framework/cache/data" "$INSTALL_DIR/storage/framework/sessions"   "$INSTALL_DIR/storage/framework/views" "$INSTALL_DIR/storage/logs" "$INSTALL_DIR/bootstrap/cache"
 info "Dateien nach $INSTALL_DIR kopiert"
 
+# Den Wings-Installer dieser Version legt das Panel bereit, damit Nodes direkt aus dem Adminbereich
+# installiert werden können (Nodes > Installation). Eine Git-Quelle bekommen die Nodes mit, ein
+# hochgeladener Ordner nicht – dann bauen sie Wings aus dem öffentlichen Repository.
+install -d -m 755 "$INSTALL_DIR/storage/app/hydra/installer"
+install -m 644 "$(dirname "$PANEL_SRC")/installer/wings-install.sh" "$INSTALL_DIR/storage/app/hydra/installer/wings-install.sh"
+if [[ -d "$SOURCE" ]]; then
+  printf '{"source":null,"ref":null}\n' > "$INSTALL_DIR/storage/app/hydra/installer/source.json"
+else
+  "$PHP_BIN" -r 'echo json_encode(["source" => $argv[1], "ref" => $argv[2]]), "\n";' -- "$SOURCE" "$REF" \
+    > "$INSTALL_DIR/storage/app/hydra/installer/source.json"
+fi
+
 cd "$INSTALL_DIR"
 info "PHP-Abhängigkeiten (composer install) …"
 COMPOSER_ALLOW_SUPERUSER=1 "$PHP_BIN" /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction --quiet

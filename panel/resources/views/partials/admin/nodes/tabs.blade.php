@@ -7,6 +7,7 @@
     ['about', 'admin.nodes.view', null],
     ['settings', 'admin.nodes.view.settings', 'nodes.update'],
     ['configuration', 'admin.nodes.view.configuration', 'nodes.configuration'],
+    ['install', 'admin.nodes.view.install', 'nodes.install'],
     ['allocation', 'admin.nodes.view.allocation', 'nodes.allocations'],
     ['servers', 'admin.nodes.view.servers', null],
     ['database', 'admin.nodes.view.database', 'nodes.database'],

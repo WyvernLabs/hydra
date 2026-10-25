@@ -52,6 +52,13 @@ Route::get('/tickets/attachments/{uuid}', Base\TicketAttachmentController::class
     ->middleware('addon:tickets')
     ->name('tickets.attachments');
 
+// Hydra: the wings installer of a one-time install command (Admin > Nodes > Installation).
+Route::get('/install/node/{code}', Base\NodeInstallScriptController::class)
+    ->withoutMiddleware(['auth', RequireTwoFactorAuthentication::class])
+    ->where('code', '[A-Za-z0-9]{40}')
+    ->middleware('throttle:20,1')
+    ->name('node-install');
+
 // Hydra: download of a database export, the link comes from the client API.
 Route::get('/databases/export/{token}', Base\DatabaseExportController::class)
     ->where('token', '[A-Za-z0-9]{48}')

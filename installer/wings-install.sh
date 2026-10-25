@@ -242,6 +242,19 @@ if (( ! INSTALLED )); then
   if (( SSL )) && [[ -z "$EMAIL" ]]; then
     EMAIL="$(ask "E-Mail-Adresse für Let's Encrypt" "admin@${FQDN#*.}")"
   fi
+  if [[ -z "$PANEL_URL" ]] && (( ! ASSUME_YES )); then
+    info "Verbindung zum Panel – Token und Node-ID stehen im Panel unter Admin › Nodes › <Node> ›"
+    info "Konfiguration › Generate Token. Leer lassen, um später zu verbinden."
+    info "(Noch einfacher: im Panel unter Nodes › <Node> › Installation per SSH installieren lassen.)"
+    PANEL_URL="$(ask "Panel-URL, z. B. https://panel.example.com" "")"
+    if [[ -n "$PANEL_URL" ]]; then
+      [[ "$PANEL_URL" == http://* || "$PANEL_URL" == https://* ]] || PANEL_URL="https://$PANEL_URL"
+      PANEL_URL="${PANEL_URL%/}"
+      [[ -n "$NODE_ID" ]] || NODE_ID="$(ask "Node-ID" "1")"
+      [[ -n "$TOKEN" ]] || TOKEN="$(ask "Token" "")"
+      [[ -n "$TOKEN" ]] || { warn "Kein Token angegeben – Wings wird nur installiert."; PANEL_URL=""; }
+    fi
+  fi
 fi
 SSL="${SSL:-0}"
 

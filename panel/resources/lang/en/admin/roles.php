@@ -114,6 +114,7 @@ return [
             'allocations' => ['title' => 'Allocations', 'description' => 'Add, rename and remove IPs and ports.'],
             'configuration' => ['title' => 'Configuration', 'description' => 'See the Wings configuration and create deploy tokens. Contains the node secret.'],
             'database' => ['title' => 'Database setup', 'description' => 'Set up MariaDB on a node as database host. Installs packages on the node and adds the database host to the panel.'],
+            'install' => ['title' => 'Install', 'description' => 'Install Hydra Wings on a node from the panel, over SSH or with an install command. This creates an API key with node access.'],
             'firewall' => ['title' => 'Firewall', 'description' => 'See and change the UFW firewall of the nodes: add and remove rules, switch it on and off.'],
             'backups' => ['title' => 'Backup storage', 'description' => 'Store the backups of a node on an SFTP server (addon "SFTP Backups"). Includes the login data of that server.'],
             'delete' => ['title' => 'Delete', 'description' => 'Remove nodes.'],

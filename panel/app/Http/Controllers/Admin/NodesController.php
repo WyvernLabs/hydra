@@ -73,6 +73,11 @@ class NodesController extends Controller
         $node = $this->creationService->handle($request->normalize());
         $this->alert->info(trans('admin/node.notices.node_created'))->flash();
 
+        // Hydra: the next step is installing Wings on the node.
+        if ($request->user()->hasAdminPermission('nodes.install')) {
+            return redirect()->route('admin.nodes.view.install', $node->id);
+        }
+
         return redirect()->route('admin.nodes.view.allocation', $node->id);
     }
 

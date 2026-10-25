@@ -37,6 +37,21 @@ bash <(curl -fsSL https://raw.githubusercontent.com/WyvernLabs/hydra/main/instal
 
 Der Installer lädt den Quellcode selbst von GitHub und merkt sich die Quelle für Updates. Alternativ geht `sudo bash installer/panel-install.sh` aus einem geklonten oder hochgeladenen Repository.
 
+**Ohne GitHub-Zugriff auf dem Server (Paket hochladen):** Paket bauen, z. B. auf dem eigenen Rechner im Repository
+
+```bash
+git archive --format=tar.gz --prefix=hydra/ -o hydra.tar.gz main
+```
+
+(oder auf GitHub *Code › Download ZIP*; für ZIP-Dateien auf dem Server vorher `apt install -y unzip`), per SFTP nach `/root` hochladen und dort:
+
+```bash
+cd /root && rm -rf hydra && tar xzf hydra.tar.gz
+bash hydra/installer/panel-install.sh        # bzw. hydra/installer/wings-install.sh …
+```
+
+Der Installer merkt sich `/root/hydra` als Quelle. Für ein Update dort die neue Version genauso entpacken (alten Ordner vorher löschen) und `hydra-panel update` bzw. `hydra-node update` ausführen.
+
 Solange das Repository privat ist, braucht es ein GitHub-Token mit Lesezugriff (Fine-grained Token, Repository-Recht „Contents: Read“). Es wird für Updates in `/etc/hydra/panel.conf` (nur root) gespeichert:
 
 ```bash

@@ -103,6 +103,7 @@ return [
         'js' => [
             'unknown' => 'Unknown',
             'unreachable' => 'The source could not be reached.',
+            'local' => 'Installed from an uploaded folder. To update, extract the new version there and then update.',
             'checked_at' => 'Checked',
             'not_checked' => 'Not checked yet',
             'checking' => 'Checking …',

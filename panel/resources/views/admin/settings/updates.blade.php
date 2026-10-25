@@ -163,7 +163,9 @@
                 latest = data.latest && data.latest.commit ? data.latest.commit : null;
                 $('#panelInstalled').html(commitLine(data.installed));
 
-                if (data.latest && data.latest.error) {
+                if (data.latest && data.latest.error === 'local') {
+                    $('#panelLatest').html('<span class="text-muted">' + esc(lang.local) + '</span>');
+                } else if (data.latest && data.latest.error) {
                     $('#panelLatest').html('<span class="text-danger">' + esc(lang.unreachable) + '</span>');
                 } else {
                     $('#panelLatest').html(commitLine(data.latest) + (data.latest && data.latest.checked_at

@@ -103,6 +103,7 @@ return [
         'js' => [
             'unknown' => 'Unbekannt',
             'unreachable' => 'Die Quelle war nicht erreichbar.',
+            'local' => 'Installiert aus einem hochgeladenen Ordner. Für ein Update die neue Version dort entpacken und dann aktualisieren.',
             'checked_at' => 'Geprüft',
             'not_checked' => 'Noch nicht geprüft',
             'checking' => 'Wird geprüft …',

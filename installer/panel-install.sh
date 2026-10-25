@@ -688,7 +688,10 @@ check() {
   elif GIT_TOKEN="${HYDRA_GIT_TOKEN:-}" git_clone "$HYDRA_SOURCE" "${HYDRA_REF:-main}" "$work/repo" >/dev/null 2>&1; then
     repo=(-C "$work/repo")
   fi
-  if (( ${#repo[@]} )); then
+  if [[ -d "$HYDRA_SOURCE" ]] && (( ! ${#repo[@]} )); then
+    # Hochgeladener Ordner ohne Git: neuere Versionen kennt nur, wer sie hochlädt.
+    json latest.json '["error" => "local", "checked_at" => date("c")]'
+  elif (( ${#repo[@]} )); then
     json latest.json '["commit" => $argv[1], "subject" => $argv[2], "date" => $argv[3], "checked_at" => date("c")]' \
       "$(git "${repo[@]}" log -1 --format=%H)" "$(git "${repo[@]}" log -1 --format=%s)" "$(git "${repo[@]}" log -1 --format=%cI)"
   else

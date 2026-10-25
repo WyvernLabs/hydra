@@ -90,6 +90,14 @@ random_string() { # random_string <länge>
   tr -dc 'A-Za-z0-9' </dev/urandom | head -c "$1" || true
 }
 
+valid_email() { # valid_email <adresse> – grob wie die Prüfung des Panels: name@domain.tld
+  [[ "$1" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]
+}
+
+valid_username() { # valid_username <name>
+  [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,190}$ ]]
+}
+
 git_clone() { # git_clone <quelle> <ref> <ziel> – mit Token auch aus privaten GitHub-Repositorys
   local auth=()
   if [[ -n "$GIT_TOKEN" && "$1" == https://github.com/* ]]; then
@@ -233,8 +241,20 @@ if (( ! INSTALLED )); then
   DEFAULT_DOMAIN="$(hostname -f 2>/dev/null || hostname)"
   [[ "$DEFAULT_DOMAIN" == *.* ]] || DEFAULT_DOMAIN="$(curl -fsS4 --max-time 5 https://api.ipify.org 2>/dev/null || hostname -I | awk '{print $1}')"
   [[ -n "$DOMAIN" ]] || DOMAIN="$(ask "Domain des Panels (oder IP-Adresse)" "$DEFAULT_DOMAIN")"
-  [[ -n "$EMAIL" ]] || EMAIL="$(ask "E-Mail-Adresse (Let's Encrypt & Admin)" "admin@${DOMAIN}")"
-  [[ -n "$ADMIN_USER" ]] || ADMIN_USER="$(ask "Benutzername des Admins" "admin")"
+  # Bei einer IP gibt es keine sinnvolle Standard-Adresse – admin@<IP> lehnt das Panel ab.
+  DEFAULT_EMAIL=""
+  [[ "$DOMAIN" =~ ^[0-9.]+$ || "$DOMAIN" == *:* || "$DOMAIN" != *.* ]] || DEFAULT_EMAIL="admin@${DOMAIN}"
+  until valid_email "$EMAIL"; do
+    [[ -z "$EMAIL" ]] || warn "„$EMAIL“ ist keine gültige E-Mail-Adresse."
+    (( ASSUME_YES )) && [[ -z "$DEFAULT_EMAIL" ]] && die "Bitte eine gültige E-Mail-Adresse mit --email angeben."
+    EMAIL="$(ask "E-Mail-Adresse (Let's Encrypt & Admin)" "$DEFAULT_EMAIL")"
+    (( ASSUME_YES )) && ! valid_email "$EMAIL" && die "Bitte eine gültige E-Mail-Adresse mit --email angeben."
+  done
+  until valid_username "$ADMIN_USER"; do
+    [[ -z "$ADMIN_USER" ]] || warn "„$ADMIN_USER“ geht nicht als Benutzername (Buchstaben, Ziffern, . _ -)."
+    ADMIN_USER="$(ask "Benutzername des Admins" "admin")"
+    (( ASSUME_YES )) && ! valid_username "$ADMIN_USER" && die "Bitte einen gültigen Benutzernamen mit --admin angeben."
+  done
   [[ -n "$TIMEZONE" ]] || TIMEZONE="$(ask "Zeitzone" "Europe/Berlin")"
 fi
 TIMEZONE="${TIMEZONE:-Europe/Berlin}"
@@ -500,11 +520,20 @@ step "Datenbank migrieren"
 "$PHP_BIN" artisan config:clear >/dev/null
 "$PHP_BIN" artisan optimize:clear >/dev/null 2>&1 || true
 
-if (( NEW_INSTALL )); then
+# Ein Admin wird angelegt, solange es keinen gibt – auch wenn ein früherer Lauf genau hier
+# abgebrochen ist (dann gibt es die .env schon).
+ADMIN_COUNT="$(mariadb -u root -Nse "SELECT COUNT(*) FROM hydra.users WHERE root_admin = 1" 2>/dev/null || echo 0)"
+CREATED_ADMIN=0
+if [[ "$ADMIN_COUNT" == 0 ]]; then
   step "Admin anlegen"
+  ADMIN_USER="${ADMIN_USER:-admin}"
   ADMIN_PASSWORD="${ADMIN_PASSWORD:-$(random_string 20)}"
-  "$PHP_BIN" artisan p:user:make --no-interaction --admin=1 --email="$EMAIL" --username="$ADMIN_USER" \
-    --name-first="Admin" --name-last="Hydra" --password="$ADMIN_PASSWORD" >/dev/null
+  if ! ADMIN_OUTPUT="$("$PHP_BIN" artisan p:user:make --no-interaction --admin=1 --email="$EMAIL" --username="$ADMIN_USER" \
+    --name-first="Admin" --name-last="Hydra" --password="$ADMIN_PASSWORD" 2>&1)"; then
+    printf '%s\n' "$ADMIN_OUTPUT" | grep -v '^\s*$' | tail -n 15 | sed 's/^/      /'
+    die "Admin '$ADMIN_USER' <$EMAIL> konnte nicht angelegt werden (Meldung oben). Installer mit --email/--admin erneut starten."
+  fi
+  CREATED_ADMIN=1
   umask 077
   cat > "$CREDENTIALS_FILE" <<EOF
 Hydra Panel – Zugangsdaten ($(date '+%Y-%m-%d %H:%M'))
@@ -965,7 +994,7 @@ if [[ -n "${HYDRA_BOOT_DIR:-}" ]]; then rm -rf "$HYDRA_BOOT_DIR"; fi
 step "Fertig"
 VERSION="$(sed -n "s/.*'version' => '\(.*\)',.*/\1/p" "$INSTALL_DIR/config/app.php" | head -n1)"
 info "Hydra Panel $VERSION läuft unter ${C_B}$APP_URL${C_0}"
-if (( NEW_INSTALL )); then
+if (( CREATED_ADMIN )); then
   info "Admin:    $ADMIN_USER / $ADMIN_PASSWORD"
   info "          (gespeichert in $CREDENTIALS_FILE)"
 fi

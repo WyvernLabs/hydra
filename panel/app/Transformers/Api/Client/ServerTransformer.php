@@ -14,6 +14,7 @@ use Pterodactyl\Models\EggVariable;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\NullResource;
 use Pterodactyl\Services\Hydra\BackgroundService;
+use Pterodactyl\Services\Hydra\Network\EggPorts;
 use Pterodactyl\Services\Servers\StartupCommandService;
 
 class ServerTransformer extends BaseClientTransformer
@@ -86,6 +87,8 @@ class ServerTransformer extends BaseClientTransformer
             'egg_name' => $server->egg->name,
             // Hydra: players online are counted (addon "player_stats").
             'player_stats' => Container::getInstance()->make(PlayerStatsAddon::class)->tracks($server),
+            // Hydra: the address players connect over when it is not the primary one (e.g. ARK: query port).
+            'connect_address' => $this->connectAddress($server),
             'location' => $server->node->location?->short,
             'created_at' => $server->created_at?->toAtomString(),
             'feature_limits' => [
@@ -113,6 +116,17 @@ class ServerTransformer extends BaseClientTransformer
             ],
             'skip_scripts' => $server->skip_scripts,
         ];
+    }
+
+    private function connectAddress(Server $server): ?array
+    {
+        $allocation = EggPorts::connectAllocation($server);
+
+        return $allocation ? [
+            'ip' => $allocation->ip,
+            'alias' => $allocation->ip_alias,
+            'port' => $allocation->port,
+        ] : null;
     }
 
     /**

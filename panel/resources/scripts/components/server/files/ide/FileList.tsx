@@ -87,7 +87,7 @@ export default () => {
             ide.setSelection(paths);
         } else if (event.key === 'Delete' && ide.selection.length > 0 && ide.can.delete) {
             event.preventDefault();
-            ide.remove(ide.selection, event.shiftKey);
+            ide.remove(ide.selection);
         } else if (event.key === 'F2' && ide.selection.length === 1 && ide.can.update) {
             event.preventDefault();
             ide.rename(ide.selection[0]);

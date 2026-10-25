@@ -26,6 +26,8 @@ export interface IdeContextValue {
         create: boolean;
         update: boolean;
         delete: boolean;
+        // Deleting from the trash for good.
+        deletePermanent: boolean;
         archive: boolean;
     };
     // Whether the user may change things in this folder (folder restrictions).
@@ -59,7 +61,7 @@ export interface IdeContextValue {
     move: (paths: string[], target: string) => void;
     uploadTo: (directory: string, transfer: DataTransfer) => void;
     pickUpload: (directory: string, folder: boolean) => void;
-    remove: (paths: string[], permanent?: boolean) => void;
+    remove: (paths: string[]) => void;
     rename: (path: string) => void;
     create: (directory: string, kind: 'file' | 'folder') => void;
 }

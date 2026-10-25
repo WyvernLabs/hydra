@@ -50,9 +50,10 @@ class FileTrashTest extends ClientApiIntegrationTestCase
         $this->mockDeletions();
 
         $this->actingAs($user)->postJson($this->link($server, '/files/delete'), ['root' => '/', 'files' => ['a.txt']])->assertNoContent();
+        // Deleting for good is only possible from the trash, the old flag is ignored.
         $this->actingAs($user)->postJson($this->link($server, '/files/delete'), ['root' => '/', 'files' => ['b.txt'], 'permanent' => true])->assertNoContent();
 
-        $this->assertSame([['/', ['a.txt'], 3 * 86400], ['/', ['b.txt'], null]], $this->calls);
+        $this->assertSame([['/', ['a.txt'], 3 * 86400], ['/', ['b.txt'], 3 * 86400]], $this->calls);
     }
 
     private function mockDeletions(): void
@@ -89,6 +90,24 @@ class FileTrashTest extends ClientApiIntegrationTestCase
         $this->assertSame([], $this->calls);
     }
 
+    public function testDeletingFromTheTrashNeedsItsOwnPermission(): void
+    {
+        [$user, $server] = $this->generateTestAccount([Permission::ACTION_FILE_READ, Permission::ACTION_FILE_DELETE]);
+
+        $this->actingAs($user)->postJson($this->link($server, '/files/trash/delete'), ['ids' => [self::ENTRIES[0]['id']]])->assertForbidden();
+        $this->actingAs($user)->postJson($this->link($server, '/files/trash/delete'), ['all' => true])->assertForbidden();
+        $this->assertSame([], $this->calls);
+    }
+
+    public function testDeletingFromTheTrashWithPermission(): void
+    {
+        [$user, $server] = $this->generateTestAccount([Permission::ACTION_FILE_READ, Permission::ACTION_FILE_DELETE_PERMANENT]);
+
+        $this->actingAs($user)->postJson($this->link($server, '/files/trash/delete'), ['ids' => [self::ENTRIES[0]['id']]])->assertNoContent();
+
+        $this->assertSame([['delete', [self::ENTRIES[0]['id']]]], $this->calls);
+    }
+
     public function testOwnerRestoresAndEmpties(): void
     {
         [$user, $server] = $this->generateTestAccount();
@@ -113,7 +132,7 @@ class FileTrashTest extends ClientApiIntegrationTestCase
         [$user, $server] = $this->generateTestAccount([
             Permission::ACTION_FILE_READ,
             Permission::ACTION_FILE_CREATE,
-            Permission::ACTION_FILE_DELETE,
+            Permission::ACTION_FILE_DELETE_PERMANENT,
         ]);
         Subuser::query()->where('user_id', $user->id)->update(['allowed_paths' => json_encode(['/plugins/WorldEdit'])]);
 

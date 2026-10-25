@@ -39,6 +39,7 @@ class AddonManager
         PwaAddon::class,
         PlayerStatsAddon::class,
         ImporterAddon::class,
+        PortsAddon::class,
     ];
 
     public function __construct(private SettingsRepositoryInterface $settings, private Encrypter $encrypter)

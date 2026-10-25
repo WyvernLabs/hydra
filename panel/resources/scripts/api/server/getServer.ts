@@ -3,6 +3,7 @@ import { rawDataToServerAllocation, rawDataToServerEggVariable } from '@/api/tra
 import { ServerEggVariable, ServerStatus } from '@/api/server/types';
 import { Identifier } from '@/api/definitions';
 import { HydraBackground } from '@/state/settings';
+import { ip } from '@/lib/formatters';
 
 export interface Allocation {
     id: number;
@@ -85,9 +86,21 @@ export interface Server {
     eggName: string;
     // Hydra: players online are counted (addon "player_stats").
     playerStats: boolean;
+    // Hydra: address players connect over when it is not the primary one (e.g. ARK: query port).
+    connectAddress: { ip: string; alias: string | null; port: number } | null;
     location: string | null;
     createdAt: Date | null;
 }
+
+/**
+ * Hydra: the address players connect over, "host:port". That is the primary
+ * allocation unless the egg marks another port for it.
+ */
+export const serverAddress = (server: Pick<Server, 'allocations' | 'connectAddress'>): string | null => {
+    const address = server.connectAddress || server.allocations.find((item) => item.isDefault);
+
+    return address ? `${address.alias || ip(address.ip)}:${address.port}` : null;
+};
 
 export const rawDataToServerObject = ({ attributes: data }: FractalResponseData): Server => ({
     id: data.identifier,
@@ -102,6 +115,7 @@ export const rawDataToServerObject = ({ attributes: data }: FractalResponseData)
     listImage: data.list_image || null,
     eggName: data.egg_name || '',
     playerStats: !!data.player_stats,
+    connectAddress: data.connect_address || null,
     location: data.location || null,
     createdAt: data.created_at ? new Date(data.created_at) : null,
     node: data.node,

@@ -14,6 +14,7 @@ export type SubuserPermission =
     | 'file.read'
     | 'file.update'
     | 'file.delete'
+    | 'file.delete-permanent'
     | 'file.archive'
     | 'file.sftp'
     | 'allocation.read'

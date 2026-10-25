@@ -40,6 +40,7 @@ if (!env('SKIP_MIGRATIONS')) {
 
     $output->writeln('<info>Seeding database for Integration tests...</info>' . PHP_EOL);
     $kernel->call('db:seed');
+    $kernel->call('db:seed', ['--class' => Pterodactyl\Tests\Fixtures\BungeecordEggSeeder::class]);
 } else {
     $output->writeln(PHP_EOL . '<comment>Skipping database migrations...</comment>' . PHP_EOL);
 }

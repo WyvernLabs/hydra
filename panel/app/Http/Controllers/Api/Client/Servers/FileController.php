@@ -286,8 +286,9 @@ class FileController extends ClientApiController
     {
         $this->assertFilesAllowed($request, $server, $request->input('files'));
 
-        // Hydra: the files go into the trash unless the user deletes them for good.
-        $trash = $request->boolean('permanent') ? null : app(TrashAddon::class)->keepSeconds();
+        // Hydra: the files always go into the trash while it is enabled. Deleting for good is only
+        // possible from the trash itself (permission file.delete-permanent).
+        $trash = app(TrashAddon::class)->keepSeconds();
 
         $this->fileRepository->setServer($server)->deleteFiles(
             $request->input('root'),

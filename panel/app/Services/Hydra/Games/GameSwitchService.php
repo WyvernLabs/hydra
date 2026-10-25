@@ -13,6 +13,7 @@ use Pterodactyl\Exceptions\DisplayException;
 use Pterodactyl\Services\Hydra\Addons\GamesAddon;
 use Pterodactyl\Services\Servers\ReinstallServerService;
 use Pterodactyl\Services\Hydra\ServerStopper;
+use Pterodactyl\Services\Hydra\Network\PortAssignmentService;
 use Pterodactyl\Repositories\Wings\DaemonServerRepository;
 use Pterodactyl\Repositories\Wings\DaemonProfileRepository;
 
@@ -30,6 +31,7 @@ class GameSwitchService
         private DaemonServerRepository $daemon,
         private DaemonProfileRepository $profiles,
         private ReinstallServerService $reinstall,
+        private PortAssignmentService $ports,
     ) {
     }
 
@@ -67,6 +69,8 @@ class GameSwitchService
                     'variable_value' => (string) ($variable->default_value ?? ''),
                 ]);
             }
+
+            $this->ports->assign($server->refresh());
         });
 
         // Reinstalling loads the new configuration on the node and runs the install script.
@@ -108,6 +112,8 @@ class GameSwitchService
                     'variable_value' => (string) ($profile->variables[$variable->env_variable] ?? $variable->default_value ?? ''),
                 ]);
             }
+
+            $this->ports->assign($server->refresh());
 
             $profile->delete();
         });

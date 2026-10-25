@@ -1,0 +1,103 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-10-25T12:00:00+02:00",
+    "name": "Minecraft AFK Bot (Mineflayer)",
+    "author": "hydra@wyvernlabs.de",
+    "description": "Mineflayer bot that logs into a Minecraft server and stays there AFK. The script is created during the installation, the login comes from the startup variables.",
+    "features": [],
+    "docker_images": {
+        "Node.js 24": "ghcr.io/pelican-eggs/yolks:nodejs_24",
+        "Node.js 22": "ghcr.io/pelican-eggs/yolks:nodejs_22"
+    },
+    "file_denylist": [],
+    "startup": "if [ ! -d node_modules ]; then npm install --omit=dev; fi; node index.js",
+    "config": {
+        "files": "{}",
+        "startup": "{\n    \"done\": \"AFK bot started\"\n}",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\nset -e\nmkdir -p /mnt/server\ncd /mnt/server\n\ncat > package.json <<'EOF'\n{\n  \"name\": \"afk-bot\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"main\": \"index.js\",\n  \"dependencies\": {\n    \"mineflayer\": \"^4.0.0\"\n  }\n}\nEOF\n\ncat > index.js <<'EOF'\nconst mineflayer = require('mineflayer')\n\nconst env = process.env\nconst delay = (parseInt(env.RECONNECT_DELAY, 10) || 30) * 1000\nlet bot = null\nlet afkTimer = null\nlet stopping = false\n\nfunction start () {\n  const options = {\n    host: env.MC_HOST,\n    port: parseInt(env.MC_PORT, 10) || 25565,\n    username: env.MC_USERNAME,\n    auth: env.MC_AUTH || 'microsoft',\n    profilesFolder: './auth-cache'\n  }\n  if (env.MC_VERSION) options.version = env.MC_VERSION\n\n  console.log('Connecting to ' + options.host + ':' + options.port + ' ...')\n  bot = mineflayer.createBot(options)\n\n  bot.once('spawn', () => {\n    console.log('Bot is online as ' + bot.username)\n    if (env.ANTI_AFK === '1') {\n      afkTimer = setInterval(() => bot.swingArm(), 60000)\n    }\n  })\n\n  bot.on('kicked', (reason) => console.log('Kicked: ' + JSON.stringify(reason)))\n  bot.on('error', (err) => console.log('Error: ' + err.message))\n\n  bot.on('end', (reason) => {\n    clearInterval(afkTimer)\n    if (stopping) return\n    console.log('Connection closed (' + reason + '), retrying in ' + (delay / 1000) + ' s')\n    setTimeout(start, delay)\n  })\n}\n\nfunction shutdown () {\n  stopping = true\n  console.log('Stopping bot')\n  if (bot) bot.quit()\n  setTimeout(() => process.exit(0), 500)\n}\n\nprocess.on('SIGINT', shutdown)\nprocess.on('SIGTERM', shutdown)\n\nconsole.log('AFK bot started')\nstart()\nEOF\n\nnpm install --omit=dev\necho 'Installation complete'\n",
+            "container": "node:22-bookworm-slim",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Server address",
+            "description": "Hostname or IP of the Minecraft server the bot should stay on.",
+            "env_variable": "MC_HOST",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:255",
+            "field_type": "text"
+        },
+        {
+            "name": "Server port",
+            "description": "Port of the Minecraft server.",
+            "env_variable": "MC_PORT",
+            "default_value": "25565",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|between:1,65535",
+            "field_type": "text"
+        },
+        {
+            "name": "Username",
+            "description": "With Microsoft login the email of the account, in offline mode the player name you want.",
+            "env_variable": "MC_USERNAME",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:100",
+            "field_type": "text"
+        },
+        {
+            "name": "Login type",
+            "description": "microsoft for bought accounts, offline for servers in offline mode.",
+            "env_variable": "MC_AUTH",
+            "default_value": "microsoft",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:microsoft,offline",
+            "field_type": "text"
+        },
+        {
+            "name": "Minecraft version",
+            "description": "Leave empty to detect it, otherwise e.g. 1.21.1.",
+            "env_variable": "MC_VERSION",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "Reconnect delay",
+            "description": "Seconds the bot waits after the connection was lost.",
+            "env_variable": "RECONNECT_DELAY",
+            "default_value": "30",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|min:5",
+            "field_type": "text"
+        },
+        {
+            "name": "Anti-AFK",
+            "description": "1 = the bot swings its arm once a minute so it is not kicked for being idle. 0 = off.",
+            "env_variable": "ANTI_AFK",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        }
+    ]
+}

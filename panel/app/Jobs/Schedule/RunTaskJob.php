@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Pterodactyl\Exceptions\DisplayException;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Pterodactyl\Services\Hydra\Schedules\TaskFlow;
+use Pterodactyl\Services\Hydra\Addons\TrashAddon;
 use Pterodactyl\Services\Backups\InitiateBackupService;
 use Pterodactyl\Services\Hydra\Schedules\TaskPayload;
 use Pterodactyl\Repositories\Wings\DaemonFileRepository;
@@ -90,7 +91,12 @@ class RunTaskJob implements ShouldQueue
                     }
                     break;
                 case Task::ACTION_DELETE_FILES:
-                    $fileRepository->setServer($server)->deleteFiles('/', TaskPayload::paths($this->task->payload));
+                    // Hydra: like deleting in the file manager, into the trash while it is enabled.
+                    $fileRepository->setServer($server)->deleteFiles(
+                        '/',
+                        TaskPayload::paths($this->task->payload),
+                        app(TrashAddon::class)->keepSeconds()
+                    );
                     break;
                 case Task::ACTION_WEBHOOK:
                     $data = TaskPayload::json($this->task->payload);

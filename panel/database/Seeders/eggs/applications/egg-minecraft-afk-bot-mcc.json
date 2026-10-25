@@ -1,0 +1,112 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-10-25T12:00:00+02:00",
+    "name": "Minecraft AFK Bot (MCC)",
+    "author": "hydra@wyvernlabs.de",
+    "description": "AFK bot based on Minecraft Console Client (MCC). It logs into a Minecraft Java server and stays there. MCC and the start script are set up automatically during the installation, the login comes from the startup variables.",
+    "features": [],
+    "docker_images": {
+        "Dotnet 8": "ghcr.io/pelican-eggs/yolks:dotnet_8"
+    },
+    "file_denylist": [],
+    "startup": "bash start.sh",
+    "config": {
+        "files": "{}",
+        "startup": "{\n    \"done\": \"AFK bot started\"\n}",
+        "logs": "{}",
+        "stop": "/quit"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\nset -e\nmkdir -p /mnt/server\ncd /mnt/server\n\ncase \"$(uname -m)\" in\n  x86_64) ARCH=\"linux-x64\" ;;\n  aarch64) ARCH=\"linux-arm64\" ;;\n  *) echo \"Unsupported architecture: $(uname -m)\"; exit 1 ;;\nesac\n\nAPI=\"https://api.github.com/repos/MCCTeam/Minecraft-Console-Client/releases\"\nif [ -z \"${MCC_RELEASE}\" ] || [ \"${MCC_RELEASE}\" = \"latest\" ]; then\n  API=\"${API}/latest\"\nelse\n  API=\"${API}/tags/${MCC_RELEASE}\"\nfi\n\nURL=$(curl -fsSL \"${API}\" | jq -r --arg a \"${ARCH}\" '.assets[] | select(.name | endswith($a)) | .browser_download_url' | head -n 1)\nif [ -z \"${URL}\" ]; then echo \"No MCC download found for ${ARCH}\"; exit 1; fi\n\necho \"Downloading ${URL}\"\ncurl -fsSL -o MinecraftClient \"${URL}\"\nchmod +x MinecraftClient\n\ncat > start.sh <<'STARTEOF'\n#!/bin/bash\n# Writes MinecraftClient.ini from the panel variables on every start and starts MCC.\ncd /home/container || exit 1\n\nif [ \"${MC_AUTH}\" = \"offline\" ]; then PASSWORD=\"-\"; else PASSWORD=\"\"; fi\nVERSION=\"${MC_VERSION:-auto}\"\nDELAY=\"${RECONNECT_DELAY:-30}\"\nif [ \"${ANTI_AFK}\" = \"1\" ]; then AFK=true; else AFK=false; fi\n\ncat > MinecraftClient.ini <<INI\n[Main.General]\nAccount = { Login = \"${MC_USERNAME}\", Password = \"${PASSWORD}\" }\nServer = { Host = \"${MC_HOST}\", Port = ${MC_PORT:-25565} }\nAccountType = \"microsoft\"\nMethod = \"mcc\"\n\n[Main.Advanced]\nMinecraftVersion = \"${VERSION}\"\n\n[ChatBot.AutoRelog]\nEnabled = true\nDelay = { min = ${DELAY}.0, max = ${DELAY}.0 }\nRetries = -1\nIgnore_Kick_Message = true\n\n[ChatBot.AntiAFK]\nEnabled = ${AFK}\nDelay = { min = 60.0, max = 60.0 }\nUse_Sneak = true\nINI\n\necho \"AFK bot started\"\nexec ./MinecraftClient MinecraftClient.ini BasicIO-NoColor\nSTARTEOF\nchmod +x start.sh\necho \"Installation complete\"\n",
+            "container": "ghcr.io/pelican-eggs/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Server address",
+            "description": "Hostname or IP of the Minecraft server the bot should stay on.",
+            "env_variable": "MC_HOST",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:255",
+            "field_type": "text"
+        },
+        {
+            "name": "Server port",
+            "description": "Port of the Minecraft server.",
+            "env_variable": "MC_PORT",
+            "default_value": "25565",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|between:1,65535",
+            "field_type": "text"
+        },
+        {
+            "name": "Username",
+            "description": "With Microsoft login the email of the account, in offline mode the player name you want.",
+            "env_variable": "MC_USERNAME",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:100",
+            "field_type": "text"
+        },
+        {
+            "name": "Login type",
+            "description": "microsoft for bought accounts, offline for servers in offline mode.",
+            "env_variable": "MC_AUTH",
+            "default_value": "microsoft",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:microsoft,offline",
+            "field_type": "text"
+        },
+        {
+            "name": "Minecraft version",
+            "description": "auto to detect it, otherwise e.g. 26.2. Set it if the server does not answer the version query correctly.",
+            "env_variable": "MC_VERSION",
+            "default_value": "auto",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "Reconnect delay",
+            "description": "Seconds the bot waits after the connection was lost.",
+            "env_variable": "RECONNECT_DELAY",
+            "default_value": "30",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|min:5",
+            "field_type": "text"
+        },
+        {
+            "name": "Anti-AFK",
+            "description": "1 = the bot sneaks briefly once a minute so it is not kicked for being idle. 0 = off.",
+            "env_variable": "ANTI_AFK",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "MCC version",
+            "description": "latest for the newest version, otherwise a release tag like 20260929-519. Only used on (re)installation.",
+            "env_variable": "MCC_RELEASE",
+            "default_value": "latest",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:40",
+            "field_type": "text"
+        }
+    ]
+}

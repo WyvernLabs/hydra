@@ -352,4 +352,20 @@ return [
         'description' => 'Users copy the files of another server onto theirs over SFTP, with progress and a log. The button for it is on the settings page of the server.',
         'notice' => 'The node of the server does the transfer. Addresses in private networks are blocked, so nobody reaches the internal network of the node. The login is never stored. Who may import is set with the subuser permission "Import Server".',
     ],
+
+    'ports' => [
+        'name' => 'Automatic ports',
+        'description' => 'Servers automatically get the additional ports their egg needs, e.g. the raw, query and RCON port of ARK, and the port numbers are written into the startup variables.',
+        'eggs' => 'Eggs with additional ports',
+        'egg' => 'Egg',
+        'ports' => 'Ports',
+        'no_eggs' => 'No egg has additional ports yet. They are set on the egg page under "Additional ports".',
+        'no_variable' => 'no variable',
+        'offset' => '(primary port + :offset)',
+        'connect' => 'shown as address',
+        'notice' => 'The ports are assigned when a server is created, when its game is switched and when an admin changes its egg. Only free ports of the node are used, so create enough allocations under Nodes > Allocation. Ports with an offset (e.g. "+1") have to be free exactly above the primary port; servers from the resource pool get another primary port if needed. The ports count towards the port limit of the server.',
+        'summary' => ':count egg(s) with additional ports',
+        'no_offset_room' => 'The port right above :port is not free on this node, but the game needs it. Pick another primary port or create more allocations.',
+        'no_free_port' => 'The node has no free port left for ":label". Create more allocations for the node.',
+    ],
 ];

@@ -61,6 +61,8 @@ class Permission extends Model
     public const ACTION_FILE_CREATE = 'file.create';
     public const ACTION_FILE_UPDATE = 'file.update';
     public const ACTION_FILE_DELETE = 'file.delete';
+    // Hydra: deleting from the trash, normal deletes only move files into it.
+    public const ACTION_FILE_DELETE_PERMANENT = 'file.delete-permanent';
     public const ACTION_FILE_ARCHIVE = 'file.archive';
     public const ACTION_FILE_SFTP = 'file.sftp';
 
@@ -146,7 +148,8 @@ class Permission extends Model
                 'read' => 'Allows a user to view the contents of a directory, but not view the contents of or download files.',
                 'read-content' => 'Allows a user to view the contents of a given file. This will also allow the user to download files.',
                 'update' => 'Allows a user to update the contents of an existing file or directory.',
-                'delete' => 'Allows a user to delete files or directories.',
+                'delete' => 'Allows a user to delete files or directories. With the trash enabled they are moved into it.',
+                'delete-permanent' => 'Allows a user to delete files from the trash for good, or to empty it.',
                 'archive' => 'Allows a user to archive the contents of a directory as well as decompress existing archives on the system.',
                 'sftp' => 'Allows a user to connect to SFTP and manage server files using the other assigned file permissions.',
             ],

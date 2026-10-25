@@ -303,6 +303,7 @@ return [
         'import_running' => 'Wird importiert, das kann einen Moment dauern …',
         'import_done' => 'Die Datei wurde in :name importiert.',
         'manager' => [
+            'tables' => 'Tabellen',
             'filter' => 'Tabellen filtern',
             'no_tables' => 'Keine Tabellen gefunden.',
             'no_tables_yet' => 'Diese Datenbank hat noch keine Tabellen. Lege eine in der SQL-Konsole an oder importiere eine Datei.',

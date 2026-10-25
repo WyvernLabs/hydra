@@ -216,7 +216,8 @@ class VersionInstallService
     /**
      * The Docker image of the egg for the Java version, the next newer one if
      * there is none for exactly this version; null when the egg has no images
-     * named after Java versions.
+     * named after Java versions. Alternative JVMs (GraalVM, OpenJ9) are only
+     * used when there is no regular image for that version.
      */
     public function imageFor(Server $server, ?int $java): ?string
     {
@@ -224,12 +225,17 @@ class VersionInstallService
             return null;
         }
 
-        $candidates = [];
+        $candidates = $alternatives = [];
         foreach ($server->egg->docker_images ?? [] as $name => $image) {
             if (preg_match('/java[ _-]?(\d+)/i', "$name $image", $match)) {
-                $candidates[(int) $match[1]] ??= $image;
+                if (preg_match('/graal|j9/i', "$name $image")) {
+                    $alternatives[(int) $match[1]] ??= $image;
+                } else {
+                    $candidates[(int) $match[1]] ??= $image;
+                }
             }
         }
+        $candidates += $alternatives;
         if (empty($candidates)) {
             return null;
         }

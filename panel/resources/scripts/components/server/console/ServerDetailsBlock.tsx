@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { faClock, faWifi } from '@fortawesome/free-solid-svg-icons';
 import { Cpu, HardDrive, MemoryStick } from 'lucide-react';
-import { ip, mbToBytes } from '@/lib/formatters';
+import { mbToBytes } from '@/lib/formatters';
+import { serverAddress } from '@/api/server/getServer';
 import { cpuValue as toCpuValue, gbOrMb, percentOf } from '@/lib/usage';
 import UsageRing from '@/components/server/console/UsageRing';
 import { useStoreState } from '@/state/hooks';
@@ -40,11 +41,7 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
     const instance = ServerContext.useStoreState((state) => state.socket.instance);
     const limits = ServerContext.useStoreState((state) => state.server.data!.limits);
 
-    const allocation = ServerContext.useStoreState((state) => {
-        const match = state.server.data!.allocations.find((allocation) => allocation.isDefault);
-
-        return !match ? null : `${match.alias || ip(match.ip)}:${match.port}`;
-    });
+    const allocation = ServerContext.useStoreState((state) => serverAddress(state.server.data!));
 
     useEffect(() => {
         if (!connected || !instance) {

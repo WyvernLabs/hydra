@@ -7,13 +7,12 @@ import debounce from 'debounce';
 import FormikFieldWrapper from '@/components/elements/FormikFieldWrapper';
 import InputSpinner from '@/components/elements/InputSpinner';
 import getServers from '@/api/getServers';
-import { Server } from '@/api/server/getServer';
+import { Server, serverAddress } from '@/api/server/getServer';
 import { ApplicationStore } from '@/state';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components/macro';
 import tw from 'twin.macro';
 import Input from '@/components/elements/Input';
-import { ip } from '@/lib/formatters';
 import { useTranslation } from 'react-i18next';
 import { useServerLink } from '@/components/hydra/serverNavigation';
 
@@ -112,15 +111,7 @@ export default ({ ...props }: Props) => {
                                 >
                                     <div css={tw`flex-1 mr-4`}>
                                         <p css={tw`text-sm`}>{server.name}</p>
-                                        <p css={tw`mt-1 text-xs text-neutral-400`}>
-                                            {server.allocations
-                                                .filter((alloc) => alloc.isDefault)
-                                                .map((allocation) => (
-                                                    <span key={allocation.ip + allocation.port.toString()}>
-                                                        {allocation.alias || ip(allocation.ip)}:{allocation.port}
-                                                    </span>
-                                                ))}
-                                        </p>
+                                        <p css={tw`mt-1 text-xs text-neutral-400`}>{serverAddress(server)}</p>
                                     </div>
                                     <div css={tw`flex-none text-right`}>
                                         <span css={tw`text-xs py-1 px-2 bg-cyan-800 text-cyan-100 rounded`}>

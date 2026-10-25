@@ -86,7 +86,7 @@ const readWidths = (): [number, number] => {
 type DialogState =
     | { type: 'create'; directory: string; kind: 'file' | 'folder' }
     | { type: 'rename'; path: string }
-    | { type: 'delete'; paths: string[]; permanent: boolean }
+    | { type: 'delete'; paths: string[] }
     | { type: 'chmod'; path: string; mode: string }
     | { type: 'unsaved'; id: string }
     | { type: 'trash' }
@@ -170,11 +170,12 @@ export default () => {
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
     const allowedPaths = ServerContext.useStoreState((state) => state.server.allowedPaths);
     const trashSettings = useStoreState((state) => state.settings.data!.trash);
-    const [canRead, canCreate, canUpdate, canDelete, canArchive] = usePermissions([
+    const [canRead, canCreate, canUpdate, canDelete, canDeletePermanent, canArchive] = usePermissions([
         'file.read-content',
         'file.create',
         'file.update',
         'file.delete',
+        'file.delete-permanent',
         'file.archive',
     ]);
     const { addError, clearFlashes } = useFlash();
@@ -354,7 +355,7 @@ export default () => {
             });
     };
 
-    const doDelete = (paths: string[], permanent: boolean) => {
+    const doDelete = (paths: string[]) => {
         setDialog(null);
         clearFlashes('files');
         const byDir = new Map<string, string[]>();
@@ -369,9 +370,9 @@ export default () => {
         });
         paths.forEach(forgetRemoved);
         setSelection([]);
-        Promise.all(Array.from(byDir.entries()).map(([dir, names]) => deleteFiles(uuid, dir, names, permanent)))
+        Promise.all(Array.from(byDir.entries()).map(([dir, names]) => deleteFiles(uuid, dir, names)))
             .then(() => {
-                if (!permanent && trashSettings.enabled) setTrashCount((count) => count + paths.length);
+                if (trashSettings.enabled) setTrashCount((count) => count + paths.length);
             })
             .catch(flashError)
             .then(() => refresh(...Array.from(byDir.keys())));
@@ -455,7 +456,14 @@ export default () => {
 
     const context: IdeContextValue = {
         uuid,
-        can: { read: canRead, create: canCreate, update: canUpdate, delete: canDelete, archive: canArchive },
+        can: {
+            read: canRead,
+            create: canCreate,
+            update: canUpdate,
+            delete: canDelete,
+            deletePermanent: canDeletePermanent,
+            archive: canArchive,
+        },
         canWriteIn,
         trashEnabled: trashSettings.enabled,
         listings,
@@ -480,7 +488,7 @@ export default () => {
         move,
         uploadTo,
         pickUpload,
-        remove: (paths, permanent = false) => paths.length > 0 && setDialog({ type: 'delete', paths, permanent }),
+        remove: (paths) => paths.length > 0 && setDialog({ type: 'delete', paths }),
         rename: (path) => setDialog({ type: 'rename', path }),
         create: (dir, kind) => setDialog({ type: 'create', directory: dir, kind }),
     };
@@ -916,9 +924,8 @@ export default () => {
                     open={dialog?.type === 'delete'}
                     names={dialog?.type === 'delete' ? dialog.paths.map(basename) : []}
                     trashEnabled={trashSettings.enabled}
-                    permanent={dialog?.type === 'delete' && dialog.permanent}
                     onClose={() => setDialog(null)}
-                    onConfirm={(permanent) => dialog?.type === 'delete' && doDelete(dialog.paths, permanent)}
+                    onConfirm={() => dialog?.type === 'delete' && doDelete(dialog.paths)}
                 />
                 <ChmodDialog
                     open={dialog?.type === 'chmod'}

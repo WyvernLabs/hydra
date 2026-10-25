@@ -1,0 +1,72 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-10-25T12:00:00+02:00",
+    "name": "N8N Automation",
+    "author": "xeasx@outlook.com.tr",
+    "description": "Runs n8n workflow automation on Node.js 22.",
+    "features": [],
+    "docker_images": {
+        "Node.js 22": "ghcr.io/pelican-eggs/yolks:nodejs_22"
+    },
+    "file_denylist": [],
+    "startup": "N8N_PORT={{SERVER_PORT}} N8N_PROTOCOL={{N8N_PROTOCOL}} WEBHOOK_URL={{WEBHOOK_URL}} GENERIC_TIMEZONE={{GENERIC_TIMEZONE}} N8N_ENCRYPTION_KEY={{N8N_ENCRYPTION_KEY}} N8N_USER_FOLDER=/home/container N8N_EDITOR_BASE_URL={{WEBHOOK_URL}} /home/container/.npm-global/bin/n8n start",
+    "config": {
+        "files": "{}",
+        "startup": "{\n    \"done\": \"Editor is now accessible\"\n}",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\ncd /mnt/server\n\napt-get update -y\napt-get install -y curl git ca-certificates\n\n# Set npm global to a writable path inside the server volume\nmkdir -p /mnt/server/.npm-global\nnpm config set prefix '/mnt/server/.npm-global'\nexport PATH=\"/mnt/server/.npm-global/bin:$PATH\"\n\n# Install n8n\nnpm install -g n8n\n\necho \"n8n installation complete.\"",
+            "container": "node:22-bookworm-slim",
+            "entrypoint": "/bin/bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Webhook URL",
+            "description": "",
+            "env_variable": "WEBHOOK_URL",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Timezone",
+            "description": "",
+            "env_variable": "GENERIC_TIMEZONE",
+            "default_value": "UTC",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Encryption Key",
+            "description": "",
+            "env_variable": "N8N_ENCRYPTION_KEY",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Protocol",
+            "description": "",
+            "env_variable": "N8N_PROTOCOL",
+            "default_value": "https",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|in:http,https",
+            "field_type": "text"
+        }
+    ]
+}

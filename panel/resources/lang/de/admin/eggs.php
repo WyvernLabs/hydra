@@ -24,6 +24,8 @@ return [
     'docker_images' => 'Docker-Images',
     'docker_images_help_new' => 'Docker-Images, die Server mit diesem Egg nutzen können, eines pro Zeile. Bei mehreren Einträgen können Benutzer aus der Liste wählen.',
     'docker_images_help' => 'Docker-Images, die Server mit diesem Egg nutzen können, eines pro Zeile. Bei mehreren Einträgen können Benutzer aus der Liste wählen. Optional kann ein Anzeigename vorangestellt werden, getrennt durch einen senkrechten Strich, z. B. <code>Anzeigename|ghcr.io/my/egg</code>.',
+    'hydra_ports' => 'Zusätzliche Ports',
+    'hydra_ports_help' => 'Ports, die Server mit diesem Egg zusätzlich zum primären Port automatisch bekommen (<a href=":url">Addon „Automatische Ports“</a>), einer pro Zeile: Variable, optional <code>+N</code> für einen festen Abstand zum primären Port, optional <code>|Bezeichnung</code> und <code>|connect</code>, wenn sich Spieler über diesen Port verbinden (das Panel zeigt ihn dann als Adresse des Servers). Beispiele: <code>QUERY_PORT|Query Port|connect</code>, <code>+1|Raw Port</code>.',
     'startup' => 'Startbefehl',
     'startup_help_new' => 'Standard-Startbefehl für neue Server mit diesem Egg. Er kann pro Server angepasst werden.',
     'startup_help' => 'Standard-Startbefehl für neue Server mit diesem Egg.',

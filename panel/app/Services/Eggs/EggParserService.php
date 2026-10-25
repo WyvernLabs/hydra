@@ -6,6 +6,7 @@ use Illuminate\Support\Arr;
 use Pterodactyl\Models\Egg;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
+use Pterodactyl\Services\Hydra\Network\EggPorts;
 use Pterodactyl\Exceptions\Service\InvalidFileUploadException;
 
 class EggParserService
@@ -36,6 +37,12 @@ class EggParserService
      */
     public function fillFromParsed(Egg $model, array $parsed): Egg
     {
+        // Hydra: additional ports (addon "ports"). Only egg files of Hydra have them,
+        // so other files keep what is set on the egg.
+        if (Arr::has($parsed, 'hydra.ports')) {
+            $model->forceFill(['hydra_ports' => EggPorts::normalize(Arr::get($parsed, 'hydra.ports')) ?: null]);
+        }
+
         return $model->forceFill([
             'name' => Arr::get($parsed, 'name'),
             'description' => Arr::get($parsed, 'description'),

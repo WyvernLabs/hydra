@@ -6,8 +6,13 @@
 #  Quellcode gebaut oder als fertige Binary), systemd-Dienst, optional ein
 #  Let's-Encrypt-Zertifikat und die automatische Verbindung zum Panel.
 #
-#  Installation (aus dem Hydra-Repository heraus):
+#  Installation direkt von GitHub (lädt den Quellcode selbst):
+#    bash <(curl -fsSL https://raw.githubusercontent.com/WyvernLabs/hydra/main/installer/wings-install.sh)
+#
+#  Installation aus dem Hydra-Repository heraus:
 #    sudo bash installer/wings-install.sh --fqdn node1.example.com
+#
+#  Private Repositorys brauchen ein Token mit Lesezugriff: --git-token <token>
 #
 #  Mit automatischer Konfiguration (Token aus Admin > Nodes > Configuration):
 #    sudo bash installer/wings-install.sh --fqdn node1.example.com --email admin@example.com \
@@ -29,6 +34,7 @@ NODE_CONF=$CONF_DIR/node.conf
 WINGS_CONFIG=$CONF_DIR/config.yml
 SERVICE=hydra-wings
 GO_DIR=/opt/hydra/go
+HYDRA_REPO=https://github.com/WyvernLabs/hydra.git
 
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
@@ -40,6 +46,7 @@ PANEL_URL=""
 TOKEN=""
 NODE_ID=""
 SOURCE=""
+GIT_TOKEN="${HYDRA_GIT_TOKEN:-}"
 REF=""
 BINARY_URL=""
 SSL=""              # leer = automatisch (FQDN → Zertifikat, sonst keins)
@@ -80,6 +87,14 @@ fetch() {
   curl -fsSL "$@" 2>/dev/null || curl -4 -fsSL "$@"
 }
 
+git_clone() { # git_clone <quelle> <ref> <ziel> – mit Token auch aus privaten GitHub-Repositorys
+  local auth=()
+  if [[ -n "$GIT_TOKEN" && "$1" == https://github.com/* ]]; then
+    auth=(-c "http.https://github.com/.extraheader=Authorization: Basic $(printf 'x-access-token:%s' "$GIT_TOKEN" | base64 -w0)")
+  fi
+  GIT_TERMINAL_PROMPT=0 git "${auth[@]}" clone -q --depth 1 --branch "$2" "$1" "$3"
+}
+
 usage() {
   cat <<EOF
 Hydra Wings – Installer
@@ -103,6 +118,8 @@ Optionen:
                        (Standard: das Repository, aus dem dieses Skript stammt)
   --ref <ref>          Git-Branch oder -Tag (nur mit Git-URL), Standard: main
   --binary-url <url>   Fertige hydra-wings-Binary laden statt aus dem Quellcode zu bauen
+  --git-token <token>  Token mit Lesezugriff für ein privates GitHub-Repository
+                       (wird für Updates in /etc/hydra/node.conf gespeichert)
   --yes                Keine Rückfragen
   --help               Diese Hilfe
 EOF
@@ -121,6 +138,7 @@ while (( $# )); do
     --source) SOURCE="${2:-}"; shift ;;
     --ref) REF="${2:-}"; shift ;;
     --binary-url) BINARY_URL="${2:-}"; shift ;;
+    --git-token) GIT_TOKEN="${2:-}"; shift ;;
     --ssl) SSL=1 ;;
     --no-ssl) SSL=0 ;;
     --allow-insecure) ALLOW_INSECURE=1 ;;
@@ -141,6 +159,7 @@ if [[ -f "$NODE_CONF" ]]; then
   SOURCE="${SOURCE:-${HYDRA_SOURCE:-}}"
   REF="${REF:-${HYDRA_REF:-}}"
   BINARY_URL="${BINARY_URL:-${HYDRA_BINARY_URL:-}}"
+  GIT_TOKEN="${GIT_TOKEN:-${HYDRA_GIT_TOKEN:-}}"
   SSL="${SSL:-${HYDRA_SSL:-}}"
   INSTALLED=1
 else
@@ -188,10 +207,28 @@ if [[ -z "$SOURCE" && -z "$BINARY_URL" ]]; then
   if [[ -f "$SCRIPT_DIR/../wings/go.mod" ]]; then
     SOURCE="$(cd "$SCRIPT_DIR/.." && pwd)"
   else
-    die "Hydra-Quelle unbekannt. Bitte --source <Verzeichnis|Git-URL> oder --binary-url <url> angeben."
+    SOURCE="$HYDRA_REPO"
   fi
 fi
 REF="${REF:-main}"
+
+# Läuft das Skript ohne Repository daneben (z. B. bash <(curl …) oder hydra-node update mit
+# Git-URL), wird zuerst der Quellcode geladen und dessen Installer übernimmt. So kommen Fragen
+# und Pakete nur einmal, und es läuft immer der Installer, der zum Quellcode passt.
+if [[ -n "$SOURCE" && ! -d "$SOURCE" && -z "$BINARY_URL" && -z "${HYDRA_REEXEC:-}" ]]; then
+  if ! command -v git >/dev/null; then
+    info "Installiere git …"
+    apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git ca-certificates >/dev/null
+  fi
+  BOOT_DIR="$(mktemp -d)"
+  info "Lade $SOURCE ($REF) …"
+  git_clone "$SOURCE" "$REF" "$BOOT_DIR/repo" \
+    || die "git clone fehlgeschlagen. Ist das Repository privat? Dann --git-token <token> angeben."
+  [[ -f "$BOOT_DIR/repo/installer/wings-install.sh" ]] || die "$SOURCE enthält keinen Hydra-Installer."
+  export HYDRA_GIT_TOKEN="$GIT_TOKEN"
+  HYDRA_REEXEC=1 HYDRA_BOOT_DIR="$BOOT_DIR" exec bash "$BOOT_DIR/repo/installer/wings-install.sh" \
+    "${ORIGINAL_ARGS[@]}" --source "$SOURCE" --ref "$REF"
+fi
 
 # ------------------------------------------------------------------ Fragen
 
@@ -242,6 +279,69 @@ if ! command -v docker >/dev/null; then
 fi
 systemctl enable --now docker >/dev/null 2>&1
 info "Docker $(docker version --format '{{.Server.Version}}' 2>/dev/null || echo '?') ok"
+
+# ------------------------------------------------------------------ Hydra-Images
+#
+# Laufzeit-Images, die es nicht fertig in einer Registry gibt, baut jeder Node selbst. Die
+# Eggs verweisen mit "~hydra/yolks:<tag>" darauf, das "~" sagt Wings, dass es nicht pullen
+# soll. Bei jedem Update neu gebaut (--pull), damit Sicherheitsupdates der Basis ankommen.
+#
+# java_25_graalvm: GraalVM Community für Java 25 (frei nutzbar, laufend aktualisiert) auf
+# derselben Ubuntu-Basis wie die Java-Yolks. Ältere GraalVM-CE-Versionen bekommen keine
+# Updates mehr, deshalb gibt es nur Java 25.
+step "Hydra-Images bauen"
+build_yolk() { # build_yolk <tag> <verzeichnis>
+  if docker build --pull -q -t "hydra/yolks:$1" "$2" >/dev/null 2>"$2/build.log"; then
+    info "hydra/yolks:$1 ok"
+  else
+    warn "hydra/yolks:$1 konnte nicht gebaut werden – Server mit diesem Image starten nicht."
+    tail -n 5 "$2/build.log" | sed 's/^/      /'
+  fi
+}
+YOLK_DIR="$(mktemp -d)"
+cat > "$YOLK_DIR/Dockerfile" <<'EOF'
+FROM ghcr.io/graalvm/jdk-community:25i-ol9 AS graalvm
+RUN cp -a "$JAVA_HOME" /graalvm
+
+FROM ubuntu:24.04
+LABEL org.opencontainers.image.description="Hydra yolk: GraalVM Community Java 25"
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends curl lsof ca-certificates openssl git tar sqlite3 \
+        fontconfig tzdata iproute2 libfreetype6 tini zip unzip jq \
+    && rm -rf /var/lib/apt/lists/* \
+    && (userdel -r ubuntu 2>/dev/null || true) \
+    && useradd -m -d /home/container -s /bin/bash container
+COPY --from=graalvm /graalvm /opt/java/graalvm
+ENV JAVA_HOME=/opt/java/graalvm PATH=/opt/java/graalvm/bin:$PATH
+USER container
+ENV USER=container HOME=/home/container
+WORKDIR /home/container
+STOPSIGNAL SIGINT
+COPY --chown=container:container entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/usr/bin/tini", "-g", "--"]
+CMD ["/entrypoint.sh"]
+EOF
+cat > "$YOLK_DIR/entrypoint.sh" <<'EOF'
+#!/bin/bash
+TZ=${TZ:-UTC}
+export TZ
+INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}')
+export INTERNAL_IP
+cd /home/container || exit 1
+
+printf "\033[1m\033[33mcontainer~ \033[0mjava -version\n"
+java -version
+
+# "{{VARIABLE}}" der Startzeile in "${VARIABLE}" umwandeln und ausführen.
+PARSED=$(echo "$STARTUP" | sed -e 's/{{/${/g' -e 's/}}/}/g')
+printf "\033[1m\033[33mcontainer~ \033[0m"
+echo "$PARSED"
+# shellcheck disable=SC2086
+eval "$PARSED"
+EOF
+build_yolk java_25_graalvm "$YOLK_DIR"
+rm -rf "$YOLK_DIR"
 
 # Caddy für die Reverse Proxys der Server (Addon "Reverse Proxy"). Ohne Proxys lauscht Caddy
 # auf keinem Port; Wings schreibt die Proxys nach /etc/hydra/caddy/ und lädt Caddy neu.
@@ -339,7 +439,7 @@ else
     WINGS_SRC="$SOURCE/wings"
   else
     info "Lade $SOURCE ($REF) …"
-    git clone -q --depth 1 --branch "$REF" "$SOURCE" "$WORK/repo" || die "git clone fehlgeschlagen."
+    git_clone "$SOURCE" "$REF" "$WORK/repo" || die "git clone fehlgeschlagen."
     WINGS_SRC="$WORK/repo/wings"
   fi
 
@@ -483,6 +583,7 @@ HYDRA_FQDN=$(printf '%q' "$FQDN")
 HYDRA_EMAIL=$(printf '%q' "$EMAIL")
 HYDRA_SOURCE=$(printf '%q' "$SOURCE")
 HYDRA_REF=$(printf '%q' "$REF")
+HYDRA_GIT_TOKEN=$(printf '%q' "$GIT_TOKEN")
 HYDRA_BINARY_URL=$(printf '%q' "$BINARY_URL")
 HYDRA_SSL=$SSL
 EOF
@@ -530,6 +631,7 @@ systemctl daemon-reload
 info "Updates aus dem Adminbereich ok"
 
 rm -rf "$WORK"
+if [[ -n "${HYDRA_BOOT_DIR:-}" ]]; then rm -rf "$HYDRA_BOOT_DIR"; fi
 
 step "Fertig"
 if [[ -f "$WINGS_CONFIG" ]]; then

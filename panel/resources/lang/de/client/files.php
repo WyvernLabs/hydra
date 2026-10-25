@@ -202,7 +202,6 @@ return [
         'delete_forever_text_one' => '<bold>:name</bold> wird endgültig gelöscht und kann nicht wiederhergestellt werden.',
         'delete_forever_text_other' => '<bold>:count Elemente</bold> werden endgültig gelöscht und können nicht wiederhergestellt werden.',
         'and_more' => '… und :count weitere',
-        'skip_trash' => 'Endgültig löschen statt in den Papierkorb verschieben',
         'move_to_trash' => 'In den Papierkorb',
         'delete_forever' => 'Endgültig löschen',
         'chmod_title' => 'Berechtigungen von :name',

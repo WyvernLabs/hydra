@@ -13,7 +13,7 @@ class DeleteTrashRequest extends ClientApiRequest implements ClientPermissionsRe
 {
     public function permission(): string
     {
-        return Permission::ACTION_FILE_DELETE;
+        return Permission::ACTION_FILE_DELETE_PERMANENT;
     }
 
     public function rules(): array

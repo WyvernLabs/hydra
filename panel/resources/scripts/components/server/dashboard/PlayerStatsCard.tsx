@@ -205,18 +205,21 @@ const Chart = ({ history }: { history: PlayerHistory }) => {
                     <p className={'text-xs text-gray-400'}>{fullTimeLabel(hovered.time, history.range)}</p>
                 </div>
             )}
-            {/* The values for screen readers. */}
-            <table className={'sr-only'}>
-                <caption>{t('dashboard.players.chart_label')}</caption>
-                <tbody>
-                    {points.map((point) => (
-                        <tr key={point.time.getTime()}>
-                            <th scope={'row'}>{fullTimeLabel(point.time, history.range)}</th>
-                            <td>{point.online === null ? t('dashboard.players.no_answer') : point.online}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+            {/* The values for screen readers. Wrapped in a div: tables ignore the 1px height of sr-only and
+                would make the page thousands of pixels taller. */}
+            <div className={'sr-only'}>
+                <table>
+                    <caption>{t('dashboard.players.chart_label')}</caption>
+                    <tbody>
+                        {points.map((point) => (
+                            <tr key={point.time.getTime()}>
+                                <th scope={'row'}>{fullTimeLabel(point.time, history.range)}</th>
+                                <td>{point.online === null ? t('dashboard.players.no_answer') : point.online}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };

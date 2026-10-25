@@ -7,11 +7,15 @@
 #  baut das Frontend, richtet Datenbank, Queue-Worker, Cronjob und den ersten
 #  Admin ein.
 #
-#  Installation (aus dem Hydra-Repository heraus):
+#  Installation direkt von GitHub (lädt den Quellcode selbst):
+#    bash <(curl -fsSL https://raw.githubusercontent.com/WyvernLabs/hydra/main/installer/panel-install.sh)
+#
+#  Installation aus dem Hydra-Repository heraus:
 #    sudo bash installer/panel-install.sh
 #
-#  Installation direkt aus einem Git-Repository:
+#  Aus einem anderen Git-Repository oder Branch:
 #    sudo bash panel-install.sh --source https://github.com/<user>/hydra.git --ref main
+#  Private Repositorys brauchen ein Token mit Lesezugriff: --git-token <token>
 #
 #  Update: dasselbe Kommando erneut ausführen oder
 #    sudo hydra-panel update
@@ -37,6 +41,7 @@ QUEUE_SERVICE=hydra-queue
 NODE_MAJOR=22
 YARN_VERSION=1.22.22
 WEB_USER=www-data
+HYDRA_REPO=https://github.com/WyvernLabs/hydra.git
 
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 ORIGINAL_ARGS=("$@")
@@ -49,6 +54,7 @@ ADMIN_PASSWORD="${HYDRA_ADMIN_PASSWORD:-}"
 TIMEZONE=""
 SOURCE=""
 REF=""
+GIT_TOKEN="${HYDRA_GIT_TOKEN:-}"
 SSL=""              # leer = automatisch (Domain → HTTPS, IP → HTTP)
 ASSUME_YES=0
 MODE=install        # install | update | status
@@ -84,6 +90,14 @@ random_string() { # random_string <länge>
   tr -dc 'A-Za-z0-9' </dev/urandom | head -c "$1" || true
 }
 
+git_clone() { # git_clone <quelle> <ref> <ziel> – mit Token auch aus privaten GitHub-Repositorys
+  local auth=()
+  if [[ -n "$GIT_TOKEN" && "$1" == https://github.com/* ]]; then
+    auth=(-c "http.https://github.com/.extraheader=Authorization: Basic $(printf 'x-access-token:%s' "$GIT_TOKEN" | base64 -w0)")
+  fi
+  GIT_TERMINAL_PROMPT=0 git "${auth[@]}" clone -q --depth 1 --branch "$2" "$1" "$3"
+}
+
 usage() {
   cat <<EOF
 Hydra Panel – Installer
@@ -103,6 +117,8 @@ Optionen:
   --source <quelle>  Lokales Verzeichnis oder Git-URL des Hydra-Repositorys
                      (Standard: das Repository, aus dem dieses Skript stammt)
   --ref <ref>        Git-Branch oder -Tag (nur mit Git-URL), Standard: main
+  --git-token <tok>  Token mit Lesezugriff für ein privates GitHub-Repository
+                     (wird für Updates in /etc/hydra/panel.conf gespeichert)
   --ssl / --no-ssl   HTTPS über Let's Encrypt erzwingen bzw. abschalten
   --yes              Keine Rückfragen, Standardwerte verwenden
   --help             Diese Hilfe
@@ -120,6 +136,7 @@ while (( $# )); do
     --timezone) TIMEZONE="${2:-}"; shift ;;
     --source) SOURCE="${2:-}"; shift ;;
     --ref) REF="${2:-}"; shift ;;
+    --git-token) GIT_TOKEN="${2:-}"; shift ;;
     --ssl) SSL=1 ;;
     --no-ssl) SSL=0 ;;
     --yes|-y) ASSUME_YES=1 ;;
@@ -140,6 +157,7 @@ if [[ -f "$CONF_FILE" ]]; then
   TIMEZONE="${TIMEZONE:-${HYDRA_TIMEZONE:-}}"
   SOURCE="${SOURCE:-${HYDRA_SOURCE:-}}"
   REF="${REF:-${HYDRA_REF:-}}"
+  GIT_TOKEN="${GIT_TOKEN:-${HYDRA_GIT_TOKEN:-}}"
   SSL="${SSL:-${HYDRA_SSL:-}}"
   INSTALLED=1
 else
@@ -185,10 +203,28 @@ if [[ -z "$SOURCE" ]]; then
   if [[ -f "$SCRIPT_DIR/../panel/artisan" ]]; then
     SOURCE="$(cd "$SCRIPT_DIR/.." && pwd)"
   else
-    die "Hydra-Quelle unbekannt. Bitte --source <Verzeichnis|Git-URL> angeben."
+    SOURCE="$HYDRA_REPO"
   fi
 fi
 REF="${REF:-main}"
+
+# Läuft das Skript ohne Repository daneben (z. B. bash <(curl …) oder hydra-panel update mit
+# Git-URL), wird zuerst der Quellcode geladen und dessen Installer übernimmt. So kommen Fragen
+# und Pakete nur einmal, und es läuft immer der Installer, der zum Quellcode passt.
+if [[ ! -d "$SOURCE" && -z "${HYDRA_REEXEC:-}" ]]; then
+  if ! command -v git >/dev/null; then
+    info "Installiere git …"
+    apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git ca-certificates >/dev/null
+  fi
+  BOOT_DIR="$(mktemp -d)"
+  info "Lade $SOURCE ($REF) …"
+  git_clone "$SOURCE" "$REF" "$BOOT_DIR/repo" \
+    || die "git clone fehlgeschlagen. Ist das Repository privat? Dann --git-token <token> angeben."
+  [[ -f "$BOOT_DIR/repo/installer/panel-install.sh" ]] || die "$SOURCE enthält keinen Hydra-Installer."
+  export HYDRA_GIT_TOKEN="$GIT_TOKEN"
+  HYDRA_REEXEC=1 HYDRA_BOOT_DIR="$BOOT_DIR" exec bash "$BOOT_DIR/repo/installer/panel-install.sh" \
+    "${ORIGINAL_ARGS[@]}" --source "$SOURCE" --ref "$REF"
+fi
 
 # ------------------------------------------------------------------ Fragen (nur Neuinstallation)
 
@@ -345,7 +381,7 @@ if [[ -d "$SOURCE" ]]; then
   PANEL_SRC="$SOURCE/panel"
 else
   info "Lade $SOURCE ($REF) …"
-  git clone -q --depth 1 --branch "$REF" "$SOURCE" "$WORK/repo" || die "git clone fehlgeschlagen."
+  git_clone "$SOURCE" "$REF" "$WORK/repo" || die "git clone fehlgeschlagen."
   PANEL_SRC="$WORK/repo/panel"
 fi
 
@@ -594,6 +630,7 @@ HYDRA_EMAIL=$(printf '%q' "$EMAIL")
 HYDRA_TIMEZONE=$(printf '%q' "$TIMEZONE")
 HYDRA_SOURCE=$(printf '%q' "$SOURCE")
 HYDRA_REF=$(printf '%q' "$REF")
+HYDRA_GIT_TOKEN=$(printf '%q' "$GIT_TOKEN")
 HYDRA_SSL=$SSL
 EOF
 chmod 600 "$CONF_FILE"
@@ -630,6 +667,7 @@ cat > /usr/local/lib/hydra/panel-updater <<EOF
 set -u
 DIR=$(printf '%q' "$UPDATE_DIR")
 PHP=$(printf '%q' "$PHP_BIN")
+$(declare -f git_clone)
 EOF
 cat >> /usr/local/lib/hydra/panel-updater <<'EOF'
 REQUEST="$DIR/request"
@@ -647,7 +685,7 @@ check() {
   local work repo=(); work="$(mktemp -d)"
   if [[ -d "$HYDRA_SOURCE" ]]; then
     git -C "$HYDRA_SOURCE" rev-parse HEAD >/dev/null 2>&1 && repo=(-C "$HYDRA_SOURCE")
-  elif git clone -q --depth 1 --branch "${HYDRA_REF:-main}" "$HYDRA_SOURCE" "$work/repo" >/dev/null 2>&1; then
+  elif GIT_TOKEN="${HYDRA_GIT_TOKEN:-}" git_clone "$HYDRA_SOURCE" "${HYDRA_REF:-main}" "$work/repo" >/dev/null 2>&1; then
     repo=(-C "$work/repo")
   fi
   if (( ${#repo[@]} )); then
@@ -907,6 +945,7 @@ install -m 644 -o "$WEB_USER" -g "$WEB_USER" /dev/null "$PMA_DIR/helper"
 info "phpMyAdmin-Addon ok"
 
 rm -rf "$WORK"
+if [[ -n "${HYDRA_BOOT_DIR:-}" ]]; then rm -rf "$HYDRA_BOOT_DIR"; fi
 
 step "Fertig"
 VERSION="$(sed -n "s/.*'version' => '\(.*\)',.*/\1/p" "$INSTALL_DIR/config/app.php" | head -n1)"

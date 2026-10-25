@@ -13,6 +13,8 @@ class EggFormRequest extends AdminFormRequest
             'description' => 'nullable|string',
             'docker_images' => ['required', 'string', 'regex:/^[\w#\.\/\- ]*\|?~?[\w\.\/\-:@ ]*$/im'],
             'force_outgoing_ip' => 'sometimes|boolean',
+            // Hydra: additional ports (addon "ports"), one per line, see EggPorts.
+            'hydra_ports' => 'nullable|string|max:5000',
             'file_denylist' => 'array',
             'features' => 'sometimes|array',
             'startup' => 'required|string',

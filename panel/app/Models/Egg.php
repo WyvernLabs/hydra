@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property array|null $hydra_background
  * @property string|null $hydra_banner
  * @property string|null $hydra_list_image
+ * @property array|null $hydra_ports
  * @property string $author
  * @property string $name
  * @property string|null $description
@@ -108,6 +109,7 @@ class Egg extends Model implements Identifiable
         'script_entry',
         'script_container',
         'copy_script_from',
+        'hydra_ports',
     ];
 
     /**
@@ -124,6 +126,8 @@ class Egg extends Model implements Identifiable
         'file_denylist' => 'array',
         // Hydra: background of the server pages, see BackgroundService.
         'hydra_background' => 'array',
+        // Hydra: additional ports of the servers, see EggPorts.
+        'hydra_ports' => 'array',
     ];
 
     public static array $validationRules = [

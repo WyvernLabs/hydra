@@ -29,6 +29,7 @@ import ServerContentBlock from '@/components/elements/ServerContentBlock';
 import CopyOnClick from '@/components/elements/CopyOnClick';
 import UptimeDuration from '@/components/server/UptimeDuration';
 import getServerSchedules, { Schedule } from '@/api/server/schedules/getServerSchedules';
+import { serverAddress } from '@/api/server/getServer';
 import getServerDatabases from '@/api/server/databases/getServerDatabases';
 import getServerBackups from '@/api/swr/getServerBackups';
 import { useActivityLogs } from '@/api/server/activity';
@@ -344,8 +345,7 @@ export default () => {
     const base = match.url.replace(/\/dashboard\/?$/, '');
     const link = (path: string) => (path === '/' ? base : `${base}${path}`);
 
-    const allocation = server.allocations.find((item) => item.isDefault);
-    const address = allocation ? `${allocation.alias || ip(allocation.ip)}:${allocation.port}` : null;
+    const address = serverAddress(server);
     const sftpUser = `${username}.${server.id}`;
     const sftpHost = ip(server.sftpDetails.ip);
     const sftpUrl = `sftp://${sftpUser}@${sftpHost}:${server.sftpDetails.port}`;

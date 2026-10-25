@@ -95,6 +95,8 @@ return [
     |               are offline, starting, stopping or suspended ("states", JSON).
     | importer:     users copy the files of another server over SFTP onto
     |               theirs (settings page of the server).
+    | ports:        servers get the additional ports of their egg automatically
+    |               (eggs.hydra_ports, set on the egg page).
     | player_stats: players online on Minecraft Java servers of the "eggs"
     |               (JSON), kept for "keep_days".
     | pwa:          the panel can be installed as an app ("name", "short_name",
@@ -187,6 +189,9 @@ return [
             'states' => null,
         ],
         'importer' => [
+            'enabled' => true,
+        ],
+        'ports' => [
             'enabled' => true,
         ],
         'player_stats' => [

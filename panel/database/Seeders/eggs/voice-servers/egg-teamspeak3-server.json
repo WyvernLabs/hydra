@@ -4,26 +4,26 @@
         "version": "PTDL_v2",
         "update_url": null
     },
-    "exported_at": "2023-01-28T00:52:56+01:00",
+    "exported_at": "2026-10-25T12:00:00+02:00",
     "name": "Teamspeak3 Server",
     "author": "support@pterodactyl.io",
     "description": "VoIP software designed with security in mind, featuring crystal clear voice quality, endless customization options, and scalabilty up to thousands of simultaneous users.",
-    "features": null,
+    "features": [],
     "docker_images": {
-        "ghcr.io\/pterodactyl\/yolks:debian": "ghcr.io\/pterodactyl\/yolks:debian"
+        "ghcr.io/pterodactyl/yolks:debian": "ghcr.io/pterodactyl/yolks:debian"
     },
     "file_denylist": [],
-    "startup": ".\/ts3server default_voice_port={{SERVER_PORT}} query_port={{QUERY_PORT}} filetransfer_ip=0.0.0.0 filetransfer_port={{FILE_TRANSFER}} query_http_port={{QUERY_HTTP}} query_ssh_port={{QUERY_SSH}} query_protocols={{QUERY_PROTOCOLS_VAR}} serveradmin_password={{SERVERADMIN_PASSWORD}} license_accepted=1",
+    "startup": "./ts3server default_voice_port={{SERVER_PORT}} query_port={{QUERY_PORT}} filetransfer_ip=0.0.0.0 filetransfer_port={{FILE_TRANSFER}} query_http_port={{QUERY_HTTP}} query_ssh_port={{QUERY_SSH}} query_protocols={{QUERY_PROTOCOLS_VAR}} license_accepted=1",
     "config": {
         "files": "{}",
-        "startup": "{\r\n    \"done\": \"listening on 0.0.0.0:\"\r\n}",
-        "logs": "{\r\n    \"custom\": true,\r\n    \"location\": \"logs\/ts3.log\"\r\n}",
+        "startup": "{\n    \"done\": \"listening on 0.0.0.0:\"\n}",
+        "logs": "{\n    \"custom\": true,\n    \"location\": \"logs/ts3.log\"\n}",
         "stop": "^C"
     },
     "scripts": {
         "installation": {
-            "script": "#!\/bin\/ash\r\n# TS3 Installation Script\r\n#\r\n# Server Files: \/mnt\/server\r\n\r\nif [ -z ${TS_VERSION} ] || [ ${TS_VERSION} == latest ]; then\r\n    TS_VERSION=$(curl -sSL https:\/\/teamspeak.com\/versions\/server.json | jq -r '.linux.x86_64.version')\r\nfi\r\n\r\ncd \/mnt\/server\r\n\r\necho -e \"getting files from http:\/\/files.teamspeak-services.com\/releases\/server\/${TS_VERSION}\/teamspeak3-server_linux_amd64-${TS_VERSION}.tar.bz2\" \r\ncurl -L http:\/\/files.teamspeak-services.com\/releases\/server\/${TS_VERSION}\/teamspeak3-server_linux_amd64-${TS_VERSION}.tar.bz2 | tar -xvj --strip-components=1\r\ncp .\/redist\/libmariadb.so.2 .\/",
-            "container": "ghcr.io\/pterodactyl\/installers:alpine",
+            "script": "#!/bin/ash\n# TS3 Installation Script\n#\n# Server Files: /mnt/server\n\nif [ -z ${TS_VERSION} ] || [ ${TS_VERSION} == latest ]; then\n    TS_VERSION=$(curl -sSL https://teamspeak.com/versions/server.json | jq -r '.linux.x86_64.version')\nfi\n\ncd /mnt/server\n\necho -e \"getting files from http://files.teamspeak-services.com/releases/server/${TS_VERSION}/teamspeak3-server_linux_amd64-${TS_VERSION}.tar.bz2\" \ncurl -L http://files.teamspeak-services.com/releases/server/${TS_VERSION}/teamspeak3-server_linux_amd64-${TS_VERSION}.tar.bz2 | tar -xvj --strip-components=1\ncp ./redist/libmariadb.so.2 ./",
+            "container": "ghcr.io/pterodactyl/installers:alpine",
             "entrypoint": "ash"
         }
     },
@@ -40,7 +40,7 @@
         },
         {
             "name": "File Transfer Port",
-            "description": "The Teamspeak file transfer port",
+            "description": "The Teamspeak file transfer port. Assigned automatically by the panel (File transfer).",
             "env_variable": "FILE_TRANSFER",
             "default_value": "30033",
             "user_viewable": true,
@@ -50,7 +50,7 @@
         },
         {
             "name": "Query Port",
-            "description": "The Teamspeak Query Port",
+            "description": "The Teamspeak Query Port. Assigned automatically by the panel (ServerQuery).",
             "env_variable": "QUERY_PORT",
             "default_value": "10011",
             "user_viewable": true,
@@ -70,7 +70,7 @@
         },
         {
             "name": "Query SSH Port",
-            "description": "TCP Port opened for ServerQuery connections using SSH",
+            "description": "TCP Port opened for ServerQuery connections using SSH. Assigned automatically by the panel (ServerQuery SSH).",
             "env_variable": "QUERY_SSH",
             "default_value": "10022",
             "user_viewable": true,
@@ -80,23 +80,41 @@
         },
         {
             "name": "Query HTTP Port",
-            "description": "TCP Port opened for ServerQuery connections using http",
+            "description": "TCP Port opened for ServerQuery connections using http. Assigned automatically by the panel (ServerQuery HTTP).",
             "env_variable": "QUERY_HTTP",
             "default_value": "10080",
             "user_viewable": true,
             "user_editable": false,
             "rules": "required|integer|between:1025,65535",
             "field_type": "text"
-        },
-        {
-            "name": "Server Query Admin Password",
-            "description": "The password for the server query admin user.",
-            "env_variable": "SERVERADMIN_PASSWORD",
-            "default_value": "",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "nullable|string|max:32",
-            "field_type": "text"
         }
-    ]
+    ],
+    "hydra": {
+        "ports": [
+            {
+                "variable": "FILE_TRANSFER",
+                "offset": null,
+                "label": "File transfer",
+                "connect": false
+            },
+            {
+                "variable": "QUERY_PORT",
+                "offset": null,
+                "label": "ServerQuery (raw)",
+                "connect": false
+            },
+            {
+                "variable": "QUERY_SSH",
+                "offset": null,
+                "label": "ServerQuery (SSH)",
+                "connect": false
+            },
+            {
+                "variable": "QUERY_HTTP",
+                "offset": null,
+                "label": "ServerQuery (HTTP)",
+                "connect": false
+            }
+        ]
+    }
 }

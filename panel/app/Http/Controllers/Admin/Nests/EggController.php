@@ -11,6 +11,7 @@ use Pterodactyl\Http\Controllers\Controller;
 use Pterodactyl\Services\Eggs\EggUpdateService;
 use Pterodactyl\Services\Eggs\EggCreationService;
 use Pterodactyl\Services\Eggs\EggDeletionService;
+use Pterodactyl\Services\Hydra\Network\EggPorts;
 use Pterodactyl\Http\Requests\Admin\Egg\EggFormRequest;
 use Pterodactyl\Contracts\Repository\EggRepositoryInterface;
 use Pterodactyl\Contracts\Repository\NestRepositoryInterface;
@@ -54,6 +55,7 @@ class EggController extends Controller
     {
         $data = $request->validated();
         $data['docker_images'] = $this->normalizeDockerImages($data['docker_images'] ?? null);
+        $data['hydra_ports'] = EggPorts::parse($data['hydra_ports'] ?? null);
 
         $egg = $this->creationService->handle($data);
         $this->alert->success(trans('admin/nests.eggs.notices.egg_created'))->flash();
@@ -87,6 +89,7 @@ class EggController extends Controller
     {
         $data = $request->validated();
         $data['docker_images'] = $this->normalizeDockerImages($data['docker_images'] ?? null);
+        $data['hydra_ports'] = EggPorts::parse($data['hydra_ports'] ?? null);
 
         $this->updateService->handle($egg, $data);
         $this->alert->success(trans('admin/nests.eggs.notices.updated'))->flash();

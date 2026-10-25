@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Pterodactyl\Models\Egg;
 use Illuminate\Support\Collection;
 use Pterodactyl\Models\EggVariable;
+use Pterodactyl\Services\Hydra\Network\EggPorts;
 use Pterodactyl\Contracts\Repository\EggRepositoryInterface;
 
 class EggExporterService
@@ -62,6 +63,12 @@ class EggExporterService
                     ->toArray();
             }),
         ];
+
+        // Hydra: additional ports (addon "ports"). Other panels ignore the key.
+        $ports = EggPorts::of($egg);
+        if (!empty($ports)) {
+            $struct['hydra'] = ['ports' => $ports];
+        }
 
         return json_encode($struct, JSON_PRETTY_PRINT);
     }

@@ -1,0 +1,62 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-10-25T12:00:00+02:00",
+    "name": "Java Environment",
+    "author": "sneaky@sneakyhub.com",
+    "description": "Runs any Java application. Upload the .jar and set its name in JAR FILE. Pick the Java version (Temurin, GraalVM or OpenJ9) under Startup > Docker Image.",
+    "features": [
+        "java_version"
+    ],
+    "docker_images": {
+        "Java 25": "ghcr.io/pterodactyl/yolks:java_25",
+        "Java 26": "ghcr.io/pelican-eggs/yolks:java_26",
+        "Java 24": "ghcr.io/pterodactyl/yolks:java_24",
+        "Java 23": "ghcr.io/pterodactyl/yolks:java_23",
+        "Java 22": "ghcr.io/pterodactyl/yolks:java_22",
+        "Java 21": "ghcr.io/pterodactyl/yolks:java_21",
+        "Java 19": "ghcr.io/pterodactyl/yolks:java_19",
+        "Java 18": "ghcr.io/pterodactyl/yolks:java_18",
+        "Java 17": "ghcr.io/pterodactyl/yolks:java_17",
+        "Java 16": "ghcr.io/pterodactyl/yolks:java_16",
+        "Java 11": "ghcr.io/pterodactyl/yolks:java_11",
+        "Java 8": "ghcr.io/pterodactyl/yolks:java_8",
+        "Java 25 (GraalVM)": "~hydra/yolks:java_25_graalvm",
+        "Java 19 (OpenJ9)": "ghcr.io/pterodactyl/yolks:java_19j9",
+        "Java 18 (OpenJ9)": "ghcr.io/pterodactyl/yolks:java_18j9",
+        "Java 17 (OpenJ9)": "ghcr.io/pterodactyl/yolks:java_17j9",
+        "Java 16 (OpenJ9)": "ghcr.io/pterodactyl/yolks:java_16j9",
+        "Java 11 (OpenJ9)": "ghcr.io/pterodactyl/yolks:java_11j9",
+        "Java 8 (OpenJ9)": "ghcr.io/pterodactyl/yolks:java_8j9"
+    },
+    "file_denylist": [],
+    "startup": "java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{JARFILE}}",
+    "config": {
+        "files": "{}",
+        "startup": "{\n    \"done\": \"regex:.\"\n}",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\n# Java Installation Script\n#\n# Server Files: /mnt/server\nmkdir -p /mnt/server\ncd /mnt/server\necho \"Upload your .jar to the server and set its name in JAR FILE.\"\n",
+            "container": "ghcr.io/pelican-eggs/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "JAR FILE",
+            "description": "",
+            "env_variable": "JARFILE",
+            "default_value": "server.jar",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:255",
+            "field_type": "text"
+        }
+    ]
+}

@@ -22,7 +22,7 @@ import { useStoreState } from '@/state/hooks';
 import uploadLogToMcLogs from '@/api/server/files/uploadLogToMcLogs';
 import { httpErrorToHuman } from '@/api/http';
 import { colorCodesToAnsi, fillPlaceholders } from '@/lib/consoleText';
-import { ip } from '@/lib/formatters';
+import { serverAddress } from '@/api/server/getServer';
 
 import 'xterm/css/xterm.css';
 import styles from './style.module.css';
@@ -107,13 +107,12 @@ export default () => {
     // Hydra: values for the placeholders of the message while offline.
     const placeholders = ServerContext.useStoreState((state) => {
         const server = state.server.data!;
-        const allocation = server.allocations.find((item) => item.isDefault);
 
         return {
             name: server.name,
             id: server.id,
             node: server.node,
-            address: allocation ? `${allocation.alias || ip(allocation.ip)}:${allocation.port}` : '',
+            address: serverAddress(server) || '',
         };
     }, isEqual);
     const [history, setHistory] = usePersistedState<string[]>(`${serverId}:command_history`, []);

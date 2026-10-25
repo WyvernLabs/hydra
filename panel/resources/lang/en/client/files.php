@@ -202,7 +202,6 @@ return [
         'delete_forever_text_one' => '<bold>:name</bold> is deleted for good and cannot be restored.',
         'delete_forever_text_other' => '<bold>:count items</bold> are deleted for good and cannot be restored.',
         'and_more' => '… and :count more',
-        'skip_trash' => 'Delete for good instead of moving to the trash',
         'move_to_trash' => 'Move to trash',
         'delete_forever' => 'Delete for good',
         'chmod_title' => 'Permissions of :name',

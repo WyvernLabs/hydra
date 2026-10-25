@@ -186,6 +186,15 @@ class MinecraftVersionTest extends ClientApiIntegrationTestCase
         $this->assertSame('ghcr.io/pterodactyl/yolks:java_21', $service->imageFor($server, 25));
         $this->assertNull($service->imageFor($server, null));
 
+        $server->egg->forceFill(['docker_images' => [
+            'Java 21 (GraalVM)' => '~hydra/yolks:java_21_graalvm',
+            'Java 17 (OpenJ9)' => 'ghcr.io/pterodactyl/yolks:java_17j9',
+            'Java 17' => 'ghcr.io/pterodactyl/yolks:java_17',
+        ]])->save();
+
+        $this->assertSame('ghcr.io/pterodactyl/yolks:java_17', $service->imageFor($server->refresh(), 17));
+        $this->assertSame('~hydra/yolks:java_21_graalvm', $service->imageFor($server, 21));
+
         $server->egg->forceFill(['docker_images' => $original])->save();
     }
 }

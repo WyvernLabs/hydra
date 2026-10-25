@@ -352,4 +352,20 @@ return [
         'description' => 'Nutzer übertragen die Dateien eines anderen Servers per SFTP auf ihren Server, mit Fortschritt und Protokoll. Der Knopf dafür steht in den Einstellungen des Servers.',
         'notice' => 'Die Übertragung macht der Node des Servers. Adressen in privaten Netzen sind gesperrt, damit niemand das interne Netz des Nodes erreicht. Die Zugangsdaten werden nicht gespeichert. Wer importieren darf, regelt das Unterbenutzer-Recht „Server importieren“.',
     ],
+
+    'ports' => [
+        'name' => 'Automatische Ports',
+        'description' => 'Server bekommen die zusätzlichen Ports, die ihr Egg braucht, automatisch, z. B. Raw-, Query- und RCON-Port von ARK. Die Portnummern werden in die Startvariablen eingetragen.',
+        'eggs' => 'Eggs mit zusätzlichen Ports',
+        'egg' => 'Egg',
+        'ports' => 'Ports',
+        'no_eggs' => 'Noch kein Egg hat zusätzliche Ports. Sie werden auf der Seite des Eggs unter „Zusätzliche Ports“ eingetragen.',
+        'no_variable' => 'keine Variable',
+        'offset' => '(primärer Port + :offset)',
+        'connect' => 'wird als Adresse angezeigt',
+        'notice' => 'Die Ports werden vergeben, wenn ein Server erstellt wird, sein Spiel gewechselt wird oder ein Admin sein Egg ändert. Es werden nur freie Ports des Nodes genutzt, lege also unter Nodes > Allocation genug an. Ports mit Abstand (z. B. „+1“) müssen genau über dem primären Port frei sein; Server aus dem Ressourcen-Pool bekommen dafür notfalls einen anderen primären Port. Die Ports zählen zum Port-Limit des Servers.',
+        'summary' => ':count Egg(s) mit zusätzlichen Ports',
+        'no_offset_room' => 'Der Port direkt über :port ist auf diesem Node nicht frei, das Spiel braucht ihn aber. Wähle einen anderen primären Port oder lege mehr Ports an.',
+        'no_free_port' => 'Der Node hat keinen freien Port mehr für „:label“. Lege mehr Ports für den Node an.',
+    ],
 ];

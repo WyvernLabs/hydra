@@ -43,8 +43,8 @@ class NestControllerTest extends ApplicationApiIntegrationTestCase
             'data' => [],
             'meta' => [
                 'pagination' => [
-                    'total' => 4,
-                    'count' => 4,
+                    'total' => count($nests),
+                    'count' => count($nests),
                     'per_page' => 50,
                     'current_page' => 1,
                     'total_pages' => 1,

@@ -29,9 +29,19 @@ Zwei A-Records auf die jeweiligen Server-IPs, z. B.:
 
 ### 2. Panel
 
+Als root auf dem Panel-Server:
+
 ```bash
-# Repository auf den Server bringen (git clone oder per scp/rsync hochladen), dann:
-sudo bash installer/panel-install.sh
+bash <(curl -fsSL https://raw.githubusercontent.com/WyvernLabs/hydra/main/installer/panel-install.sh)
+```
+
+Der Installer lädt den Quellcode selbst von GitHub und merkt sich die Quelle für Updates. Alternativ geht `sudo bash installer/panel-install.sh` aus einem geklonten oder hochgeladenen Repository.
+
+Solange das Repository privat ist, braucht es ein GitHub-Token mit Lesezugriff (Fine-grained Token, Repository-Recht „Contents: Read“). Es wird für Updates in `/etc/hydra/panel.conf` (nur root) gespeichert:
+
+```bash
+TOKEN=github_pat_…
+bash <(curl -fsSL -H "Authorization: Bearer $TOKEN" https://raw.githubusercontent.com/WyvernLabs/hydra/main/installer/panel-install.sh) --git-token "$TOKEN"
 ```
 
 Der Installer fragt nach Domain, E-Mail, Admin-Benutzer und Zeitzone und richtet dann ein:
@@ -66,10 +76,15 @@ Danach unter **Configuration › Generate Token** den Token erzeugen.
 
 ### 4. Wings
 
+Als root auf dem Node-Server:
+
 ```bash
-sudo bash installer/wings-install.sh --fqdn node1.example.com --email admin@example.com \
+bash <(curl -fsSL https://raw.githubusercontent.com/WyvernLabs/hydra/main/installer/wings-install.sh) \
+  --fqdn node1.example.com --email admin@example.com \
   --panel-url https://panel.example.com --token <token> --node <id>
 ```
+
+Für ein privates Repository wie beim Panel `-H "Authorization: Bearer $TOKEN"` an curl und `--git-token "$TOKEN"` an den Installer anhängen. Aus einem Repository-Verzeichnis heraus geht auch `sudo bash installer/wings-install.sh …`.
 
 Das installiert Docker, baut Hydra Wings aus `wings/` mit der passenden Go-Version (nach `/opt/hydra/go`), holt ein Let's-Encrypt-Zertifikat, verbindet den Node mit dem Panel und startet `hydra-wings.service`.
 
@@ -81,6 +96,8 @@ sudo systemctl restart hydra-wings
 ```
 
 Laufen Panel und Wings auf **demselben Server**, hält der Installer Caddy für die Zertifikatsausstellung (und jede Erneuerung) kurz an, weil certbot Port 80 braucht.
+
+Der Installer baut außerdem lokale Laufzeit-Images, die es nicht fertig gibt (derzeit `hydra/yolks:java_25_graalvm` für GraalVM). Eggs verweisen mit `~hydra/yolks:…` darauf.
 
 **Update:** `sudo hydra-node update`
 

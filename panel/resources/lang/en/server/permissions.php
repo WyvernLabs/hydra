@@ -22,6 +22,7 @@ return [
             'read-content' => 'Read Content',
             'update' => 'Edit',
             'delete' => 'Delete',
+            'delete-permanent' => 'Delete Permanently',
             'archive' => 'Archives',
             'sftp' => 'SFTP',
         ],

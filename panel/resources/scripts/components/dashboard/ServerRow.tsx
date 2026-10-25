@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Cpu, HardDrive, MapPin, MemoryStick, Network } from 'lucide-react';
-import { Server } from '@/api/server/getServer';
+import { Server, serverAddress } from '@/api/server/getServer';
 import getServerResourceUsage, { ServerPowerState, ServerStats } from '@/api/server/getServerResourceUsage';
-import { bytesToString, ip, mbToBytes } from '@/lib/formatters';
+import { bytesToString, mbToBytes } from '@/lib/formatters';
 import { useServerLink } from '@/components/hydra/serverNavigation';
 import { useCpuValue } from '@/lib/usage';
 
@@ -89,7 +89,7 @@ export default ({ server, className }: { server: Server; className?: string }) =
     }, [isSuspended, lockedOut, server.isNodeUnderMaintenance]);
 
     const unlimited = t('client/common:unlimited');
-    const allocation = server.allocations.find((item) => item.isDefault);
+    const address = serverAddress(server);
     const picture = server.listImage || server.banner;
 
     // A state that replaces the live state, e.g. suspended or installing.
@@ -140,12 +140,10 @@ export default ({ server, className }: { server: Server; className?: string }) =
                 <div className={'relative min-w-0'}>
                     <p className={'truncate text-lg font-semibold text-white'}>{server.name}</p>
                     <p className={'font-mono text-xs text-gray-300'}>{server.id}</p>
-                    {allocation && (
+                    {address && (
                         <p className={'mt-3 flex items-center gap-1.5 text-sm text-gray-200'}>
                             <Network className={'h-3.5 w-3.5 shrink-0'} />
-                            <span className={'truncate'}>
-                                {allocation.alias || ip(allocation.ip)}:{allocation.port}
-                            </span>
+                            <span className={'truncate'}>{address}</span>
                         </p>
                     )}
                     <p className={'mt-1 flex items-center gap-1.5 text-xs text-gray-300'}>

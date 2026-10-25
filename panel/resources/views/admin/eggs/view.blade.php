@@ -82,6 +82,11 @@
                                 <p class="text-muted small">{!! __('admin/eggs.docker_images_help') !!}</p>
                             </div>
                             <div class="form-group">
+                                <label for="pHydraPorts" class="control-label">{{ __('admin/eggs.hydra_ports') }}</label>
+                                <textarea id="pHydraPorts" name="hydra_ports" class="form-control" rows="3" placeholder="+1|Raw Port&#10;QUERY_PORT|Query Port">{{ old('hydra_ports', \Pterodactyl\Services\Hydra\Network\EggPorts::format($egg)) }}</textarea>
+                                <p class="text-muted small">{!! __('admin/eggs.hydra_ports_help', ['url' => route('admin.design.addons.view', 'ports')]) !!}</p>
+                            </div>
+                            <div class="form-group">
                                 <div class="checkbox checkbox-primary no-margin-bottom">
                                     <input id="pForceOutgoingIp" name="force_outgoing_ip" type="checkbox" value="1" @if($egg->force_outgoing_ip) checked @endif />
                                     <label for="pForceOutgoingIp" class="strong">{{ __('admin/eggs.force_outgoing_ip') }}</label>

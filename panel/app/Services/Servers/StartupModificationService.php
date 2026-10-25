@@ -9,6 +9,7 @@ use Pterodactyl\Models\Server;
 use Pterodactyl\Models\ServerVariable;
 use Illuminate\Database\ConnectionInterface;
 use Pterodactyl\Traits\Services\HasUserLevels;
+use Pterodactyl\Services\Hydra\Network\PortAssignmentService;
 
 class StartupModificationService
 {
@@ -17,8 +18,11 @@ class StartupModificationService
     /**
      * StartupModificationService constructor.
      */
-    public function __construct(private ConnectionInterface $connection, private VariableValidatorService $validatorService)
-    {
+    public function __construct(
+        private ConnectionInterface $connection,
+        private VariableValidatorService $validatorService,
+        private PortAssignmentService $portAssignmentService,
+    ) {
     }
 
     /**
@@ -48,7 +52,13 @@ class StartupModificationService
             }
 
             if ($this->isUserLevel(User::USER_LEVEL_ADMIN)) {
+                $eggId = $server->egg_id;
                 $this->updateAdministrativeSettings($data, $server);
+
+                // Hydra: another egg may need other additional ports (addon "ports").
+                if ($server->egg_id !== $eggId) {
+                    $this->portAssignmentService->assign($server);
+                }
             }
 
             // Calling ->refresh() rather than ->fresh() here causes it to return the

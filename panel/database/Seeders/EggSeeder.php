@@ -16,14 +16,12 @@ class EggSeeder extends Seeder
     protected EggUpdateImporterService $updateImporterService;
 
     /**
-     * @var string[]
+     * The nests whose eggs get imported, see NestSeeder::$nests.
      */
-    public static array $import = [
-        'Minecraft',
-        'Source Engine',
-        'Voice Servers',
-        'Rust',
-    ];
+    public static function nests(): array
+    {
+        return array_keys(NestSeeder::$nests);
+    }
 
     /**
      * EggSeeder constructor.
@@ -41,7 +39,7 @@ class EggSeeder extends Seeder
      */
     public function run()
     {
-        foreach (static::$import as $nest) {
+        foreach (static::nests() as $nest) {
             /* @noinspection PhpParamsInspection */
             $this->parseEggFiles(
                 Nest::query()->where('author', 'support@pterodactyl.io')->where('name', $nest)->firstOrFail()
@@ -54,10 +52,12 @@ class EggSeeder extends Seeder
      */
     protected function parseEggFiles(Nest $nest)
     {
-        $files = new \DirectoryIterator(database_path('Seeders/eggs/' . kebab_case($nest->name)));
+        // Hydra: sorted by name, so the eggs of a new panel always get the same IDs.
+        $files = iterator_to_array(new \FilesystemIterator(database_path('Seeders/eggs/' . kebab_case($nest->name))));
+        ksort($files);
 
         $this->command->alert('Updating Eggs for Nest: ' . $nest->name);
-        /** @var \DirectoryIterator $file */
+        /** @var \SplFileInfo $file */
         foreach ($files as $file) {
             if (!$file->isFile() || !$file->isReadable()) {
                 continue;

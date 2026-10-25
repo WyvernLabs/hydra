@@ -81,24 +81,18 @@ export const DeleteDialog = ({
     open,
     names,
     trashEnabled,
-    permanent: initialPermanent,
     onClose,
     onConfirm,
 }: {
     open: boolean;
     names: string[];
     trashEnabled: boolean;
-    permanent: boolean;
     onClose: () => void;
-    onConfirm: (permanent: boolean) => void;
+    onConfirm: () => void;
 }) => {
     const { t } = useTranslation('client/files');
-    const [permanent, setPermanent] = useState(initialPermanent);
-    const forever = permanent || !trashEnabled;
-
-    useEffect(() => {
-        if (open) setPermanent(initialPermanent);
-    }, [open, initialPermanent]);
+    // Hydra: deleting moves into the trash, only without trash the files are gone right away.
+    const forever = !trashEnabled;
 
     return (
         <Dialog
@@ -129,20 +123,9 @@ export const DeleteDialog = ({
                     {names.length > 50 && <li>{t('dialogs.and_more', { count: names.length - 50 })}</li>}
                 </ul>
             )}
-            {trashEnabled && (
-                <label className={'mt-4 flex items-center gap-2 text-sm text-gray-300'}>
-                    <Input.Checkbox
-                        checked={permanent}
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                            setPermanent(event.currentTarget.checked)
-                        }
-                    />
-                    {t('dialogs.skip_trash')}
-                </label>
-            )}
             <Dialog.Footer>
                 <Button.Text onClick={onClose}>{t('dialogs.cancel')}</Button.Text>
-                <Button.Danger onClick={() => onConfirm(forever)}>
+                <Button.Danger onClick={onConfirm}>
                     {forever ? t('dialogs.delete_forever') : t('dialogs.move_to_trash')}
                 </Button.Danger>
             </Dialog.Footer>

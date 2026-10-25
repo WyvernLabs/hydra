@@ -17,6 +17,7 @@ use Pterodactyl\Repositories\Wings\DaemonServerRepository;
 use Pterodactyl\Services\Deployment\FindViableNodesService;
 use Pterodactyl\Repositories\Eloquent\ServerVariableRepository;
 use Pterodactyl\Services\Deployment\AllocationSelectionService;
+use Pterodactyl\Services\Hydra\Network\PortAssignmentService;
 use Pterodactyl\Exceptions\Http\Connection\DaemonConnectionException;
 
 class ServerCreationService
@@ -33,6 +34,7 @@ class ServerCreationService
         private ServerDeletionService $serverDeletionService,
         private ServerVariableRepository $serverVariableRepository,
         private VariableValidatorService $validatorService,
+        private PortAssignmentService $portAssignmentService,
     ) {
     }
 
@@ -83,12 +85,16 @@ class ServerCreationService
         // If that connection fails out we will attempt to perform a cleanup by just
         // deleting the server itself from the system.
         /** @var Server $server */
-        $server = $this->connection->transaction(function () use ($data, $eggVariableData) {
+        $server = $this->connection->transaction(function () use ($data, $eggVariableData, $deployment) {
             // Create the server and assign any additional allocations to it.
             $server = $this->createModel($data);
 
             $this->storeAssignedAllocations($server, $data);
             $this->storeEggVariables($server, $eggVariableData);
+
+            // Hydra: the additional ports the egg needs (addon "ports").
+            $this->portAssignmentService->assign($server, !is_null($deployment));
+            $server->refresh();
 
             return $server;
         }, 5);

@@ -191,7 +191,7 @@ export default ({
                                                         <RotateCcw className={'h-4 w-4'} />
                                                     </button>
                                                 )}
-                                                {ide.can.delete && (
+                                                {ide.can.deletePermanent && (
                                                     <button
                                                         type={'button'}
                                                         title={t('trash.delete')}
@@ -213,12 +213,12 @@ export default ({
                     )}
                 </div>
                 <Dialog.Footer>
-                    {ide.can.delete && entries.length > 0 && (
+                    {ide.can.deletePermanent && entries.length > 0 && (
                         <Button.Text onClick={() => setConfirmEmpty(true)} disabled={busy} className={'mr-auto'}>
                             {t('trash.empty_button')}
                         </Button.Text>
                     )}
-                    {selected.length > 0 && ide.can.delete && (
+                    {selected.length > 0 && ide.can.deletePermanent && (
                         <Button.Danger
                             disabled={busy}
                             onClick={() =>

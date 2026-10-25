@@ -52,7 +52,7 @@ bash hydra/installer/panel-install.sh        # bzw. hydra/installer/wings-instal
 
 Der Installer merkt sich `/root/hydra` als Quelle. Für ein Update dort die neue Version genauso entpacken (alten Ordner vorher löschen) und `hydra-panel update` bzw. `hydra-node update` ausführen.
 
-Solange das Repository privat ist, braucht es ein GitHub-Token mit Lesezugriff (Fine-grained Token, Repository-Recht „Contents: Read“). Es wird für Updates in `/etc/hydra/panel.conf` (nur root) gespeichert:
+Für ein privates Repository (z. B. einen eigenen Fork) braucht es ein GitHub-Token mit Lesezugriff (Fine-grained Token, Repository-Recht „Contents: Read“). Es wird für Updates in `/etc/hydra/panel.conf` (nur root) gespeichert:
 
 ```bash
 TOKEN=github_pat_…

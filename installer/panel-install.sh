@@ -31,6 +31,8 @@ set -Eeuo pipefail
 # Systembefehle (apt-cache, systemctl, free …) auf Englisch, damit ihre Ausgabe unabhängig von der
 # Serversprache ausgewertet werden kann. Die Meldungen des Installers selbst bleiben deutsch.
 export LC_ALL=C.UTF-8 LANG=C.UTF-8
+# Ohne Login-Shell (z. B. aus einem systemd-Dienst) fehlt HOME.
+export HOME="${HOME:-/root}"
 
 INSTALL_DIR=/var/www/hydra
 CONF_DIR=/etc/hydra

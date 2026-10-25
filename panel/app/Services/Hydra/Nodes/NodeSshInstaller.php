@@ -73,7 +73,7 @@ class NodeSshInstaller
 
         $job = 'bash ' . escapeshellarg($script) . ' > ' . self::LOG . ' 2>&1; echo $? > ' . self::EXIT . '; rm -f ' . escapeshellarg($script);
         $this->run($sftp, $sudo . 'rm -f ' . self::EXIT . ' ' . self::LOG);
-        $this->run($sftp, $sudo . "systemd-run --quiet --collect --unit=hydra-node-install-$id /bin/bash -c " . escapeshellarg($job));
+        $this->run($sftp, $sudo . "systemd-run --quiet --collect --unit=hydra-node-install-$id --setenv=HOME=/root /bin/bash -c " . escapeshellarg($job));
         // Removes the key of the panel even if nobody looks at the page again.
         $this->run($sftp, $sudo . "systemd-run --quiet --collect --on-active=3h --unit=hydra-node-install-cleanup-$id /bin/sed -i "
             . escapeshellarg("/$marker/d") . ' ' . escapeshellarg($authorized));

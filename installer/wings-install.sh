@@ -27,6 +27,8 @@ set -Eeuo pipefail
 # Systembefehle (apt-cache, systemctl, free …) auf Englisch, damit ihre Ausgabe unabhängig von der
 # Serversprache ausgewertet werden kann. Die Meldungen des Installers selbst bleiben deutsch.
 export LC_ALL=C.UTF-8 LANG=C.UTF-8
+# Ohne Login-Shell (z. B. gestartet vom Panel über systemd-run) fehlt HOME.
+export HOME="${HOME:-/root}"
 
 BIN=/usr/local/bin/hydra-wings
 CONF_DIR=/etc/hydra
@@ -490,7 +492,12 @@ else
   fi
   info "Baue Hydra Wings $WINGS_VERSION …"
   rsync -a --delete "$WINGS_SRC/" "$WORK/wings/"
+  # proxy.golang.org antwortet manchen Hoster-Netzen mit 403 (wie dl.google.com über IPv6).
+  # Mit "|" holt Go ein Modul bei jedem Fehler direkt aus seinem Repository (GitHub, GitLab …);
+  # die Prüfsummen aus go.sum gelten auch dann.
+  GO_PROXY_CHAIN="${GOPROXY:-https://proxy.golang.org|direct}"
   (cd "$WORK/wings" && CGO_ENABLED=0 GOTOOLCHAIN=local GOPATH=/opt/hydra/gopath GOCACHE=/opt/hydra/gocache \
+    GOPROXY="$GO_PROXY_CHAIN" GOFLAGS=-mod=readonly \
     "$GO_DIR/bin/go" build -trimpath \
       -ldflags="-s -w -X github.com/pterodactyl/wings/system.Version=$WINGS_VERSION" \
       -o "$WORK/hydra-wings" .) || die "Wings konnte nicht gebaut werden."

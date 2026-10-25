@@ -448,7 +448,7 @@ else
   if [[ -z "${HYDRA_REEXEC:-}" && -f "$NEW_INSTALLER" ]] && ! cmp -s "$NEW_INSTALLER" "$SCRIPT_PATH"; then
     info "Neuere Installer-Version gefunden – starte sie"
     cp "$NEW_INSTALLER" "$WORK/wings-install.sh"
-    HYDRA_REEXEC=1 exec bash "$WORK/wings-install.sh" "${ORIGINAL_ARGS[@]}" --source "$SOURCE" --ref "$REF"
+    HYDRA_REEXEC=1 HYDRA_BOOT_DIR="$WORK" exec bash "$WORK/wings-install.sh" "${ORIGINAL_ARGS[@]}" --source "$SOURCE" --ref "$REF"
   fi
 
   # Go in genau der Version, die wings/go.mod verlangt (toolchain-Zeile), nach /opt/hydra/go.

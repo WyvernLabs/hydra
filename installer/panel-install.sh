@@ -390,7 +390,7 @@ NEW_INSTALLER="$(dirname "$PANEL_SRC")/installer/panel-install.sh"
 if [[ -z "${HYDRA_REEXEC:-}" && -f "$NEW_INSTALLER" ]] && ! cmp -s "$NEW_INSTALLER" "$SCRIPT_PATH"; then
   info "Neuere Installer-Version gefunden – starte sie"
   cp "$NEW_INSTALLER" "$WORK/panel-install.sh"
-  HYDRA_REEXEC=1 exec bash "$WORK/panel-install.sh" "${ORIGINAL_ARGS[@]}" --source "$SOURCE" --ref "$REF"
+  HYDRA_REEXEC=1 HYDRA_BOOT_DIR="$WORK" exec bash "$WORK/panel-install.sh" "${ORIGINAL_ARGS[@]}" --source "$SOURCE" --ref "$REF"
 fi
 
 if (( INSTALLED )) && [[ -f "$INSTALL_DIR/artisan" ]]; then

@@ -6,6 +6,7 @@ use Pterodactyl\Models\User;
 use Pterodactyl\Models\ApiKey;
 use Pterodactyl\Http\Controllers\Api\Application\Nodes\NodeController;
 use Pterodactyl\Http\Controllers\Api\Application\Users\UserController;
+use Pterodactyl\Http\Controllers\Api\Application\Users\SanctionController;
 use Pterodactyl\Http\Controllers\Api\Application\Servers\ServerController;
 use Pterodactyl\Http\Controllers\Api\Application\Servers\StartupController;
 use Pterodactyl\Http\Controllers\Api\Application\Locations\LocationController;
@@ -61,7 +62,7 @@ class AdminAcl
         ],
         self::RESOURCE_USERS => [
             self::READ => ['users.view'],
-            self::WRITE => ['users.create', 'users.update', 'users.delete'],
+            self::WRITE => ['users.create', 'users.update', 'users.delete', 'users.warn', 'users.ban'],
         ],
         self::RESOURCE_LOCATIONS => [
             self::READ => ['locations.view'],
@@ -103,6 +104,9 @@ class AdminAcl
         UserController::class . '@store' => ['users.create'],
         UserController::class . '@update' => ['users.update'],
         UserController::class . '@delete' => ['users.delete'],
+        SanctionController::class . '@warn' => ['users.warn'],
+        SanctionController::class . '@ban' => ['users.ban'],
+        SanctionController::class . '@lift' => ['users.ban'],
         NodeController::class . '@store' => ['nodes.create'],
         NodeController::class . '@update' => ['nodes.update'],
         NodeController::class . '@delete' => ['nodes.delete'],

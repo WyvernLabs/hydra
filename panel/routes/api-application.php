@@ -21,7 +21,16 @@ Route::group(['prefix' => '/users'], function () {
     Route::patch('/{user:id}', [Application\Users\UserController::class, 'update']);
 
     Route::delete('/{user:id}', [Application\Users\UserController::class, 'delete']);
+
+    // Hydra: warnings and bans of user accounts.
+    Route::get('/{user:id}/sanctions', [Application\Users\SanctionController::class, 'index']);
+    Route::post('/{user:id}/warnings', [Application\Users\SanctionController::class, 'warn']);
+    Route::post('/{user:id}/bans', [Application\Users\SanctionController::class, 'ban']);
+    Route::post('/{user:id}/bans/{sanction:id}/lift', [Application\Users\SanctionController::class, 'lift']);
 });
+
+// Hydra: ban templates of the admin area (Users > Ban templates).
+Route::get('/ban-templates', [Application\Users\SanctionController::class, 'templates']);
 
 /*
 |--------------------------------------------------------------------------

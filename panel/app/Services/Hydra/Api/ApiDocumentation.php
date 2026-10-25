@@ -97,6 +97,10 @@ class ApiDocumentation
             return 'account/' . $parts[1];
         }
 
+        if ($api === 'application' && $parts[0] === 'ban-templates') {
+            return 'users';
+        }
+
         return in_array($parts[0], ['', 'permissions', 'pages'], true) ? 'general' : $parts[0];
     }
 

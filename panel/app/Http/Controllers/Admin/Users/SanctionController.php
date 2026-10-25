@@ -4,11 +4,9 @@ namespace Pterodactyl\Http\Controllers\Admin\Users;
 
 use Illuminate\Http\Request;
 use Pterodactyl\Models\User;
-use Pterodactyl\Models\BanTemplate;
 use Illuminate\Http\RedirectResponse;
 use Prologue\Alerts\AlertsMessageBag;
 use Pterodactyl\Models\UserSanction;
-use Pterodactyl\Exceptions\DisplayException;
 use Pterodactyl\Http\Controllers\Controller;
 use Pterodactyl\Services\Hydra\Users\SanctionService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -24,7 +22,7 @@ class SanctionController extends Controller
 
     public function warn(Request $request, User $user): RedirectResponse
     {
-        $this->assertCanSanction($request, $user);
+        $this->service->assertCanSanction($request->user(), $user);
         $data = $request->validate(['reason' => 'required|string|max:2000']);
 
         $this->service->warn($user, $request->user(), $data['reason']);
@@ -35,19 +33,21 @@ class SanctionController extends Controller
 
     public function ban(Request $request, User $user): RedirectResponse
     {
-        $this->assertCanSanction($request, $user);
+        $this->service->assertCanSanction($request->user(), $user);
         $data = $request->validate([
             'template' => 'nullable|integer|exists:ban_templates,id',
             'reason' => 'required_without:template|nullable|string|max:2000',
             'duration_days' => 'nullable|integer|between:1,3650',
         ]);
 
-        // A template fills in what was left empty.
-        $template = !empty($data['template']) ? BanTemplate::query()->find($data['template']) : null;
-        $reason = trim((string) ($data['reason'] ?? '')) ?: (string) $template?->reason;
-        $days = $request->filled('duration_days') ? (int) $data['duration_days'] : ($request->boolean('permanent') ? null : $template?->duration_days);
-
-        $this->service->ban($user, $request->user(), $reason, $days);
+        $this->service->banWith(
+            $user,
+            $request->user(),
+            !empty($data['template']) ? (int) $data['template'] : null,
+            $data['reason'] ?? null,
+            $request->filled('duration_days') ? (int) $data['duration_days'] : null,
+            $request->boolean('permanent'),
+        );
         $this->alert->success(__('admin/sanctions.banned', ['name' => $user->username]))->flash();
 
         return redirect()->route('admin.users.view', $user->id);
@@ -55,7 +55,7 @@ class SanctionController extends Controller
 
     public function lift(Request $request, User $user, UserSanction $sanction): RedirectResponse
     {
-        $this->assertCanSanction($request, $user);
+        $this->service->assertCanSanction($request->user(), $user);
         if ($sanction->user_id !== $user->id || !$sanction->isActive()) {
             throw new NotFoundHttpException();
         }
@@ -64,19 +64,5 @@ class SanctionController extends Controller
         $this->alert->success(__('admin/sanctions.lifted', ['name' => $user->username]))->flash();
 
         return redirect()->route('admin.users.view', $user->id);
-    }
-
-    /**
-     * Nobody can sanction themselves, a root admin or an account with more
-     * admin rights than they have.
-     *
-     * @throws DisplayException
-     */
-    private function assertCanSanction(Request $request, User $user): void
-    {
-        $actor = $request->user();
-        if ($actor->is($user) || $user->root_admin || !$actor->outranks($user)) {
-            throw new DisplayException(__('admin/sanctions.not_allowed'));
-        }
     }
 }

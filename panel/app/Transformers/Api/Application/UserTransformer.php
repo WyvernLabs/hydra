@@ -3,6 +3,7 @@
 namespace Pterodactyl\Transformers\Api\Application;
 
 use Pterodactyl\Models\User;
+use Pterodactyl\Models\UserSanction;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\NullResource;
 use Pterodactyl\Services\Acl\Api\AdminAcl;
@@ -12,7 +13,7 @@ class UserTransformer extends BaseTransformer
     /**
      * List of resources that can be included.
      */
-    protected array $availableIncludes = ['servers'];
+    protected array $availableIncludes = ['servers', 'sanctions'];
 
     /**
      * Return the resource name for the JSONAPI output.
@@ -57,5 +58,23 @@ class UserTransformer extends BaseTransformer
         $user->loadMissing('servers');
 
         return $this->collection($user->getRelation('servers'), $this->makeTransformer(ServerTransformer::class), 'server');
+    }
+
+    /**
+     * Hydra: warnings and bans of the user, newest first.
+     *
+     * @throws \Pterodactyl\Exceptions\Transformer\InvalidTransformerLevelException
+     */
+    public function includeSanctions(User $user): Collection|NullResource
+    {
+        if (!$this->authorize(AdminAcl::RESOURCE_USERS)) {
+            return $this->null();
+        }
+
+        return $this->collection(
+            $user->sanctions()->latest('id')->get(),
+            $this->makeTransformer(UserSanctionTransformer::class),
+            UserSanction::RESOURCE_NAME,
+        );
     }
 }

@@ -7,8 +7,10 @@ use Pterodactyl\Models\User;
 use Pterodactyl\Models\Server;
 use Illuminate\Support\Facades\Log;
 use Pterodactyl\Facades\Activity;
+use Pterodactyl\Models\BanTemplate;
 use Pterodactyl\Models\UserSanction;
 use Pterodactyl\Jobs\RevokeSftpAccessJob;
+use Pterodactyl\Exceptions\DisplayException;
 use Pterodactyl\Notifications\AccountBanned;
 use Pterodactyl\Services\Servers\SuspensionService;
 
@@ -24,6 +26,37 @@ class SanctionService
 {
     public function __construct(private SuspensionService $suspension)
     {
+    }
+
+    /**
+     * Nobody can sanction themselves, a root admin or an account with more
+     * admin rights than they have.
+     *
+     * @throws DisplayException
+     */
+    public function assertCanSanction(User $actor, User $user): void
+    {
+        if ($actor->is($user) || $user->root_admin || !$actor->outranks($user)) {
+            throw new DisplayException(__('admin/sanctions.not_allowed'));
+        }
+    }
+
+    /**
+     * Bans with what the form or the API sent: a template fills in what was
+     * left empty, without days and without "permanent" the days of the template.
+     *
+     * @throws DisplayException
+     */
+    public function banWith(User $user, ?User $issuer, ?int $templateId, ?string $reason, ?int $days, bool $permanent): UserSanction
+    {
+        $template = $templateId ? BanTemplate::query()->find($templateId) : null;
+        $reason = trim((string) $reason) ?: (string) $template?->reason;
+        if ($reason === '') {
+            throw new DisplayException(__('admin/sanctions.reason_required'));
+        }
+        $days ??= $permanent ? null : $template?->duration_days;
+
+        return $this->ban($user, $issuer, $reason, $days);
     }
 
     public function warn(User $user, ?User $issuer, string $reason): UserSanction

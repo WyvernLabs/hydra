@@ -13,6 +13,7 @@
 @endsection
 
 @section('content')
+    @include('partials.admin.api.tabs', ['active' => 'keys'])
     <div class="row">
         <div class="col-xs-12">
             <div class="box box-primary">

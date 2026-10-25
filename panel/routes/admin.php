@@ -16,6 +16,8 @@ Route::get('/', [Admin\BaseController::class, 'index'])->name('admin.index');
 */
 Route::group(['prefix' => 'api'], function () {
     Route::get('/', [Admin\ApiController::class, 'index'])->name('admin.api.index')->middleware('admin.can:api.view');
+    // Hydra: documentation of the application and client API.
+    Route::get('/docs', Admin\ApiDocumentationController::class)->name('admin.api.docs')->middleware('admin.can:api.view');
     Route::get('/new', [Admin\ApiController::class, 'create'])->name('admin.api.new')->middleware('admin.can:api.create');
 
     Route::post('/new', [Admin\ApiController::class, 'store'])->middleware('admin.can:api.create');

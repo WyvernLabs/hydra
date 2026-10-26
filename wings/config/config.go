@@ -106,7 +106,7 @@ type ApiConfiguration struct {
 	RemoteDownloadAllowlist []string `json:"-" yaml:"remote_download_allowlist"`
 
 	// The maximum size for files uploaded through the Panel in MB.
-	UploadLimit int64 `default:"100" json:"upload_limit" yaml:"upload_limit"`
+	UploadLimit int64 `default:"16384" json:"upload_limit" yaml:"upload_limit"`
 
 	// A list of IP address of proxies that may send a X-Forwarded-For header to set the true clients IP
 	TrustedProxies []string `json:"trusted_proxies" yaml:"trusted_proxies"`

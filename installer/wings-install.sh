@@ -585,6 +585,13 @@ else
   info "Firewall (ufw) installiert, Regeln für SSH, 8080 und 2022 angelegt (einschalten im Adminbereich)"
 fi
 
+# Uploads über den Dateimanager: Standard 16 GB statt 100 MB. Nur der alte Standardwert wird
+# angehoben, ein im Adminbereich gesetzter Wert bleibt. Das Panel hebt ihn per Migration ebenso an.
+if [[ -f "$WINGS_CONFIG" ]] && grep -qE '^[[:space:]]+upload_limit:[[:space:]]*100[[:space:]]*$' "$WINGS_CONFIG"; then
+  sed -i -E 's/^([[:space:]]+upload_limit:[[:space:]]*)100[[:space:]]*$/\116384/' "$WINGS_CONFIG"
+  info "Upload-Limit von 100 MB auf 16 GB angehoben"
+fi
+
 if [[ -f "$WINGS_CONFIG" ]]; then
   systemctl restart "$SERVICE"
   sleep 3

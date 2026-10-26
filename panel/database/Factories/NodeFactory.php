@@ -33,7 +33,7 @@ class NodeFactory extends Factory
             'memory_overallocate' => 0,
             'disk' => 10240,
             'disk_overallocate' => 0,
-            'upload_size' => 100,
+            'upload_size' => 16384,
             'daemon_token_id' => Str::random(Node::DAEMON_TOKEN_ID_LENGTH),
             'daemon_token' => Crypt::encrypt(Str::random(Node::DAEMON_TOKEN_LENGTH)),
             'daemonListen' => 8080,

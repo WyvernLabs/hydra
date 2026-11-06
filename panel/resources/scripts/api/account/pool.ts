@@ -53,6 +53,8 @@ export interface ResourcePool {
     servers: PoolServer[];
     eggs: PoolEgg[];
     locations: { id: number; name: string }[];
+    // Nodes the admin gave the pool, also non-public ones.
+    nodes: { id: number; name: string; location: string | null }[];
     features: { subdomains: boolean; proxies: boolean };
     canEdit: boolean;
     canDelete: boolean;
@@ -62,6 +64,7 @@ export interface NewPoolServer extends PoolResources {
     name: string;
     egg: number;
     location: number | null;
+    node: number | null;
     environment: Record<string, string>;
 }
 
@@ -82,6 +85,7 @@ const toPool = (data: any): ResourcePool | null =>
               })),
               eggs: data.eggs,
               locations: data.locations,
+              nodes: data.nodes || [],
               features: data.features,
               canEdit: data.can_edit,
               canDelete: data.can_delete,

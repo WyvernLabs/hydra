@@ -305,7 +305,7 @@ return [
         'eggs' => 'Wählbare Eggs',
         'eggs_help' => 'Diese Eggs können Benutzer für neue Server wählen. Leer lassen für alle Eggs.',
         'locations' => 'Wählbare Standorte',
-        'locations_help' => 'Neue Server landen auf einer öffentlichen Node dieser Standorte, die genug Platz hat. Leer lassen für alle Standorte.',
+        'locations_help' => 'Neue Server landen auf einer öffentlichen Node dieser Standorte, die genug Platz hat. Leer lassen für alle Standorte. Auf der Seite eines Benutzers lassen sich eigene Standorte und Nodes für seinen Pool festlegen.',
         'user_edit' => 'Benutzer dürfen die Ressourcen ihrer Pool-Server ändern',
         'user_delete' => 'Benutzer dürfen ihre Pool-Server löschen',
         'notice' => 'Den Pool eines Benutzers legst du auf seiner Seite unter Benutzer fest. Dort bestimmst du auch, welche seiner Server dazu zählen. Server, die ein Benutzer aus seinem Pool erstellt, zählen automatisch dazu.',

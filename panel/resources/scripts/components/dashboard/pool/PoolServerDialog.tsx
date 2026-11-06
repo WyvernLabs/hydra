@@ -96,7 +96,8 @@ export default ({ pool, server, open, onClose, onDone }: Props) => {
     const { clearFlashes, clearAndAddHttpError } = useFlashKey('pool:dialog');
     const [name, setName] = useState('');
     const [egg, setEgg] = useState<number>(pool.eggs[0]?.id || 0);
-    const [location, setLocation] = useState<number | null>(null);
+    // "location:<id>", "node:<id>" or empty to let the panel pick.
+    const [target, setTarget] = useState('');
     const [environment, setEnvironment] = useState<Record<string, string>>({});
     const [values, setValues] = useState<PoolResources>({} as PoolResources);
     const [busy, setBusy] = useState(false);
@@ -132,7 +133,7 @@ export default ({ pool, server, open, onClose, onDone }: Props) => {
         }
         setName('');
         setEgg(pool.eggs[0]?.id || 0);
-        setLocation(pool.locations.length > 1 ? pool.locations[0].id : null);
+        setTarget('');
         const initial = {} as PoolResources;
         POOL_RESOURCES.forEach((key) => {
             const { min, max } = limits[key];
@@ -140,6 +141,9 @@ export default ({ pool, server, open, onClose, onDone }: Props) => {
         });
         setValues(initial);
     }, [open, server]);
+
+    const targets = pool.locations.length + pool.nodes.length;
+    const [targetType, targetId] = target.split(':');
 
     const selectedEgg = pool.eggs.find((item) => item.id === egg);
 
@@ -166,7 +170,14 @@ export default ({ pool, server, open, onClose, onDone }: Props) => {
         ) as PoolResources;
         const request = server
             ? updatePoolServer(server.identifier, resources)
-            : createPoolServer({ ...resources, name, egg, location, environment });
+            : createPoolServer({
+                  ...resources,
+                  name,
+                  egg,
+                  location: targetType === 'location' ? Number(targetId) : null,
+                  node: targetType === 'node' ? Number(targetId) : null,
+                  environment,
+              });
         request
             .then(() => onDone())
             .catch((error) => {
@@ -199,7 +210,7 @@ export default ({ pool, server, open, onClose, onDone }: Props) => {
                             />
                         </div>
                         <div className={'grid grid-cols-1 gap-4 sm:grid-cols-2'}>
-                            <div className={pool.locations.length > 1 ? '' : 'sm:col-span-2'}>
+                            <div className={targets > 1 ? '' : 'sm:col-span-2'}>
                                 <Label htmlFor={'poolEgg'}>{t('egg')}</Label>
                                 <Select
                                     id={'poolEgg'}
@@ -217,19 +228,33 @@ export default ({ pool, server, open, onClose, onDone }: Props) => {
                                     ))}
                                 </Select>
                             </div>
-                            {pool.locations.length > 1 && (
+                            {targets > 1 && (
                                 <div>
                                     <Label htmlFor={'poolLocation'}>{t('location')}</Label>
                                     <Select
                                         id={'poolLocation'}
-                                        value={location || ''}
-                                        onChange={(event) => setLocation(Number(event.currentTarget.value))}
+                                        value={target}
+                                        onChange={(event) => setTarget(event.currentTarget.value)}
                                     >
-                                        {pool.locations.map((item) => (
-                                            <option key={item.id} value={item.id}>
-                                                {item.name}
-                                            </option>
-                                        ))}
+                                        <option value={''}>{t('location_auto')}</option>
+                                        {pool.locations.length > 0 && (
+                                            <optgroup label={t('locations_group')}>
+                                                {pool.locations.map((item) => (
+                                                    <option key={item.id} value={`location:${item.id}`}>
+                                                        {item.name}
+                                                    </option>
+                                                ))}
+                                            </optgroup>
+                                        )}
+                                        {pool.nodes.length > 0 && (
+                                            <optgroup label={t('nodes_group')}>
+                                                {pool.nodes.map((item) => (
+                                                    <option key={item.id} value={`node:${item.id}`}>
+                                                        {item.location ? `${item.name} (${item.location})` : item.name}
+                                                    </option>
+                                                ))}
+                                            </optgroup>
+                                        )}
                                     </Select>
                                 </div>
                             )}

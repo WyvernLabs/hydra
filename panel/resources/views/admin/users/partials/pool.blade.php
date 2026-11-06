@@ -14,6 +14,11 @@
     };
     $units = ['cpu' => __('admin/users.pool.unit_cores'), 'memory' => 'GB', 'disk' => 'GB', 'backups' => 'GB'];
     $mayEdit = $canManage && Auth::user()->hasAdminPermission('users.pool');
+    // Where the pool servers may go; both empty = the locations of the addon settings.
+    $allLocations = \Pterodactyl\Models\Location::query()->orderBy('short')->get();
+    $allNodes = \Pterodactyl\Models\Node::query()->with('location')->orderBy('name')->get();
+    $selectedLocations = array_map('intval', old('locations', $pool?->locations ?? []));
+    $selectedNodes = array_map('intval', old('nodes', $pool?->nodes ?? []));
 @endphp
 <div class="col-xs-12">
     <form action="{{ route('admin.users.pool', $user->id) }}" method="POST">
@@ -52,6 +57,30 @@
                             </p>
                         </div>
                     @endforeach
+                </div>
+                <div class="row">
+                    <div class="form-group col-sm-6">
+                        <label for="poolLocations" class="control-label">{{ __('admin/users.pool.locations') }}</label>
+                        <select id="poolLocations" name="locations[]" class="form-control" multiple>
+                            @foreach($allLocations as $location)
+                                <option value="{{ $location->id }}" @selected(in_array($location->id, $selectedLocations, true))>{{ $location->short }}{{ $location->long ? ' – ' . $location->long : '' }}</option>
+                            @endforeach
+                        </select>
+                        <p class="text-muted small no-margin" style="margin-top: 4px;">{{ __('admin/users.pool.locations_help') }}</p>
+                    </div>
+                    <div class="form-group col-sm-6">
+                        <label for="poolNodes" class="control-label">{{ __('admin/users.pool.nodes') }}</label>
+                        <select id="poolNodes" name="nodes[]" class="form-control" multiple>
+                            @foreach($allNodes->groupBy(fn ($node) => $node->location?->short ?? '') as $short => $nodes)
+                                <optgroup label="{{ $short }}">
+                                    @foreach($nodes as $node)
+                                        <option value="{{ $node->id }}" @selected(in_array($node->id, $selectedNodes, true))>{{ $node->name }}{{ $node->public ? '' : ' (' . __('admin/users.pool.node_private') . ')' }}</option>
+                                    @endforeach
+                                </optgroup>
+                            @endforeach
+                        </select>
+                        <p class="text-muted small no-margin" style="margin-top: 4px;">{{ __('admin/users.pool.nodes_help') }}</p>
+                    </div>
                 </div>
                 <label class="control-label">{{ __('admin/users.pool.servers_title') }}</label>
                 <p class="text-muted small">{{ __('admin/users.pool.servers_help') }}</p>
@@ -102,3 +131,10 @@
         </div>
     </form>
 </div>
+
+@section('footer-scripts')
+    @parent
+    <script>
+        $('#poolLocations, #poolNodes').select2({ width: '100%' });
+    </script>
+@endsection

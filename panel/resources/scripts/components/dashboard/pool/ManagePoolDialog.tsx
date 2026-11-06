@@ -89,7 +89,7 @@ export default ({ pool, open, onClose, onChanged }: Props) => {
     });
     const serverLimit = pool.limits.servers;
     const serversLeft = serverLimit === null ? Infinity : serverLimit - pool.used.servers;
-    const canCreate = serversLeft > 0 && pool.eggs.length > 0 && pool.locations.length > 0;
+    const canCreate = serversLeft > 0 && pool.eggs.length > 0 && pool.locations.length + pool.nodes.length > 0;
 
     const createButton = (
         <Button onClick={() => setCreating(true)} disabled={!canCreate}>

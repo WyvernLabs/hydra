@@ -305,7 +305,7 @@ return [
         'eggs' => 'Eggs to pick from',
         'eggs_help' => 'Users can pick these eggs for new servers. Leave empty for every egg.',
         'locations' => 'Locations to pick from',
-        'locations_help' => 'New servers go to a public node of these locations that has enough room. Leave empty for every location.',
+        'locations_help' => 'New servers go to a public node of these locations that has enough room. Leave empty for every location. Own locations and nodes for a pool can be set on the page of the user.',
         'user_edit' => 'Users may change the resources of their pool servers',
         'user_delete' => 'Users may delete their pool servers',
         'notice' => 'Set the pool of a user on their page under Users. There you also choose which of their servers count against it. Servers a user creates from the pool always count.',

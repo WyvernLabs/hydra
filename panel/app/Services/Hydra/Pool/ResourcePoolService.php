@@ -3,6 +3,7 @@
 namespace Pterodactyl\Services\Hydra\Pool;
 
 use Pterodactyl\Models\Egg;
+use Pterodactyl\Models\Node;
 use Pterodactyl\Models\User;
 use Pterodactyl\Models\Server;
 use Pterodactyl\Models\Location;
@@ -118,19 +119,43 @@ class ResourcePoolService
     }
 
     /**
-     * Locations the user may pick.
+     * Locations the user may pick: the own ones of the pool or, when the pool
+     * has neither own locations nor nodes, those of the addon settings. Only
+     * locations with a public node count.
      *
      * @return Collection<int, Location>
      */
-    public function locations(): Collection
+    public function locations(?HydraResourcePool $pool = null): Collection
     {
-        $ids = $this->addon->locationIds();
+        if ($pool?->hasOwnTargets()) {
+            $ids = array_map('intval', $pool->locations ?? []);
+            if (empty($ids)) {
+                return new Collection();
+            }
+        } else {
+            $ids = $this->addon->locationIds();
+        }
 
         return Location::query()
             ->when(!empty($ids), fn ($query) => $query->whereIn('id', $ids))
             ->whereHas('nodes', fn ($query) => $query->where('public', true))
             ->orderBy('short')
             ->get();
+    }
+
+    /**
+     * Nodes the admin gave the pool, also non-public ones.
+     *
+     * @return Collection<int, Node>
+     */
+    public function nodes(?HydraResourcePool $pool): Collection
+    {
+        $ids = array_map('intval', $pool?->nodes ?? []);
+        if (empty($ids)) {
+            return new Collection();
+        }
+
+        return Node::query()->whereIn('id', $ids)->with('location')->orderBy('name')->get();
     }
 
     /**
@@ -151,8 +176,8 @@ class ResourcePoolService
     }
 
     /**
-     * Creates a server from the pool. $data holds name, egg, location (or
-     * null), the resources and the variables the user filled in.
+     * Creates a server from the pool. $data holds name, egg, location or node
+     * (or neither), the resources and the variables the user filled in.
      *
      * @throws \Throwable
      */
@@ -171,14 +196,21 @@ class ResourcePoolService
                 throw ValidationException::withMessages(['egg' => trans('client/pool.errors.egg')]);
             }
 
-            $locations = $this->locations()->pluck('id')->all();
-            if (!empty($data['location'])) {
+            // Picked a location or a node, or let the panel pick from all of them.
+            $locations = $this->locations($pool)->pluck('id')->all();
+            $nodes = $this->nodes($pool)->pluck('id')->all();
+            if (!empty($data['node'])) {
+                if (!in_array((int) $data['node'], $nodes, true)) {
+                    throw ValidationException::withMessages(['node' => trans('client/pool.errors.node')]);
+                }
+                [$locations, $nodes] = [[], [(int) $data['node']]];
+            } elseif (!empty($data['location'])) {
                 if (!in_array((int) $data['location'], $locations, true)) {
                     throw ValidationException::withMessages(['location' => trans('client/pool.errors.location')]);
                 }
-                $locations = [(int) $data['location']];
+                [$locations, $nodes] = [[(int) $data['location']], []];
             }
-            if (empty($locations)) {
+            if (empty($locations) && empty($nodes)) {
                 throw ValidationException::withMessages(['location' => trans('client/pool.errors.location')]);
             }
 
@@ -203,7 +235,7 @@ class ResourcePoolService
                 'backup_limit' => 0,
                 'backup_storage_limit' => (int) $data['backups'],
                 'start_on_completion' => false,
-            ], (new DeploymentObject())->setLocations($locations));
+            ], (new DeploymentObject())->setLocations($locations)->setNodes($nodes));
 
             $server->forceFill([
                 'hydra_pool' => true,
@@ -323,9 +355,14 @@ class ResourcePoolService
                         'required' => str_contains('|' . $variable->rules . '|', '|required|'),
                     ])->values()->all(),
             ])->values()->all(),
-            'locations' => $this->locations()->map(fn (Location $location) => [
+            'locations' => $this->locations($pool)->map(fn (Location $location) => [
                 'id' => $location->id,
                 'name' => $location->long ?: $location->short,
+            ])->values()->all(),
+            'nodes' => $this->nodes($pool)->map(fn (Node $node) => [
+                'id' => $node->id,
+                'name' => $node->name,
+                'location' => $node->location ? ($node->location->long ?: $node->location->short) : null,
             ])->values()->all(),
             'features' => [
                 'subdomains' => app(SubdomainsAddon::class)->enabled(),

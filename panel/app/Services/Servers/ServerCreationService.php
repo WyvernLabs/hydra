@@ -123,6 +123,7 @@ class ServerCreationService
     {
         /** @var Collection $nodes */
         $nodes = $this->findViableNodesService->setLocations($deployment->getLocations())
+            ->setNodes($deployment->getNodes())
             ->setDisk(Arr::get($data, 'disk'))
             ->setMemory(Arr::get($data, 'memory'))
             ->handle();

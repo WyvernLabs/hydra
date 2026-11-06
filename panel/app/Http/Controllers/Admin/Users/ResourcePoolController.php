@@ -38,6 +38,10 @@ class ResourcePoolController extends Controller
             'backups' => 'required|numeric|min:0|max:1048576',
             'subdomains' => 'required|integer|min:0|max:10000',
             'proxies' => 'required|integer|min:0|max:10000',
+            'locations' => 'nullable|array',
+            'locations.*' => 'integer|exists:locations,id',
+            'nodes' => 'nullable|array',
+            'nodes.*' => 'integer|exists:nodes,id',
             'pool_servers' => 'nullable|array',
             'pool_servers.*' => 'integer',
         ]);
@@ -61,6 +65,9 @@ class ResourcePoolController extends Controller
             'backups' => (int) round($data['backups'] * 1024),
             'subdomains' => (int) $data['subdomains'],
             'proxies' => (int) $data['proxies'],
+            // Both empty: the locations of the addon settings.
+            'locations' => $this->ids($data['locations'] ?? []),
+            'nodes' => $this->ids($data['nodes'] ?? []),
         ]);
 
         $selected = array_map('intval', $data['pool_servers'] ?? []);
@@ -70,5 +77,15 @@ class ResourcePoolController extends Controller
         $this->alert->success(__('admin/users.pool.saved'))->flash();
 
         return redirect()->route('admin.users.view', $user->id);
+    }
+
+    /**
+     * @return int[]|null
+     */
+    private function ids(array $values): ?array
+    {
+        $ids = array_values(array_unique(array_map('intval', $values)));
+
+        return empty($ids) ? null : $ids;
     }
 }

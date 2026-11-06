@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $backups
  * @property int $subdomains
  * @property int $proxies
+ * @property int[]|null $locations locations the servers may go to (public nodes of them)
+ * @property int[]|null $nodes nodes the servers may go to, also non-public ones
  * @property \Carbon\CarbonImmutable $created_at
  * @property \Carbon\CarbonImmutable $updated_at
  * @property User $user
@@ -36,7 +38,7 @@ class HydraResourcePool extends Model
 
     protected bool $immutableDates = true;
 
-    protected $fillable = ['user_id', 'servers', 'cpu', 'memory', 'disk', 'databases', 'ports', 'backups', 'subdomains', 'proxies'];
+    protected $fillable = ['user_id', 'servers', 'cpu', 'memory', 'disk', 'databases', 'ports', 'backups', 'subdomains', 'proxies', 'locations', 'nodes'];
 
     protected $casts = [
         'user_id' => 'integer',
@@ -49,6 +51,8 @@ class HydraResourcePool extends Model
         'backups' => 'integer',
         'subdomains' => 'integer',
         'proxies' => 'integer',
+        'locations' => 'array',
+        'nodes' => 'array',
     ];
 
     public static array $validationRules = [
@@ -62,11 +66,24 @@ class HydraResourcePool extends Model
         'backups' => 'required|integer|min:0|max:1073741824',
         'subdomains' => 'required|integer|min:0|max:10000',
         'proxies' => 'required|integer|min:0|max:10000',
+        'locations' => 'nullable|array',
+        'locations.*' => 'integer',
+        'nodes' => 'nullable|array',
+        'nodes.*' => 'integer',
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * True when the admin set own locations or nodes for this pool, which
+     * then replace the locations of the addon settings.
+     */
+    public function hasOwnTargets(): bool
+    {
+        return !empty($this->locations) || !empty($this->nodes);
     }
 
     /**

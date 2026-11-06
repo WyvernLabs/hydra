@@ -37,6 +37,7 @@ class ResourcePoolController extends ClientApiController
             'name' => 'required|string|min:1|max:191',
             'egg' => 'required|integer',
             'location' => 'nullable|integer',
+            'node' => 'nullable|integer',
             'environment' => 'nullable|array',
             'environment.*' => 'nullable|string|max:2000',
         ] + ResourcePoolService::resourceRules());

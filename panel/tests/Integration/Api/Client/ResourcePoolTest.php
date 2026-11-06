@@ -210,6 +210,49 @@ class ResourcePoolTest extends ClientApiIntegrationTestCase
         $this->assertNotNull($own->fresh());
     }
 
+    public function testServerGoesToADedicatedNodeOfThePool(): void
+    {
+        $user = User::factory()->create();
+        $dedicated = Node::factory()->create(['location_id' => $this->location->id, 'public' => false, 'memory' => 65536, 'disk' => 1048576]);
+        Allocation::factory()->create(['node_id' => $dedicated->id, 'port' => 31000]);
+        $this->poolFor($user, ['nodes' => [$dedicated->id]]);
+
+        // Own nodes replace the locations of the addon settings.
+        $pool = $this->login($user)->getJson('/api/client/account/pool')->assertOk()->json('pool');
+        $this->assertSame([], $pool['locations']);
+        $this->assertSame([$dedicated->id], array_column($pool['nodes'], 'id'));
+
+        $this->login($user)->postJson('/api/client/account/pool/servers', $this->newServer(['ports' => 1]))->assertCreated();
+        $this->assertSame($dedicated->id, Server::query()->where('owner_id', $user->id)->firstOrFail()->node_id);
+
+        $this->login($user)->postJson('/api/client/account/pool/servers', $this->newServer(['ports' => 1, 'node' => $dedicated->id + 100]))
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.meta.source_field', 'node');
+    }
+
+    public function testUserPicksALocationOrANodeOfThePool(): void
+    {
+        $user = User::factory()->create();
+        $other = Location::factory()->create();
+        $node = Node::factory()->create(['location_id' => $other->id, 'memory' => 65536, 'disk' => 1048576]);
+        Allocation::factory()->create(['node_id' => $node->id, 'port' => 32000]);
+        $dedicated = Node::factory()->create(['location_id' => $this->location->id, 'public' => false, 'memory' => 65536, 'disk' => 1048576]);
+        Allocation::factory()->create(['node_id' => $dedicated->id, 'port' => 32001]);
+        $this->poolFor($user, ['locations' => [$other->id], 'nodes' => [$dedicated->id]]);
+
+        // The location of the addon settings is not offered any more.
+        $this->login($user)->postJson('/api/client/account/pool/servers', $this->newServer(['ports' => 1, 'location' => $this->location->id]))
+            ->assertStatus(422);
+
+        $this->login($user)->postJson('/api/client/account/pool/servers', $this->newServer(['ports' => 1, 'location' => $other->id]))->assertCreated();
+        $this->login($user)->postJson('/api/client/account/pool/servers', $this->newServer(['ports' => 1, 'node' => $dedicated->id]))->assertCreated();
+
+        $this->assertEqualsCanonicalizing(
+            [$node->id, $dedicated->id],
+            Server::query()->where('owner_id', $user->id)->pluck('node_id')->all()
+        );
+    }
+
     public function testAdminSetsThePoolInCoresAndGigabytes(): void
     {
         $user = User::factory()->create();
@@ -227,11 +270,13 @@ class ResourcePoolTest extends ClientApiIntegrationTestCase
             'backups' => 20,
             'subdomains' => 1,
             'proxies' => 1,
+            'nodes' => [(string) $server->node_id],
             'pool_servers' => [$server->id],
         ])->assertRedirect();
 
         $pool = $user->resourcePool()->firstOrFail();
         $this->assertSame([3, 250, 8192, 51200, 20480], [$pool->servers, $pool->cpu, $pool->memory, $pool->disk, $pool->backups]);
+        $this->assertSame([null, [$server->node_id]], [$pool->locations, $pool->nodes]);
         $this->assertTrue($server->refresh()->hydra_pool);
 
         $this->login($admin)->get("/admin/users/view/$user->id")->assertOk()->assertSee('resourcePool');

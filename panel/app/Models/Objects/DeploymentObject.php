@@ -10,6 +10,9 @@ class DeploymentObject
 
     private array $ports = [];
 
+    // Hydra: nodes to deploy to besides the locations, also non-public ones.
+    private array $nodes = [];
+
     public function isDedicated(): bool
     {
         return $this->dedicated;
@@ -42,6 +45,18 @@ class DeploymentObject
     public function setPorts(array $ports): self
     {
         $this->ports = $ports;
+
+        return $this;
+    }
+
+    public function getNodes(): array
+    {
+        return $this->nodes;
+    }
+
+    public function setNodes(array $nodes): self
+    {
+        $this->nodes = $nodes;
 
         return $this;
     }

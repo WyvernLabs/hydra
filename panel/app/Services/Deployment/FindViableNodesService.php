@@ -11,6 +11,7 @@ use Pterodactyl\Exceptions\Service\Deployment\NoViableNodeException;
 class FindViableNodesService
 {
     protected array $locations = [];
+    protected array $nodes = [];
     protected ?int $disk = null;
     protected ?int $memory = null;
 
@@ -22,6 +23,20 @@ class FindViableNodesService
         Assert::allIntegerish($locations, 'An array of location IDs should be provided when calling setLocations.');
 
         $this->locations = $locations;
+
+        return $this;
+    }
+
+    /**
+     * Hydra: nodes that may be picked besides the public nodes of the locations,
+     * also when they are not public (e.g. nodes dedicated to a user). With
+     * nodes but no locations only these nodes are searched.
+     */
+    public function setNodes(array $nodes): self
+    {
+        Assert::allIntegerish($nodes, 'An array of node IDs should be provided when calling setNodes.');
+
+        $this->nodes = $nodes;
 
         return $this;
     }
@@ -74,11 +89,20 @@ class FindViableNodesService
         $query = Node::query()->select('nodes.*')
             ->selectRaw('IFNULL(SUM(servers.memory), 0) as sum_memory')
             ->selectRaw('IFNULL(SUM(servers.disk), 0) as sum_disk')
-            ->leftJoin('servers', 'servers.node_id', '=', 'nodes.id')
-            ->where('nodes.public', 1);
+            ->leftJoin('servers', 'servers.node_id', '=', 'nodes.id');
 
-        if (!empty($this->locations)) {
-            $query = $query->whereIn('nodes.location_id', $this->locations);
+        if (empty($this->nodes)) {
+            $query->where('nodes.public', 1);
+            if (!empty($this->locations)) {
+                $query->whereIn('nodes.location_id', $this->locations);
+            }
+        } else {
+            $query->where(function ($query) {
+                $query->whereIn('nodes.id', $this->nodes);
+                if (!empty($this->locations)) {
+                    $query->orWhere(fn ($query) => $query->where('nodes.public', 1)->whereIn('nodes.location_id', $this->locations));
+                }
+            });
         }
 
         $results = $query->groupBy('nodes.id')

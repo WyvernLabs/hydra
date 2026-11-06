@@ -1137,3 +1137,124 @@ a { color: rgb(var(--hydra-accent-400)); }
     .hydra-tiles.hydra-tiles > * { width: calc((100% - 32px) / 3); }
 }
 
+
+/* ---------------------------------------------------------------- Announcements */
+
+/* Design > Announcements: glass with a light tint of the type's color. */
+.hydra-announcements {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.hydra-announcement {
+    --announcement: 148, 163, 184;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 16px 20px;
+    border: 1px solid rgba(var(--announcement), 0.35);
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(var(--announcement), 0.18), rgba(var(--announcement), 0.07));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 24px rgba(0, 0, 0, 0.22);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+}
+
+.hydra-announcement[data-type='success'] { --announcement: 34, 197, 94; }
+.hydra-announcement[data-type='warning'] { --announcement: 234, 179, 8; }
+.hydra-announcement[data-type='critical'] { --announcement: 239, 68, 68; }
+.hydra-announcement[data-type='maintenance'] { --announcement: 59, 130, 246; }
+
+.hydra-announcement-icon {
+    flex: none;
+    display: flex;
+    color: rgb(var(--announcement));
+}
+
+.hydra-announcement-icon svg {
+    width: 42px;
+    height: 42px;
+    stroke-width: 1.75;
+}
+
+.hydra-announcement-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.hydra-announcement-text strong {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--hydra-text);
+    overflow-wrap: anywhere;
+}
+
+.hydra-announcement-text p {
+    margin: 3px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--hydra-text);
+    opacity: 0.8;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.hydra-announcement a.hydra-announcement-button {
+    flex: none;
+    padding: 8px 16px;
+    border: 1px solid rgba(var(--announcement), 0.5);
+    border-radius: 8px;
+    background: rgba(var(--announcement), 0.2);
+    color: var(--hydra-text);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s ease;
+}
+
+.hydra-announcement a.hydra-announcement-button:hover,
+.hydra-announcement a.hydra-announcement-button:focus {
+    background: rgba(var(--announcement), 0.35);
+    color: var(--hydra-text);
+    text-decoration: none;
+}
+
+@media (max-width: 640px) {
+    .hydra-announcement { flex-wrap: wrap; gap: 12px; padding: 14px 16px; }
+    .hydra-announcement-icon svg { width: 32px; height: 32px; }
+    .hydra-announcement-text { flex-basis: calc(100% - 48px); }
+    .hydra-announcement a.hydra-announcement-button { width: 100%; text-align: center; }
+}
+
+.hydra-announcement-close {
+    flex: none;
+    display: flex;
+    padding: 6px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--hydra-text);
+    opacity: 0.65;
+    cursor: pointer;
+    transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.hydra-announcement-close:hover,
+.hydra-announcement-close:focus-visible {
+    opacity: 1;
+    background: rgba(var(--announcement), 0.25);
+}
+
+.hydra-announcement-close svg {
+    width: 18px;
+    height: 18px;
+}
+
+@media (max-width: 640px) {
+    /* Stays in the corner while the button takes the whole row. */
+    .hydra-announcement { position: relative; padding-right: 44px; }
+    .hydra-announcement-close { position: absolute; top: 8px; right: 8px; }
+}

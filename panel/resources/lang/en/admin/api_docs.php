@@ -60,6 +60,7 @@ return [
         ],
         'client' => [
             'general' => ['title' => 'General', 'description' => 'Server list, permission names and pages.'],
+            'announcements' => ['title' => 'Announcements', 'description' => 'The announcements the user sees.'],
             'account' => ['title' => 'Account', 'description' => 'The account of the user of the key: details, email, password, language, profile, two-factor login, activity and warnings.'],
             'account/api-keys' => ['title' => 'API keys', 'description' => 'Client API keys of the user.'],
             'account/ssh-keys' => ['title' => 'SSH keys', 'description' => 'SSH keys for the SFTP login.'],
@@ -136,6 +137,8 @@ return [
             'GET ' => 'Lists the servers of the user (?type=admin-all for admins: every server).',
             'GET permissions' => 'Returns all subuser permissions with their descriptions.',
             'GET pages/{slug}' => 'Returns a page written in the admin area.',
+            'GET announcements' => 'Returns the announcements of the user: general ones and those of the nodes of their servers. With the parameter server (UUID) only those of the node of that server.',
+            'POST announcements/{announcement}/dismiss' => 'Hides a dismissible announcement for the user for 24 hours.',
             'GET account' => 'Shows the account of the user.',
             'DELETE account' => 'Deletes the own account (password needed).',
             'GET account/activity' => 'Activity log of the account.',

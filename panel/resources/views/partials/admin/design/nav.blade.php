@@ -10,6 +10,9 @@
                     <li @if($activeTab === 'console')class="active"@endif><a href="{{ route('admin.design.console') }}">{{ __('admin/design.tabs.console') }}</a></li>
                     <li @if($activeTab === 'links')class="active"@endif><a href="{{ route('admin.design.links') }}">{{ __('admin/design.tabs.links') }}</a></li>
                     <li @if($activeTab === 'navigation')class="active"@endif><a href="{{ route('admin.design.navigation') }}">{{ __('admin/design.tabs.navigation') }}</a></li>
+                    @if(Auth::user()->hasAdminPermission('announcements.view'))
+                        <li @if($activeTab === 'announcements')class="active"@endif><a href="{{ route('admin.design.announcements') }}">{{ __('admin/design.tabs.announcements') }}</a></li>
+                    @endif
                     @if(Auth::user()->hasAdminPermission('addons.view'))
                         <li @if($activeTab === 'addons')class="active"@endif><a href="{{ route('admin.design.addons') }}">{{ __('admin/design.tabs.addons') }}</a></li>
                     @endif

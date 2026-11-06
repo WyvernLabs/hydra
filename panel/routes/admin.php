@@ -115,6 +115,13 @@ Route::group(['prefix' => 'design'], function () {
     Route::post('/domains', [Admin\Design\DomainController::class, 'store'])->middleware('admin.can:addons.update');
     Route::patch('/domains/{domain:id}', [Admin\Design\DomainController::class, 'update'])->name('admin.design.domains.update')->middleware('admin.can:addons.update');
     Route::delete('/domains/{domain:id}', [Admin\Design\DomainController::class, 'delete'])->name('admin.design.domains.delete')->middleware('admin.can:addons.update');
+    // Hydra: announcements in the client area.
+    Route::get('/announcements', [Admin\Design\AnnouncementController::class, 'index'])->name('admin.design.announcements')->middleware('admin.can:announcements.view');
+    Route::get('/announcements/new', [Admin\Design\AnnouncementController::class, 'create'])->name('admin.design.announcements.new')->middleware('admin.can:announcements.update');
+    Route::post('/announcements/new', [Admin\Design\AnnouncementController::class, 'store'])->middleware('admin.can:announcements.update');
+    Route::get('/announcements/{announcement:id}', [Admin\Design\AnnouncementController::class, 'view'])->name('admin.design.announcements.view')->middleware('admin.can:announcements.view');
+    Route::patch('/announcements/{announcement:id}', [Admin\Design\AnnouncementController::class, 'update'])->middleware('admin.can:announcements.update');
+    Route::delete('/announcements/{announcement:id}', [Admin\Design\AnnouncementController::class, 'delete'])->middleware('admin.can:announcements.update');
     Route::get('/links', [Admin\Design\LinkController::class, 'index'])->name('admin.design.links')->middleware('admin.can:design.view');
     Route::get('/links/new', [Admin\Design\LinkController::class, 'create'])->name('admin.design.links.new')->middleware('admin.can:design.update');
     Route::get('/links/{link:id}', [Admin\Design\LinkController::class, 'view'])->name('admin.design.links.view')->middleware('admin.can:design.view');

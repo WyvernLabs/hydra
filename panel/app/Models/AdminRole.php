@@ -32,6 +32,7 @@ class AdminRole extends Model
         'settings' => ['view', 'update'],
         'design' => ['view', 'update'],
         'addons' => ['view', 'update'],
+        'announcements' => ['view', 'update'],
         'updates' => ['view', 'run'],
         'api' => ['view', 'create', 'delete'],
         'databases' => ['view', 'create', 'update', 'delete'],
@@ -56,6 +57,8 @@ class AdminRole extends Model
         'updates.view' => 'settings.view',
         // The addons are a tab of the design area.
         'addons.view' => 'design.view',
+        // The announcements are a tab of the design area.
+        'announcements.view' => 'design.view',
     ];
 
     protected $table = 'admin_roles';

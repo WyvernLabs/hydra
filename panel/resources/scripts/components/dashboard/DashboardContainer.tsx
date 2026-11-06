@@ -15,6 +15,7 @@ import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getResourcePool, ResourcePool } from '@/api/account/pool';
 import ResourcePoolCard from '@/components/dashboard/pool/ResourcePoolCard';
+import Announcements from '@/components/hydra/Announcements';
 
 // Hydra: the greeting depends on the time of day.
 const greetingKey = (): string => {
@@ -141,6 +142,7 @@ export default () => {
                     />
                 )}
             </div>
+            <Announcements />
             {!servers ? (
                 <Spinner centered size={'large'} />
             ) : (

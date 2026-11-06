@@ -21,6 +21,9 @@ Route::get('/', [Client\ClientController::class, 'index'])->name('api:client.ind
 Route::get('/permissions', [Client\ClientController::class, 'permissions']);
 // Hydra: pages written in the admin area.
 Route::get('/pages/{slug}', [Client\PageController::class, 'view'])->where('slug', '[a-z0-9-]+');
+// Hydra: announcements from Design > Announcements.
+Route::get('/announcements', [Client\AnnouncementController::class, 'index']);
+Route::post('/announcements/{announcement}/dismiss', [Client\AnnouncementController::class, 'dismiss'])->whereNumber('announcement')->middleware('throttle:30,1');
 
 Route::prefix('/account')->middleware(AccountSubject::class)->group(function () {
     Route::prefix('/')->withoutMiddleware(RequireTwoFactorAuthentication::class)->group(function () {

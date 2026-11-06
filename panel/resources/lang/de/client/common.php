@@ -34,6 +34,9 @@ return [
     ],
 
     // Hydra: Verwarnungen der Admins.
+    'announcements' => [
+        'dismiss' => 'Für 24 Stunden ausblenden',
+    ],
     'warnings' => [
         'title' => 'Verwarnung',
         'hint' => 'Bitte halte dich an die Regeln, weitere Verstöße können zu einer Sperre führen.',

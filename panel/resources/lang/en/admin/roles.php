@@ -60,6 +60,7 @@ return [
         'settings' => 'Settings',
         'design' => 'Design',
         'addons' => 'Addons',
+        'announcements' => 'Announcements',
         'updates' => 'Updates',
         'api' => 'Application API',
         'databases' => 'Database Hosts',
@@ -85,6 +86,10 @@ return [
         'addons' => [
             'view' => ['title' => 'View', 'description' => 'Open the addons and their settings.'],
             'update' => ['title' => 'Change', 'description' => 'Switch addons on and off and change their settings, e.g. the Turnstile keys.'],
+        ],
+        'announcements' => [
+            'view' => ['title' => 'View', 'description' => 'See the announcements in the design area.'],
+            'update' => ['title' => 'Edit', 'description' => 'Create, change and delete announcements.'],
         ],
         'updates' => [
             'view' => ['title' => 'View', 'description' => 'See the installed versions of the panel and the nodes.'],

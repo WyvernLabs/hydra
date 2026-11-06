@@ -35,6 +35,9 @@ return [
     ],
 
     // Hydra: warnings from the admins.
+    'announcements' => [
+        'dismiss' => 'Hide for 24 hours',
+    ],
     'warnings' => [
         'title' => 'Warning',
         'hint' => 'Please follow the rules, further violations can lead to a ban.',

@@ -13,6 +13,7 @@ return [
         'console' => 'Konsole',
         'links' => 'Links & Seiten',
         'navigation' => 'Navigation',
+        'announcements' => 'Ankündigungen',
         'addons' => 'Addons',
     ],
 

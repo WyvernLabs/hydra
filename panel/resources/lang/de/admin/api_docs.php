@@ -60,6 +60,7 @@ return [
         ],
         'client' => [
             'general' => ['title' => 'Allgemein', 'description' => 'Serverliste, Namen der Rechte und Seiten.'],
+            'announcements' => ['title' => 'Ankündigungen', 'description' => 'Die Ankündigungen, die der Benutzer sieht.'],
             'account' => ['title' => 'Konto', 'description' => 'Das Konto des Schlüssel-Besitzers: Daten, E-Mail, Passwort, Sprache, Profil, Zwei-Faktor-Anmeldung, Aktivität und Verwarnungen.'],
             'account/api-keys' => ['title' => 'API-Schlüssel', 'description' => 'Client-API-Schlüssel des Benutzers.'],
             'account/ssh-keys' => ['title' => 'SSH-Schlüssel', 'description' => 'SSH-Schlüssel für die SFTP-Anmeldung.'],
@@ -136,6 +137,8 @@ return [
             'GET ' => 'Listet die Server des Benutzers (?type=admin-all für Admins: alle Server).',
             'GET permissions' => 'Liefert alle Unterbenutzer-Rechte mit ihren Beschreibungen.',
             'GET pages/{slug}' => 'Liefert eine im Adminbereich geschriebene Seite.',
+            'GET announcements' => 'Liefert die Ankündigungen des Benutzers: allgemeine und die der Nodes seiner Server. Mit dem Parameter server (UUID) nur die der Node dieses Servers.',
+            'POST announcements/{announcement}/dismiss' => 'Blendet eine wegklickbare Ankündigung für den Benutzer 24 Stunden aus.',
             'GET account' => 'Zeigt das Konto des Benutzers.',
             'DELETE account' => 'Löscht das eigene Konto (Passwort nötig).',
             'GET account/activity' => 'Aktivitätsprotokoll des Kontos.',

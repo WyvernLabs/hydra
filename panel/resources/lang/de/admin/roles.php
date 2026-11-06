@@ -60,6 +60,7 @@ return [
         'settings' => 'Einstellungen',
         'design' => 'Design',
         'addons' => 'Addons',
+        'announcements' => 'Ankündigungen',
         'updates' => 'Updates',
         'api' => 'Application-API',
         'databases' => 'Datenbank-Hosts',
@@ -85,6 +86,10 @@ return [
         'addons' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Die Addons und ihre Einstellungen öffnen.'],
             'update' => ['title' => 'Ändern', 'description' => 'Addons ein- und ausschalten und ihre Einstellungen ändern, z. B. die Turnstile-Schlüssel.'],
+        ],
+        'announcements' => [
+            'view' => ['title' => 'Ansehen', 'description' => 'Die Ankündigungen im Design-Bereich sehen.'],
+            'update' => ['title' => 'Ändern', 'description' => 'Ankündigungen anlegen, ändern und löschen.'],
         ],
         'updates' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Die installierten Versionen von Panel und Nodes sehen.'],

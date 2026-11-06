@@ -89,7 +89,8 @@ export default () => {
     const { t } = useTranslation('client/server');
     const ref = useRef<HTMLDivElement>(null);
     const terminal = useMemo(() => new Terminal({ ...terminalProps }), []);
-    const fitAddon = new FitAddon();
+    // Hydra: one per terminal; a new one per render would not be connected to it.
+    const fitAddon = useMemo(() => new FitAddon(), []);
     const searchAddon = new SearchAddon();
     const searchBar = new SearchBarAddon({ searchAddon });
     const webLinksAddon = new WebLinksAddon();
@@ -281,6 +282,22 @@ export default () => {
         }, 100)
     );
 
+    // Hydra: the space changes without the window changing, e.g. when an announcement is closed.
+    useEffect(() => {
+        if (!ref.current) return;
+
+        const observer = new ResizeObserver(
+            debounce(() => {
+                if (terminal.element) {
+                    fitAddon.fit();
+                }
+            }, 100)
+        );
+        observer.observe(ref.current);
+
+        return () => observer.disconnect();
+    }, [terminal, fitAddon]);
+
     useEffect(() => {
         const listeners: Record<string, (s: string) => void> = {
             [SocketEvent.STATUS]: handlePowerChangeEvent,
@@ -359,7 +376,7 @@ export default () => {
                     </button>
                 )}
             </div>
-            <div className={'relative flex flex-col'}>
+            <div className={'relative flex flex-1 flex-col'}>
                 <SpinnerOverlay visible={!connected} size={'large'} />
                 <div
                     className={classNames(styles.container, styles.overflows_container, {

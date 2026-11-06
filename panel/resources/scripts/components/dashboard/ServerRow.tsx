@@ -116,7 +116,7 @@ export default ({ server, className }: { server: Server; className?: string }) =
     return (
         <Link
             to={serverLink(server.id)}
-            className={`group grid overflow-hidden rounded-lg border border-gray-700 bg-gray-800/80 no-underline backdrop-blur transition-colors hover:border-gray-500 sm:grid-cols-2 ${
+            className={`hydra-server-row group grid overflow-hidden rounded-lg border border-gray-700 bg-gray-800/80 no-underline backdrop-blur transition-colors hover:border-gray-500 sm:grid-cols-2 ${
                 className || ''
             }`}
         >

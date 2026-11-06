@@ -26,6 +26,7 @@ import { usePermissions } from '@/plugins/usePermissions';
 import { bytesToString, ip, mbToBytes } from '@/lib/formatters';
 import { formatDate } from '@/lib/date';
 import ServerContentBlock from '@/components/elements/ServerContentBlock';
+import { ServerAnnouncements } from '@/components/hydra/Announcements';
 import CopyOnClick from '@/components/elements/CopyOnClick';
 import UptimeDuration from '@/components/server/UptimeDuration';
 import getServerSchedules, { Schedule } from '@/api/server/schedules/getServerSchedules';
@@ -362,6 +363,7 @@ export default () => {
 
     return (
         <ServerContentBlock title={t('dashboard.title')}>
+            <ServerAnnouncements />
             {/* Banner of the egg */}
             <div className={'relative mb-4 h-44 overflow-hidden rounded-lg border border-gray-700 sm:h-56'}>
                 {server.banner ? (

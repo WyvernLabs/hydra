@@ -14,6 +14,7 @@ return [
         'links' => 'Links & Pages',
         'navigation' => 'Navigation',
         'announcements' => 'Announcements',
+        'effects' => 'Effects',
         'addons' => 'Addons',
     ],
 
@@ -62,6 +63,20 @@ return [
         'saved' => 'The background has been saved.',
         'eggs_hint' => 'The backgrounds of the server pages of each egg are set under <a href=":url">Design > Eggs</a>.',
         'egg_inherits' => 'Dashboard background',
+    ],
+
+    'effects' => [
+        'title' => 'Effects',
+        'subtitle' => 'Seasonal events across the whole panel.',
+        'event' => 'Event',
+        'saved' => 'The event was saved.',
+        'users_hint' => 'While an event runs, every user can switch single parts of it off in their account. The choice stays saved per user and event.',
+        'events' => [
+            'off' => ['name' => 'Disabled', 'description' => 'The normal panel, nothing extra is loaded.'],
+            'halloween' => ['name' => 'Halloween', 'description' => 'Pumpkins and spider webs in some places, occasional falling leaves.'],
+            'christmas' => ['name' => 'Christmas', 'description' => 'A snowy interface, string lights and snowflakes.'],
+            'newyear' => ['name' => 'New Year', 'description' => 'The snow stays, and rockets keep rising in the background and exploding at different heights.'],
+        ],
     ],
 
     'links' => [

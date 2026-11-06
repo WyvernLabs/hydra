@@ -207,6 +207,22 @@ return [
             'background_color' => '#121212',
             'tabs' => true,
         ],
+        'discord' => [
+            'enabled' => false,
+            'bot_token' => null,
+            'guild_id' => null,
+            'role_verified' => null,
+            'role_server' => null,
+            'role_map' => [],
+            'node_map' => [],
+            'ticket_notifications' => true,
+        ],
+        'status' => [
+            'enabled' => false,
+            'title' => null,
+            'description' => null,
+            'private_nodes' => false,
+        ],
         'server_templates' => [
             'enabled' => false,
         ],
@@ -255,6 +271,10 @@ return [
     | "[… Daemon]:" of Wings (null keeps it).
     |
     */
+    'effects' => [
+        'event' => 'off',
+    ],
+
     'console' => [
         'offline_message' => null,
         'prefix' => null,

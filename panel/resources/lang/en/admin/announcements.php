@@ -34,7 +34,7 @@ return [
     'per_node' => 'Per node',
     'general_help' => 'Shown to all users on the dashboard.',
     'nodes' => 'Nodes',
-    'nodes_help' => 'Shown to users with a server on these nodes, on the dashboard and on the pages of those servers.',
+    'nodes_help' => 'Shown to users with a server on these nodes: in their server list and, for the server, on its dashboard (when the addon is on), otherwise on the console.',
     'no_nodes' => 'Node no longer exists',
     'sort' => 'Order',
     'sort_help' => 'Lower numbers are shown further up.',

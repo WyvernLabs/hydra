@@ -11,10 +11,15 @@ import MessageBox from '@/components/MessageBox';
 import { useLocation } from 'react-router-dom';
 import ProfileEditor from '@/components/dashboard/profile/ProfileEditor';
 import DeleteAccountBox from '@/components/dashboard/profile/DeleteAccountBox';
+import DiscordAccountBox from '@/components/dashboard/profile/DiscordAccountBox';
+import SeasonalEffectsBox from '@/components/dashboard/profile/SeasonalEffectsBox';
+import { useStoreState } from '@/state/hooks';
 
 export default () => {
     const { t } = useTranslation('client/account');
     const { state } = useLocation<undefined | { twoFactorRedirect?: boolean }>();
+    const discord = useStoreState((store) => store.settings.data!.discord.enabled);
+    const effects = useStoreState((store) => store.settings.data!.effects.event !== 'off');
 
     return (
         <PageContentBlock title={t('overview.title')}>
@@ -39,6 +44,8 @@ export default () => {
                 <ContentBox title={t('two_factor.title')}>
                     <ConfigureTwoFactorForm />
                 </ContentBox>
+                {discord && <DiscordAccountBox />}
+                {effects && <SeasonalEffectsBox />}
                 <ContentBox title={t('language.title')} showFlashes={'account:language'}>
                     <UpdateLanguageForm />
                 </ContentBox>

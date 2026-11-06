@@ -39,10 +39,12 @@
         /*
          * Hydra: as tall as the screen allows, the graphs below are gone. The
          * header, the filter bar, the command input and the footer take about
-         * 15rem. "flex: none", since flex-1 would ignore the height.
+         * 15rem, announcements above the console what they measure.
+         * Grows when the column next to it is taller, but never below this height
+         * (flex-1 would ignore the height).
          */
-        flex: none;
-        height: max(24rem, calc(var(--hydra-vh, 100vh) - 15rem));
+        flex: 1 0 auto;
+        height: max(24rem, calc(var(--hydra-vh, 100vh) - 15rem - var(--hydra-announcements-height, 0px)));
 
         & #terminal {
             @apply h-full;

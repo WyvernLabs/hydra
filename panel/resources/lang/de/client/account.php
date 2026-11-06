@@ -57,6 +57,47 @@ return [
         'confirm' => 'Konto endgültig löschen',
     ],
 
+    'effects' => [
+        'title' => 'Saisonale Effekte',
+        'intro' => [
+            'halloween' => 'Gerade läuft Halloween im Panel. Stelle hier ein, was du davon sehen möchtest.',
+            'christmas' => 'Gerade läuft Weihnachten im Panel. Stelle hier ein, was du davon sehen möchtest.',
+            'newyear' => 'Gerade läuft Silvester im Panel. Stelle hier ein, was du davon sehen möchtest.',
+        ],
+        'options' => [
+            'halloween' => [
+                'decor' => 'Paneldeko (Kürbisse und Spinnenweben)',
+                'particles' => 'Blätterfall',
+            ],
+            'christmas' => [
+                'decor' => 'Paneldeko (Schnee und Lichterketten)',
+                'particles' => 'Schneeflocken',
+            ],
+            'newyear' => [
+                'decor' => 'Paneldeko (Schnee)',
+                'particles' => 'Schneeflocken',
+                'fireworks' => 'Feuerwerk im Hintergrund',
+            ],
+        ],
+        'saved_hint' => 'Deine Auswahl wird für dieses Event gespeichert.',
+    ],
+
+    'discord' => [
+        'title' => 'Discord',
+        'intro' => 'Verknüpfe dein Discord-Konto, um Rollen auf unserem Discord-Server zu bekommen.',
+        'user_id' => 'Discord-Benutzer-ID',
+        'user_id_help' => 'In Discord den Entwicklermodus einschalten, dann Rechtsklick auf dein Profil und „Benutzer-ID kopieren“.',
+        'send_code' => 'Code senden',
+        'code_sent' => 'Der Bot hat dir einen Code per Direktnachricht geschickt. Gib ihn hier ein.',
+        'code' => 'Code',
+        'time_left' => 'Noch gültig für {{time}} Minuten.',
+        'confirm' => 'Verknüpfen',
+        'cancel' => 'Abbrechen',
+        'linked' => 'Verknüpft mit {{name}}.',
+        'notify_tickets' => 'Per Direktnachricht über neue Ticket-Antworten informieren',
+        'unlink' => 'Verbindung trennen',
+    ],
+
     'language' => [
         'title' => 'Sprache',
         'label' => 'Sprache des Panels',

@@ -29,7 +29,7 @@ export default () => {
         <ContentContainer>
             <div
                 className={
-                    'mb-4 flex flex-wrap items-center gap-4 rounded-lg border border-gray-700 bg-gray-800/80 px-4 py-3 backdrop-blur'
+                    'hydra-server-header mb-4 flex flex-wrap items-center gap-4 rounded-lg border border-gray-700 bg-gray-800/80 px-4 py-3 backdrop-blur'
                 }
             >
                 <div className={'min-w-0 flex-1'}>

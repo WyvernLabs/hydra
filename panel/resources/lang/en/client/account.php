@@ -57,6 +57,47 @@ return [
         'confirm' => 'Delete account for good',
     ],
 
+    'effects' => [
+        'title' => 'Seasonal effects',
+        'intro' => [
+            'halloween' => 'Halloween is running in the panel right now. Choose what you want to see of it.',
+            'christmas' => 'Christmas is running in the panel right now. Choose what you want to see of it.',
+            'newyear' => 'New Year is running in the panel right now. Choose what you want to see of it.',
+        ],
+        'options' => [
+            'halloween' => [
+                'decor' => 'Panel decoration (pumpkins and spider webs)',
+                'particles' => 'Falling leaves',
+            ],
+            'christmas' => [
+                'decor' => 'Panel decoration (snow and string lights)',
+                'particles' => 'Snowflakes',
+            ],
+            'newyear' => [
+                'decor' => 'Panel decoration (snow)',
+                'particles' => 'Snowflakes',
+                'fireworks' => 'Fireworks in the background',
+            ],
+        ],
+        'saved_hint' => 'Your choice is saved for this event.',
+    ],
+
+    'discord' => [
+        'title' => 'Discord',
+        'intro' => 'Link your Discord account to get roles on our Discord server.',
+        'user_id' => 'Discord user ID',
+        'user_id_help' => 'Enable developer mode in Discord, then right-click your profile and choose "Copy User ID".',
+        'send_code' => 'Send code',
+        'code_sent' => 'The bot sent you a code by direct message. Enter it here.',
+        'code' => 'Code',
+        'time_left' => 'Valid for another {{time}} minutes.',
+        'confirm' => 'Link account',
+        'cancel' => 'Cancel',
+        'linked' => 'Linked to {{name}}.',
+        'notify_tickets' => 'Tell me about new ticket answers by direct message',
+        'unlink' => 'Disconnect',
+    ],
+
     'language' => [
         'title' => 'Language',
         'label' => 'Panel language',

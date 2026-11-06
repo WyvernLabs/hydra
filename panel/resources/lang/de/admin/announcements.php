@@ -34,7 +34,7 @@ return [
     'per_node' => 'Pro Node',
     'general_help' => 'Erscheint bei allen Benutzern auf dem Dashboard.',
     'nodes' => 'Nodes',
-    'nodes_help' => 'Erscheint bei Benutzern mit einem Server auf diesen Nodes, auf dem Dashboard und auf den Seiten dieser Server.',
+    'nodes_help' => 'Erscheint bei Benutzern mit einem Server auf diesen Nodes: auf ihrer Serverübersicht und beim Server auf dem Server-Dashboard (wenn das Addon an ist), sonst auf der Konsole.',
     'no_nodes' => 'Keine Node mehr vorhanden',
     'sort' => 'Reihenfolge',
     'sort_help' => 'Kleinere Zahlen stehen weiter oben.',

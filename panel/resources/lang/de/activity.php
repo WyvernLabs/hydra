@@ -39,6 +39,10 @@ return [
             'server-updated' => 'Ressourcen von Server :name geändert',
             'server-deleted' => 'Server :name aus dem Ressourcenpool gelöscht',
         ],
+        'discord' => [
+            'linked' => 'Discord-Konto :discord_id verknüpft',
+            'unlinked' => 'Verbindung zum Discord-Konto :discord_id getrennt',
+        ],
         'api-key' => [
             'create' => 'Neuen API-Schlüssel :identifier erstellt',
             'delete' => 'API-Schlüssel :identifier gelöscht',

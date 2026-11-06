@@ -41,6 +41,8 @@ class AddonManager
         ImporterAddon::class,
         PortsAddon::class,
         ServerTemplatesAddon::class,
+        StatusAddon::class,
+        DiscordAddon::class,
     ];
 
     public function __construct(private SettingsRepositoryInterface $settings, private Encrypter $encrypter)

@@ -17,6 +17,10 @@ export interface SiteSettings {
     phpMyAdmin: boolean;
     // Hydra: overview page of the servers; with landing servers open on it.
     dashboard: { enabled: boolean; landing: boolean };
+    // Hydra: users can link their Discord account; tickets = ticket messages are offered.
+    discord: { enabled: boolean; tickets: boolean };
+    // Hydra: the seasonal event of the panel, "off" for none.
+    effects: { event: string };
     // Hydra: support tickets in the account (addon) in the support languages, with
     // the categories named per language; images up to uploadLimit MB.
     tickets: {

@@ -34,6 +34,12 @@ Route::get('/backgrounds/{file}', Base\BackgroundController::class)
     ->where('file', '[a-z0-9-]+\.(png|jpg|gif|webp)')
     ->name('backgrounds');
 
+// Hydra: public status page (addon "status").
+Route::get('/status', Base\StatusController::class)
+    ->withoutMiddleware(['auth', RequireTwoFactorAuthentication::class])
+    ->middleware(['addon:status', 'throttle:60,1'])
+    ->name('status');
+
 // Hydra: pages written in the admin area. Public ones work without logging in.
 Route::get('/pages/{slug}', Base\PageController::class)
     ->withoutMiddleware(['auth', RequireTwoFactorAuthentication::class])

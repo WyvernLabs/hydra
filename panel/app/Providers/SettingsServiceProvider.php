@@ -43,6 +43,7 @@ class SettingsServiceProvider extends ServiceProvider
         'hydra:console:offline_message',
         'hydra:console:prefix',
         'hydra:console:daemon_prefix',
+        'hydra:effects:event',
     ];
 
     /**

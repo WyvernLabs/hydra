@@ -159,6 +159,7 @@ class User extends Model implements
      * Cast values to correct type.
      */
     protected $casts = [
+        'hydra_effects' => 'array',
         'root_admin' => 'boolean',
         'use_totp' => 'boolean',
         'gravatar' => 'boolean',

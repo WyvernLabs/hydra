@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Pterodactyl\Models\TicketAttachment;
 use Illuminate\Database\ConnectionInterface;
 use Pterodactyl\Services\Hydra\Addons\TicketsAddon;
+use Pterodactyl\Services\Hydra\Discord\DiscordNotifier;
 use Pterodactyl\Services\Hydra\Markdown\MarkdownService;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
@@ -32,6 +33,7 @@ class TicketService
         private ConnectionInterface $connection,
         private TicketsAddon $addon,
         private MarkdownService $markdown,
+        private DiscordNotifier $discord,
     ) {
     }
 
@@ -88,6 +90,11 @@ class TicketService
 
             return $message;
         });
+
+        // Hydra: linked users hear about it on Discord (addon "discord").
+        if (!$internal) {
+            $this->discord->ticketAnswered($ticket, $author, $staff);
+        }
 
         return $message;
     }

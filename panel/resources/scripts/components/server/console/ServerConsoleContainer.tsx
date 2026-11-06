@@ -8,11 +8,15 @@ import Console from '@/components/server/console/Console';
 import ServerDetailsBlock from '@/components/server/console/ServerDetailsBlock';
 import { Alert } from '@/components/elements/alert';
 import { useTranslation } from 'react-i18next';
+import { useStoreState } from '@/state/hooks';
+import { ServerAnnouncements } from '@/components/hydra/Announcements';
 
 export type PowerAction = 'start' | 'stop' | 'restart' | 'kill';
 
 const ServerConsoleContainer = () => {
     const { t } = useTranslation('client/server');
+    // Hydra: on the dashboard of the server while that addon is on.
+    const dashboardEnabled = useStoreState((state) => state.settings.data!.dashboard.enabled);
     const isInstalling = ServerContext.useStoreState((state) => state.server.isInstalling);
     const isTransferring = ServerContext.useStoreState((state) => state.server.data!.isTransferring);
     const eggFeatures = ServerContext.useStoreState((state) => state.server.data!.eggFeatures, isEqual);
@@ -20,6 +24,7 @@ const ServerConsoleContainer = () => {
 
     return (
         <ServerContentBlock title={t('console.title')}>
+            {!dashboardEnabled && <ServerAnnouncements />}
             {(isNodeUnderMaintenance || isInstalling || isTransferring) && (
                 <Alert type={'warning'} className={'mb-4'}>
                     {isNodeUnderMaintenance

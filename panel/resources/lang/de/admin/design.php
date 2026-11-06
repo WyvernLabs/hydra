@@ -14,6 +14,7 @@ return [
         'links' => 'Links & Seiten',
         'navigation' => 'Navigation',
         'announcements' => 'Ankündigungen',
+        'effects' => 'Effekte',
         'addons' => 'Addons',
     ],
 
@@ -62,6 +63,20 @@ return [
         'saved' => 'Der Hintergrund wurde gespeichert.',
         'eggs_hint' => 'Die Hintergründe der Serverseiten einzelner Eggs legst du unter <a href=":url">Design > Eggs</a> fest.',
         'egg_inherits' => 'Dashboard-Hintergrund',
+    ],
+
+    'effects' => [
+        'title' => 'Effekte',
+        'subtitle' => 'Saisonale Events im ganzen Panel.',
+        'event' => 'Event',
+        'saved' => 'Das Event wurde gespeichert.',
+        'users_hint' => 'Während ein Event läuft, kann jeder Benutzer in seinem Konto einzelne Teile davon abschalten. Die Auswahl bleibt pro Benutzer und Event gespeichert.',
+        'events' => [
+            'off' => ['name' => 'Deaktiviert', 'description' => 'Das normale Panel, es wird nichts zusätzlich geladen.'],
+            'halloween' => ['name' => 'Halloween', 'description' => 'Kürbisse und Spinnenweben an einigen Stellen, vereinzelter Blätterfall.'],
+            'christmas' => ['name' => 'Weihnachten', 'description' => 'Verschneite Oberfläche, Lichterketten und Schneeflocken.'],
+            'newyear' => ['name' => 'Silvester', 'description' => 'Der Schnee bleibt, dazu steigen im Hintergrund immer wieder Raketen auf und explodieren in unterschiedlichen Höhen.'],
+        ],
     ],
 
     'links' => [

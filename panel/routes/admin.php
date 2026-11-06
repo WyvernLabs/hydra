@@ -115,6 +115,17 @@ Route::group(['prefix' => 'design'], function () {
     Route::post('/domains', [Admin\Design\DomainController::class, 'store'])->middleware('admin.can:addons.update');
     Route::patch('/domains/{domain:id}', [Admin\Design\DomainController::class, 'update'])->name('admin.design.domains.update')->middleware('admin.can:addons.update');
     Route::delete('/domains/{domain:id}', [Admin\Design\DomainController::class, 'delete'])->name('admin.design.domains.delete')->middleware('admin.can:addons.update');
+    // Hydra: seasonal effects of the panel.
+    Route::get('/effects', [Admin\Design\EffectsController::class, 'index'])->name('admin.design.effects')->middleware('admin.can:design.view');
+    Route::patch('/effects', [Admin\Design\EffectsController::class, 'update'])->middleware('admin.can:design.update');
+    // Hydra: tests the bot of the addon "discord".
+    Route::get('/discord/test', Admin\Design\DiscordTestController::class)->name('admin.design.discord.test')->middleware('admin.can:addons.view');
+    // Hydra: own applications on the status page (addon "status").
+    Route::get('/status', [Admin\Design\StatusServiceController::class, 'index'])->name('admin.design.status')->middleware('admin.can:addons.view');
+    Route::post('/status', [Admin\Design\StatusServiceController::class, 'store'])->middleware('admin.can:addons.update');
+    Route::get('/status/{service:id}', [Admin\Design\StatusServiceController::class, 'view'])->name('admin.design.status.view')->middleware('admin.can:addons.view');
+    Route::patch('/status/{service:id}', [Admin\Design\StatusServiceController::class, 'update'])->middleware('admin.can:addons.update');
+    Route::delete('/status/{service:id}', [Admin\Design\StatusServiceController::class, 'delete'])->middleware('admin.can:addons.update');
     // Hydra: announcements in the client area.
     Route::get('/announcements', [Admin\Design\AnnouncementController::class, 'index'])->name('admin.design.announcements')->middleware('admin.can:announcements.view');
     Route::get('/announcements/new', [Admin\Design\AnnouncementController::class, 'create'])->name('admin.design.announcements.new')->middleware('admin.can:announcements.update');

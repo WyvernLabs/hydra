@@ -29,3 +29,4 @@
 <link rel="stylesheet" href="/hydra/tokens.css?v={{ substr(md5_file(public_path('hydra/tokens.css')), 0, 8) }}">
 <link rel="stylesheet" href="/hydra/layout.css?v={{ substr(md5_file(public_path('hydra/layout.css')), 0, 8) }}">
 <style id="hydra-branding">{!! $branding->cssVariables() !!}</style>
+@include('partials.hydra.effects')

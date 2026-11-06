@@ -13,6 +13,8 @@ use Pterodactyl\Console\Commands\Schedule\ProcessRunnableCommand;
 use Pterodactyl\Console\Commands\Hydra\AutoDeleteCommand;
 use Pterodactyl\Console\Commands\Hydra\CleanTicketImagesCommand;
 use Pterodactyl\Console\Commands\Hydra\SamplePlayersCommand;
+use Pterodactyl\Console\Commands\Hydra\StatusCheckCommand;
+use Pterodactyl\Console\Commands\Hydra\DiscordSyncCommand;
 use Pterodactyl\Console\Commands\Maintenance\PruneOrphanedBackupsCommand;
 use Pterodactyl\Console\Commands\Maintenance\CleanServiceBackupFilesCommand;
 
@@ -44,6 +46,10 @@ class Kernel extends ConsoleKernel
         $schedule->command(CleanTicketImagesCommand::class)->hourly()->withoutOverlapping();
         // Hydra: players of the Minecraft servers for their statistics.
         $schedule->command(SamplePlayersCommand::class)->everyFiveMinutes()->withoutOverlapping()->runInBackground();
+        // Hydra: availability of the nodes and applications for the status page.
+        $schedule->command(StatusCheckCommand::class)->everyMinute()->withoutOverlapping(5)->runInBackground();
+        // Hydra: Discord roles of linked users.
+        $schedule->command(DiscordSyncCommand::class)->everyFiveMinutes()->withoutOverlapping()->runInBackground();
 
         if (config('backups.prune_age')) {
             // Every 30 minutes, run the backup pruning command so that any abandoned backups can be deleted.

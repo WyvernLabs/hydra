@@ -27,6 +27,9 @@ class UserDeletionService
         // Hydra: profile pictures and banners go with the account.
         ProfileMediaService::removeFiles($user);
 
+        // Hydra: the Discord roles go with it, the link itself with the account row.
+        app(\Pterodactyl\Services\Hydra\Discord\DiscordLinkService::class)->unlink($user);
+
         $deleted = $user->delete();
 
         // Hydra: the user is told once the account is gone.

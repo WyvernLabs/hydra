@@ -41,6 +41,10 @@ return [
             'server-updated' => 'Changed the resources of server :name',
             'server-deleted' => 'Deleted server :name from the resource pool',
         ],
+        'discord' => [
+            'linked' => 'Linked Discord account :discord_id',
+            'unlinked' => 'Disconnected Discord account :discord_id',
+        ],
         'api-key' => [
             'create' => 'Created new API key :identifier',
             'delete' => 'Deleted API key :identifier',

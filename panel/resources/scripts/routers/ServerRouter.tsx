@@ -24,8 +24,6 @@ import ServerSidebarHeader from '@/components/hydra/ServerSidebarHeader';
 import { useTranslation } from 'react-i18next';
 import SuspendedNotice, { SuspendedBanner } from '@/components/server/SuspendedNotice';
 import LockdownNotice, { LockdownBanner } from '@/components/server/lockdown/Lockdown';
-import Announcements from '@/components/hydra/Announcements';
-import ContentContainer from '@/components/elements/ContentContainer';
 import ServerHeader from '@/components/server/ServerHeader';
 import FileTransfers from '@/components/server/files/FileTransfers';
 
@@ -143,9 +141,6 @@ export default () => {
                             <ServerHeader />
                             <SuspendedBanner />
                             <LockdownBanner />
-                            <ContentContainer>
-                                <Announcements server={uuid} />
-                            </ContentContainer>
                             <TransitionRouter>
                                 <Switch location={location}>
                                     {suspendedAccess === 'limited' ? (

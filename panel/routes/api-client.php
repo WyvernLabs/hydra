@@ -55,6 +55,20 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function () 
     });
 
     // Hydra: support tickets (tickets addon).
+    // Hydra: what the user wants to see of the seasonal event.
+    Route::get('/effects', [Client\EffectsController::class, 'index']);
+    Route::put('/effects', [Client\EffectsController::class, 'update'])->middleware('throttle:30,1');
+
+    // Hydra: connecting the account to Discord (addon "discord").
+    Route::prefix('/discord')->middleware('addon:discord')->group(function () {
+        Route::get('/', [Client\DiscordController::class, 'index']);
+        Route::patch('/', [Client\DiscordController::class, 'update']);
+        Route::delete('/', [Client\DiscordController::class, 'delete']);
+        Route::post('/code', [Client\DiscordController::class, 'sendCode'])->middleware('throttle:5,10');
+        Route::delete('/code', [Client\DiscordController::class, 'cancel']);
+        Route::post('/confirm', [Client\DiscordController::class, 'confirm'])->middleware('throttle:10,1');
+    });
+
     Route::prefix('/tickets')->middleware('addon:tickets')->group(function () {
         Route::get('/', [Client\TicketController::class, 'index'])->name('api:client.account.tickets');
         Route::post('/', [Client\TicketController::class, 'store'])->middleware('throttle:10,1');

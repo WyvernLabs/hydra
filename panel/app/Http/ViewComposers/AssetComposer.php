@@ -63,6 +63,10 @@ class AssetComposer
             'phpMyAdmin' => app(PhpMyAdminService::class)->isOffered(),
             // Hydra: overview page of the servers (Design > Addons).
             'dashboard' => app(DashboardAddon::class)->toArray(),
+            // Hydra: the seasonal event (Design > Effects).
+            'effects' => ['event' => app(\Pterodactyl\Services\Hydra\Effects\SeasonalEffects::class)->event()],
+            // Hydra: users can link their Discord account (Design > Addons).
+            'discord' => app(\Pterodactyl\Services\Hydra\Addons\DiscordAddon::class)->toArray(),
             // Hydra: support tickets in the account (Design > Addons).
             'tickets' => app(TicketsAddon::class)->toArray(),
             // Hydra: .properties file as a form (Design > Addons).

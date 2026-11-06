@@ -1,0 +1,38 @@
+<?php
+
+return [
+    'title' => 'Server-Templates',
+    'subtitle' => 'Fertige Einstellungen für neue Server.',
+    'list' => 'Templates',
+    'new' => 'Neues Template',
+    'edit' => 'Template „:name“ bearbeiten',
+    'form_subtitle' => 'Alles, was ein Server aus diesem Template bekommt.',
+    'none' => 'Es gibt noch keine Templates.',
+    'general' => 'Template',
+    'name' => 'Name des Templates',
+    'name_help' => 'Unter diesem Namen wählst du das Template beim Erstellen eines Servers aus.',
+    'description' => 'Beschreibung',
+    'description_help' => 'Optional, nur für Admins sichtbar.',
+    'target' => 'Ziel',
+    'locations' => 'Standorte',
+    'locations_help' => 'Server kommen auf eine öffentliche Node dieser Standorte.',
+    'nodes' => 'Nodes',
+    'nodes_help' => 'Server dürfen auch auf diese Nodes, selbst wenn sie nicht öffentlich sind. Bleiben Standorte und Nodes leer, ist jede öffentliche Node möglich.',
+    'all_public' => 'Alle öffentlichen Nodes',
+    'unlimited' => 'Unbegrenzt',
+    'startup_help' => 'Leer lassen, um immer den aktuellen Startbefehl des Eggs zu nutzen (grau angezeigt).',
+    'image_required' => 'Wähle ein Docker-Image aus oder gib eines ein.',
+    'delete_confirm' => 'Template „:name“ löschen? Bereits erstellte Server bleiben unverändert.',
+    'created' => 'Das Template „:name“ wurde erstellt.',
+    'updated' => 'Das Template „:name“ wurde gespeichert.',
+    'deleted' => 'Das Template „:name“ wurde gelöscht.',
+
+    'deploy' => [
+        'title' => 'Server aus Template',
+        'short' => 'Server erstellen',
+        'button' => 'Aus Template',
+        'subtitle' => 'Name und Besitzer eingeben, den Rest übernimmt das Template.',
+        'template' => 'Template',
+        'summary' => 'Das bekommt der Server',
+    ],
+];

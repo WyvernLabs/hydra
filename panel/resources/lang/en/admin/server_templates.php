@@ -1,0 +1,38 @@
+<?php
+
+return [
+    'title' => 'Server templates',
+    'subtitle' => 'Ready-made settings for new servers.',
+    'list' => 'Templates',
+    'new' => 'New template',
+    'edit' => 'Edit template ":name"',
+    'form_subtitle' => 'Everything a server from this template gets.',
+    'none' => 'There are no templates yet.',
+    'general' => 'Template',
+    'name' => 'Template name',
+    'name_help' => 'You pick the template by this name when creating a server.',
+    'description' => 'Description',
+    'description_help' => 'Optional, only visible to admins.',
+    'target' => 'Target',
+    'locations' => 'Locations',
+    'locations_help' => 'Servers go to a public node of these locations.',
+    'nodes' => 'Nodes',
+    'nodes_help' => 'Servers may also go to these nodes, even if they are not public. With no locations and no nodes, any public node can be used.',
+    'all_public' => 'All public nodes',
+    'unlimited' => 'Unlimited',
+    'startup_help' => 'Leave empty to always use the current startup command of the egg (shown in grey).',
+    'image_required' => 'Select a Docker image or enter one.',
+    'delete_confirm' => 'Delete template ":name"? Servers already created stay as they are.',
+    'created' => 'The template ":name" was created.',
+    'updated' => 'The template ":name" was saved.',
+    'deleted' => 'The template ":name" was deleted.',
+
+    'deploy' => [
+        'title' => 'Server from template',
+        'short' => 'Create server',
+        'button' => 'From template',
+        'subtitle' => 'Enter a name and an owner, the template does the rest.',
+        'template' => 'Template',
+        'summary' => 'What the server gets',
+    ],
+];

@@ -207,6 +207,9 @@ return [
             'background_color' => '#121212',
             'tabs' => true,
         ],
+        'server_templates' => [
+            'enabled' => false,
+        ],
         'resource_pool' => [
             'enabled' => false,
             'eggs' => [],

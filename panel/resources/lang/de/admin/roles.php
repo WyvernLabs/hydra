@@ -122,6 +122,7 @@ return [
         'servers' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Die Serverliste und die Übersicht eines Servers sehen.'],
             'create' => ['title' => 'Anlegen', 'description' => 'Neue Server erstellen.'],
+            'templates' => ['title' => 'Templates', 'description' => 'Server-Templates anlegen, bearbeiten und löschen (Addon „Server-Templates“). Server daraus zu erstellen braucht nur „Anlegen“.'],
             'details' => ['title' => 'Details', 'description' => 'Name, Besitzer und Beschreibung ändern.'],
             'build' => ['title' => 'Ressourcen', 'description' => 'Ressourcen, Limits und Zuweisungen ändern.'],
             'startup' => ['title' => 'Start', 'description' => 'Egg, Startbefehl, Image und Variablen ändern.'],

@@ -40,6 +40,7 @@ class AddonManager
         PlayerStatsAddon::class,
         ImporterAddon::class,
         PortsAddon::class,
+        ServerTemplatesAddon::class,
     ];
 
     public function __construct(private SettingsRepositoryInterface $settings, private Encrypter $encrypter)

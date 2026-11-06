@@ -217,6 +217,21 @@ Route::group(['prefix' => 'tickets', 'middleware' => 'addon:tickets'], function 
 Route::group(['prefix' => 'servers'], function () {
     Route::get('/', [Admin\Servers\ServerController::class, 'index'])->name('admin.servers')->middleware('admin.can:servers.view');
     Route::get('/new', [Admin\Servers\CreateServerController::class, 'index'])->name('admin.servers.new')->middleware('admin.can:servers.create');
+    // Hydra: templates for new servers (addon "server_templates").
+    Route::group(['middleware' => 'addon:server_templates'], function () {
+        Route::get('/new/template', [Admin\Servers\ServerFromTemplateController::class, 'index'])->name('admin.servers.new.template')->middleware('admin.can:servers.create');
+        Route::post('/new/template', [Admin\Servers\ServerFromTemplateController::class, 'store'])->middleware('admin.can:servers.create');
+
+        Route::group(['prefix' => 'templates', 'middleware' => 'admin.can:servers.templates'], function () {
+            Route::get('/', [Admin\Servers\ServerTemplateController::class, 'index'])->name('admin.servers.templates');
+            Route::get('/new', [Admin\Servers\ServerTemplateController::class, 'create'])->name('admin.servers.templates.new');
+            Route::post('/new', [Admin\Servers\ServerTemplateController::class, 'store']);
+            Route::get('/{template:id}', [Admin\Servers\ServerTemplateController::class, 'view'])->name('admin.servers.templates.view');
+            Route::patch('/{template:id}', [Admin\Servers\ServerTemplateController::class, 'update']);
+            Route::delete('/{template:id}', [Admin\Servers\ServerTemplateController::class, 'delete']);
+        });
+    });
+
     Route::get('/view/{server:id}', [Admin\Servers\ServerViewController::class, 'index'])->name('admin.servers.view')->middleware('admin.can:servers.view');
 
     Route::group(['middleware' => [ServerInstalled::class]], function () {

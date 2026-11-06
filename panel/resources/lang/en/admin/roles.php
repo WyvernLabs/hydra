@@ -122,6 +122,7 @@ return [
         'servers' => [
             'view' => ['title' => 'View', 'description' => 'See the server list and the overview of a server.'],
             'create' => ['title' => 'Create', 'description' => 'Create new servers.'],
+            'templates' => ['title' => 'Templates', 'description' => 'Create, edit and delete server templates (addon "Server templates"). Creating servers from them only needs "Create".'],
             'details' => ['title' => 'Details', 'description' => 'Change name, owner and description.'],
             'build' => ['title' => 'Build', 'description' => 'Change resources, limits and allocations.'],
             'startup' => ['title' => 'Startup', 'description' => 'Change egg, startup command, image and variables.'],

@@ -143,6 +143,15 @@ return [
         'summary_users_off' => 'Only nodes use SFTP servers',
     ],
 
+    'server_templates' => [
+        'name' => 'Server templates',
+        'description' => 'Save ready-made settings for new servers under a name of your own. When creating a server you only enter its name and owner and pick the template.',
+        'hint' => 'Templates set the egg, image, variables, resources, limits and target. Create servers from them in the server list with "From template".',
+        'manage' => 'Manage templates',
+        'enable_first' => 'Enable the addon to create templates.',
+        'summary' => ':count template(s)',
+    ],
+
     'subdomains' => [
         'name' => 'Subdomains',
         'description' => 'Users create subdomains of your Cloudflare domains in the network tab of their server, pointing to the node and, with an SRV record, to a port (e.g. play.example.com for Minecraft without a port).',

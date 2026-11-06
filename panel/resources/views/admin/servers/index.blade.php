@@ -24,6 +24,7 @@
                             <input type="text" name="filter[*]" class="form-control pull-right" value="{{ request()->input()['filter']['*'] ?? '' }}" placeholder="{{ __('admin/servers.search') }}">
                             <div class="input-group-btn">
                                 <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
+                                @if(Auth::user()->hasAdminPermission('servers.create') && config('hydra.addons.server_templates.enabled'))<a href="{{ route('admin.servers.new.template') }}"><button type="button" class="btn btn-sm btn-default" style="border-radius: 0;margin-left:-1px;">{{ __('admin/server_templates.deploy.button') }}</button></a>@endif
                                 @if(Auth::user()->hasAdminPermission('servers.create'))<a href="{{ route('admin.servers.new') }}"><button type="button" class="btn btn-sm btn-primary" style="border-radius: 0 3px 3px 0;margin-left:-1px;">{{ __('admin/common.actions.create_new') }}</button></a>@endif
                             </div>
                         </div>

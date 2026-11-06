@@ -239,6 +239,7 @@ class ResourcePoolService
 
             $server->forceFill([
                 'hydra_pool' => true,
+                'hydra_dedicated' => in_array($server->node_id, $pool->dedicatedNodes(), true),
                 'hydra_subdomain_limit' => (int) $data['subdomains'],
                 'hydra_proxy_limit' => (int) $data['proxies'],
             ])->saveOrFail();
@@ -247,6 +248,25 @@ class ResourcePoolService
 
             return $server;
         });
+    }
+
+    /**
+     * Brings the servers of a user in line with the dedicated nodes of the
+     * pool. Servers elsewhere keep what an admin set on them.
+     *
+     * @param int[] $previous dedicated nodes before the change
+     * @param int[] $current dedicated nodes now
+     */
+    public function syncDedicated(User $user, array $previous, array $current): void
+    {
+        Server::query()->where('owner_id', $user->id)->where('hydra_pool', true)
+            ->whereIn('node_id', $current)
+            ->update(['hydra_dedicated' => true]);
+
+        Server::query()->where('owner_id', $user->id)
+            ->whereIn('node_id', $previous)
+            ->where(fn ($query) => $query->where('hydra_pool', false)->orWhereNotIn('node_id', $current))
+            ->update(['hydra_dedicated' => false]);
     }
 
     /**

@@ -71,6 +71,8 @@ return [
         'locations_help' => 'Server landen auf einer öffentlichen Node dieser Standorte. Sind weder Standorte noch Nodes gewählt, gelten die Standorte aus den Addon-Einstellungen.',
         'nodes' => 'Eigene Nodes',
         'nodes_help' => 'Diese Nodes kann der Benutzer auch nutzen, wenn sie nicht öffentlich sind – z. B. Nodes, die nur ihm gehören.',
+        'dedicated' => 'Ports frei wählen auf diesen Nodes',
+        'dedicated_help' => 'Für Nodes, die nur diesem Benutzer gehören: Seine Pool-Server auf den eigenen Nodes dürfen im Netzwerk-Tab selbst Ports ab 1024 freigeben, bis zu den Ports, die er dem Server im Pool zuteilt. Lege auf der Node mindestens einen Port pro Server an, er wird der primäre Port.',
         'node_private' => 'nicht öffentlich',
         'servers_title' => 'Server im Pool',
         'servers_help' => 'Angehakte Server zählen zum Pool und kann der Benutzer im Pool ändern oder löschen. Server ohne CPU-, RAM- oder SSD-Limit (∞) zählen dabei mit 0.',

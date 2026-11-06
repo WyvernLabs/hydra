@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $proxies
  * @property int[]|null $locations locations the servers may go to (public nodes of them)
  * @property int[]|null $nodes nodes the servers may go to, also non-public ones
+ * @property bool $dedicated servers on these nodes pick their ports freely
  * @property \Carbon\CarbonImmutable $created_at
  * @property \Carbon\CarbonImmutable $updated_at
  * @property User $user
@@ -38,7 +39,7 @@ class HydraResourcePool extends Model
 
     protected bool $immutableDates = true;
 
-    protected $fillable = ['user_id', 'servers', 'cpu', 'memory', 'disk', 'databases', 'ports', 'backups', 'subdomains', 'proxies', 'locations', 'nodes'];
+    protected $fillable = ['user_id', 'servers', 'cpu', 'memory', 'disk', 'databases', 'ports', 'backups', 'subdomains', 'proxies', 'locations', 'nodes', 'dedicated'];
 
     protected $casts = [
         'user_id' => 'integer',
@@ -53,6 +54,7 @@ class HydraResourcePool extends Model
         'proxies' => 'integer',
         'locations' => 'array',
         'nodes' => 'array',
+        'dedicated' => 'boolean',
     ];
 
     public static array $validationRules = [
@@ -70,7 +72,18 @@ class HydraResourcePool extends Model
         'locations.*' => 'integer',
         'nodes' => 'nullable|array',
         'nodes.*' => 'integer',
+        'dedicated' => 'boolean',
     ];
+
+    /**
+     * Nodes on which the pool servers pick their ports freely.
+     *
+     * @return int[]
+     */
+    public function dedicatedNodes(): array
+    {
+        return $this->dedicated ? array_map('intval', $this->nodes ?? []) : [];
+    }
 
     public function user(): BelongsTo
     {

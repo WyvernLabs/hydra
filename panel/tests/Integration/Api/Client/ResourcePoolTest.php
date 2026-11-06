@@ -253,6 +253,71 @@ class ResourcePoolTest extends ClientApiIntegrationTestCase
         );
     }
 
+    public function testServersOnDedicatedNodesOfThePoolPickTheirPorts(): void
+    {
+        $user = User::factory()->create();
+        $dedicated = Node::factory()->create(['location_id' => $this->location->id, 'public' => false, 'memory' => 65536, 'disk' => 1048576]);
+        Allocation::factory()->create(['node_id' => $dedicated->id, 'port' => 33000]);
+        $other = Location::factory()->create();
+        $shared = Node::factory()->create(['location_id' => $other->id, 'memory' => 65536, 'disk' => 1048576]);
+        Allocation::factory()->create(['node_id' => $shared->id, 'port' => 33001]);
+        $this->poolFor($user, ['locations' => [$other->id], 'nodes' => [$dedicated->id], 'dedicated' => true]);
+
+        $this->login($user)->postJson('/api/client/account/pool/servers', $this->newServer(['ports' => 1, 'node' => $dedicated->id]))->assertCreated();
+        $this->login($user)->postJson('/api/client/account/pool/servers', $this->newServer(['ports' => 1, 'location' => $other->id]))->assertCreated();
+
+        $flags = Server::query()->where('owner_id', $user->id)->get()->pluck('hydra_dedicated', 'node_id');
+        $this->assertTrue($flags[$dedicated->id]);
+        $this->assertFalse($flags[$shared->id]);
+    }
+
+    public function testServersOfAPoolWithoutTheOptionKeepFixedPorts(): void
+    {
+        $user = User::factory()->create();
+        $dedicated = Node::factory()->create(['location_id' => $this->location->id, 'public' => false, 'memory' => 65536, 'disk' => 1048576]);
+        Allocation::factory()->create(['node_id' => $dedicated->id, 'port' => 33002]);
+        $this->poolFor($user, ['nodes' => [$dedicated->id]]);
+
+        $this->login($user)->postJson('/api/client/account/pool/servers', $this->newServer(['ports' => 1]))->assertCreated();
+
+        $this->assertFalse(Server::query()->where('owner_id', $user->id)->firstOrFail()->hydra_dedicated);
+    }
+
+    public function testAdminTurnsDedicatedNodesOnAndOffForExistingServers(): void
+    {
+        $user = User::factory()->create();
+        $server = $this->createServerModel(['user_id' => $user->id]);
+        $elsewhere = $this->createServerModel(['user_id' => $user->id, 'hydra_dedicated' => true]);
+        $admin = User::factory()->admin()->create();
+        $form = [
+            'active' => '1', 'servers' => 3, 'cpu' => 2, 'memory' => 8, 'disk' => 50, 'databases' => 0,
+            'ports' => 6, 'backups' => 0, 'subdomains' => 0, 'proxies' => 0,
+            'nodes' => [(string) $server->node_id], 'pool_servers' => [$server->id, $elsewhere->id],
+        ];
+
+        $this->login($admin)->patch("/admin/users/view/$user->id/pool", $form + ['dedicated' => '1'])->assertRedirect();
+        $this->assertTrue($user->resourcePool()->firstOrFail()->dedicated);
+        $this->assertTrue($server->refresh()->hydra_dedicated);
+
+        // Without the option the server goes back, the one an admin set elsewhere stays.
+        $this->login($admin)->patch("/admin/users/view/$user->id/pool", $form)->assertRedirect();
+        $this->assertFalse($server->refresh()->hydra_dedicated);
+        $this->assertTrue($elsewhere->refresh()->hydra_dedicated);
+
+        // Taken out of the pool: fixed ports again.
+        $this->login($admin)->patch("/admin/users/view/$user->id/pool", $form + ['dedicated' => '1'])->assertRedirect();
+        $this->assertTrue($server->refresh()->hydra_dedicated);
+        $this->login($admin)->patch("/admin/users/view/$user->id/pool", ['pool_servers' => [$elsewhere->id], 'dedicated' => '1'] + $form)->assertRedirect();
+        $this->assertFalse($server->refresh()->hydra_dedicated);
+
+        // Pool removed: fixed ports again.
+        $this->login($admin)->patch("/admin/users/view/$user->id/pool", $form + ['dedicated' => '1'])->assertRedirect();
+        $this->assertTrue($server->refresh()->hydra_dedicated);
+        $this->login($admin)->patch("/admin/users/view/$user->id/pool", ['active' => '0'] + $form)->assertRedirect();
+        $this->assertNull($user->resourcePool()->first());
+        $this->assertFalse($server->refresh()->hydra_dedicated);
+    }
+
     public function testAdminSetsThePoolInCoresAndGigabytes(): void
     {
         $user = User::factory()->create();

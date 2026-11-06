@@ -10,6 +10,7 @@ use Prologue\Alerts\AlertsMessageBag;
 use Pterodactyl\Models\HydraResourcePool;
 use Pterodactyl\Exceptions\DisplayException;
 use Pterodactyl\Http\Controllers\Controller;
+use Pterodactyl\Services\Hydra\Pool\ResourcePoolService;
 
 /**
  * Hydra: the resource pool of a user (addon "resource_pool"), set on their
@@ -18,7 +19,7 @@ use Pterodactyl\Http\Controllers\Controller;
  */
 class ResourcePoolController extends Controller
 {
-    public function __construct(private AlertsMessageBag $alert)
+    public function __construct(private AlertsMessageBag $alert, private ResourcePoolService $service)
     {
     }
 
@@ -46,15 +47,18 @@ class ResourcePoolController extends Controller
             'pool_servers.*' => 'integer',
         ]);
 
+        $previous = $user->resourcePool()->first()?->dedicatedNodes() ?? [];
+
         if (!$request->boolean('active')) {
             $user->resourcePool()->delete();
+            $this->service->syncDedicated($user, $previous, []);
             Server::query()->where('owner_id', $user->id)->update(['hydra_pool' => false]);
             $this->alert->success(__('admin/users.pool.removed'))->flash();
 
             return redirect()->route('admin.users.view', $user->id);
         }
 
-        HydraResourcePool::query()->updateOrCreate(['user_id' => $user->id], [
+        $pool = HydraResourcePool::query()->updateOrCreate(['user_id' => $user->id], [
             // Empty: no limit of servers.
             'servers' => isset($data['servers']) ? (int) $data['servers'] : null,
             'cpu' => (int) round($data['cpu'] * 100),
@@ -68,11 +72,13 @@ class ResourcePoolController extends Controller
             // Both empty: the locations of the addon settings.
             'locations' => $this->ids($data['locations'] ?? []),
             'nodes' => $this->ids($data['nodes'] ?? []),
+            'dedicated' => $request->boolean('dedicated'),
         ]);
 
         $selected = array_map('intval', $data['pool_servers'] ?? []);
         Server::query()->where('owner_id', $user->id)->whereIn('id', $selected)->update(['hydra_pool' => true]);
         Server::query()->where('owner_id', $user->id)->whereNotIn('id', $selected)->update(['hydra_pool' => false]);
+        $this->service->syncDedicated($user, $previous, $pool->dedicatedNodes());
 
         $this->alert->success(__('admin/users.pool.saved'))->flash();
 

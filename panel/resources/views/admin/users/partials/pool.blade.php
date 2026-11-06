@@ -80,6 +80,11 @@
                             @endforeach
                         </select>
                         <p class="text-muted small no-margin" style="margin-top: 4px;">{{ __('admin/users.pool.nodes_help') }}</p>
+                        <div class="checkbox checkbox-primary" style="margin-top: 10px;">
+                            <input type="checkbox" id="poolDedicated" name="dedicated" value="1" @checked(old('dedicated', $pool?->dedicated))>
+                            <label for="poolDedicated" class="strong">{{ __('admin/users.pool.dedicated') }}</label>
+                        </div>
+                        <p class="text-muted small no-margin">{{ __('admin/users.pool.dedicated_help') }}</p>
                     </div>
                 </div>
                 <label class="control-label">{{ __('admin/users.pool.servers_title') }}</label>

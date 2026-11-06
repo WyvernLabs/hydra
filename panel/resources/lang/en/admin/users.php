@@ -71,6 +71,8 @@ return [
         'locations_help' => 'Servers go to a public node of these locations. With neither locations nor nodes picked, the locations of the addon settings apply.',
         'nodes' => 'Own nodes',
         'nodes_help' => 'The user may use these nodes even when they are not public, e.g. nodes dedicated to them.',
+        'dedicated' => 'Free port choice on these nodes',
+        'dedicated_help' => 'For nodes that belong to this user only: their pool servers on the own nodes may open ports from 1024 up in the network tab, up to the ports given to the server in the pool. Create at least one port per server on the node, it becomes the primary port.',
         'node_private' => 'not public',
         'servers_title' => 'Servers in the pool',
         'servers_help' => 'Ticked servers count against the pool and the user can change or delete them there. Servers without a CPU, memory or SSD limit (∞) count as 0.',

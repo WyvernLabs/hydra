@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'too_many_requests' => 'Too many requests in a short time. Please try again in :seconds seconds.',
     'daemon_connection_failed' => 'There was an exception while attempting to communicate with the daemon resulting in a HTTP/:code response code. This exception has been logged.',
     'node' => [
         'servers_attached' => 'A node must have no servers linked to it in order to be deleted.',

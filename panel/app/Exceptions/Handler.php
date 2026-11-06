@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Support\Collection;
 use Illuminate\Container\Container;
 use Illuminate\Database\Connection;
@@ -200,6 +201,11 @@ class Handler extends ExceptionHandler
                 ? $e->getMessage()
                 : 'An unexpected error was encountered while processing this request, please try again.',
         ];
+
+        // Hydra: Laravel's "Too Many Attempts." in the language of the user, with the wait time.
+        if ($e instanceof ThrottleRequestsException) {
+            $error['detail'] = trans('exceptions.too_many_requests', ['seconds' => (int) ($e->getHeaders()['Retry-After'] ?? 60)]);
+        }
 
         if ($e instanceof ModelNotFoundException || $e->getPrevious() instanceof ModelNotFoundException) {
             // Show a nicer error message compared to the standard "No query results for model"

@@ -44,7 +44,8 @@ enum ResourceLimit
     {
         return match($this) {
             self::Backup => Limit::perMinutes(15, 3),
-            self::Database => Limit::perMinute(2),
+            // Hydra: the database limit of the server caps them anyway; two per minute was too few.
+            self::Database => Limit::perMinute(10),
             self::FilePull => Limit::perMinutes(10, 5),
             self::Subuser => Limit::perMinutes(15, 10),
             self::Websocket => Limit::perMinute(5),

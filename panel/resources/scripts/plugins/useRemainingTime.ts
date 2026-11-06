@@ -64,13 +64,13 @@ export const formatRemaining = (t: TFunction, seconds: number | null): string =>
 
     let time: string;
     if (seconds < 60) {
-        time = t('client/server:files.transfers.seconds', { s: Math.max(1, Math.ceil(seconds / 5) * 5) });
+        time = t('client/server:files.transfers.seconds', { sec: Math.max(1, Math.ceil(seconds / 5) * 5) });
     } else if (seconds < 3600) {
         const rounded = Math.ceil(seconds / 10) * 10;
-        time = t('client/server:files.transfers.minutes', { m: Math.floor(rounded / 60), s: rounded % 60 });
+        time = t('client/server:files.transfers.minutes', { min: Math.floor(rounded / 60), sec: rounded % 60 });
     } else {
         const minutes = Math.ceil(seconds / 60);
-        time = t('client/server:files.transfers.hours', { h: Math.floor(minutes / 60), m: minutes % 60 });
+        time = t('client/server:files.transfers.hours', { hrs: Math.floor(minutes / 60), min: minutes % 60 });
     }
 
     return t('client/server:files.transfers.remaining', { time });

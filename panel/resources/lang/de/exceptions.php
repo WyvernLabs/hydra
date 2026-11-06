@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'too_many_requests' => 'Zu viele Anfragen in kurzer Zeit. Bitte versuche es in :seconds Sekunden erneut.',
     'daemon_connection_failed' => 'Bei der Kommunikation mit dem Daemon ist ein Fehler aufgetreten (HTTP-Statuscode :code). Der Fehler wurde protokolliert.',
     'node' => [
         'servers_attached' => 'Ein Node kann nur gelöscht werden, wenn ihm keine Server mehr zugeordnet sind.',

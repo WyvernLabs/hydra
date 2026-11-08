@@ -11,6 +11,7 @@ use phpseclib3\Crypt\PublicKeyLoader;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Pterodactyl\Exceptions\DisplayException;
+use Pterodactyl\Services\Hydra\InstallerLog;
 
 /**
  * Hydra: runs the wings installer on a node over SSH (Nodes > Installation).
@@ -130,13 +131,20 @@ class NodeSshInstaller
             . $sudo . 'systemctl is-active hydra-node-install-' . $data['id'] . ' 2>/dev/null)"'
         );
         preg_match('/__HYDRA__(\d*)__([a-z-]*)\s*$/', $output, $match);
-        $data['log'] = $this->clean(preg_replace('/\n?__HYDRA__.*$/s', '', $output) ?? '');
+        // The installer marks its progress in the log (InstallerLog), shown as a bar.
+        $parsed = InstallerLog::parse($this->clean(preg_replace('/\n?__HYDRA__.*$/s', '', $output) ?? ''));
+        $data['log'] = trim($parsed['log']);
+        $data['progress'] = $parsed['progress'] ?? ($data['progress'] ?? 0);
+        $data['stage'] = $parsed['stage'] ?? ($data['stage'] ?? null);
 
         $exit = $match[1] ?? '';
         $active = $match[2] ?? '';
         if ($exit !== '' || !in_array($active, ['active', 'activating'], true)) {
             $data['exit_code'] = $exit === '' ? null : (int) $exit;
             $data['state'] = $exit === '0' ? 'success' : 'failed';
+            if ($data['state'] === 'success') {
+                $data['progress'] = 100;
+            }
             // Done: the key of the panel is no longer needed.
             $sftp->exec('sed -i ' . escapeshellarg("/hydra-panel-install-{$data['id']}/d") . ' ' . escapeshellarg($data['authorized']));
             unset($data['key']);
@@ -218,7 +226,7 @@ class NodeSshInstaller
 
     private function public(array $data): array
     {
-        return array_intersect_key($data, array_flip(['state', 'log', 'exit_code', 'host', 'username', 'started_at', 'error']));
+        return array_intersect_key($data, array_flip(['state', 'log', 'progress', 'stage', 'exit_code', 'host', 'username', 'started_at', 'error']));
     }
 
     private function cacheKey(Node $node): string

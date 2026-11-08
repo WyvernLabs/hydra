@@ -75,6 +75,25 @@ const initialState = (key: string): State => {
             active = tab.id;
         }
     }
+    // The admin area was loaded straight into the app window and sent us here (layouts/admin).
+    let frame: string | null = null;
+    try {
+        frame = sessionStorage.getItem('hydra:open-frame');
+        sessionStorage.removeItem('hydra:open-frame');
+    } catch {
+        // Storage blocked.
+    }
+    if (frame && pageKind(frame.split(/[?#]/)[0]) === 'frame') {
+        const existing = tabs.find((tab) => tab.frame);
+        if (existing) {
+            existing.path = frame;
+            active = existing.id;
+        } else {
+            const tab = { id: newId(), path: frame, title: '', frame: true };
+            tabs.push(tab);
+            active = tab.id;
+        }
+    }
     if (tabs.length === 0) {
         tabs = [{ id: newId(), path: '/', title: '', frame: false }];
     }
@@ -92,7 +111,7 @@ interface ViewProps {
     register: (id: string, navigator: Navigator | null) => void;
     onPath: (id: string, path: string) => void;
     onTitle: (id: string, title: string) => void;
-    open: (path: string, background?: boolean) => void;
+    open: (path: string, background?: boolean, fresh?: boolean) => void;
     attach: (doc: Document) => void;
 }
 
@@ -191,15 +210,16 @@ export default ({ Routes }: { Routes: React.ComponentType }) => {
         }));
     }, []);
 
-    const open = useCallback((path: string, background = false) => {
+    // "fresh": always a new tab, also for the admin area (middle click, Ctrl/Shift).
+    const open = useCallback((path: string, background = false, fresh = false) => {
         const kind = pageKind(new URL(path, window.location.origin).pathname);
         if (!kind) {
             window.location.assign(path);
             return;
         }
 
-        // The admin area keeps one tab.
-        const frame = kind === 'frame' ? current.current.tabs.find((tab) => tab.frame) : undefined;
+        // A plain link to the admin area goes to the admin tab that is open already.
+        const frame = kind === 'frame' && !fresh ? current.current.tabs.find((tab) => tab.frame) : undefined;
         if (frame) {
             navigators.current[frame.id]?.push(path);
             if (!background) activate(frame.id);
@@ -303,7 +323,7 @@ export default ({ Routes }: { Routes: React.ComponentType }) => {
 
         event.preventDefault();
         event.stopPropagation();
-        open(pathOf(url), modified && !event.shiftKey);
+        open(pathOf(url), modified && !event.shiftKey, modified);
     }, []);
 
     const attached = useRef(new WeakSet<Document>());
@@ -315,6 +335,10 @@ export default ({ Routes }: { Routes: React.ComponentType }) => {
 
     useEffect(() => {
         attach(document);
+        // Admin pages in a frame tab attach themselves as soon as they start (layouts/admin),
+        // long before their "load" event, which waits for every stylesheet and font.
+        const host = window as Window & { hydraAttachFrame?: (doc: Document) => void };
+        host.hydraAttachFrame = attach;
 
         const move = (step: number) => {
             const { tabs, active } = current.current;
@@ -363,6 +387,7 @@ export default ({ Routes }: { Routes: React.ComponentType }) => {
         return () => {
             document.removeEventListener('keydown', onKey);
             document.removeEventListener('mouseup', onMouse);
+            delete host.hydraAttachFrame;
             unlisten();
         };
     }, []);

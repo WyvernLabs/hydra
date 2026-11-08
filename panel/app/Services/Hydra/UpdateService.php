@@ -81,7 +81,17 @@ class UpdateService
         $size = filesize($path);
         $log = (string) file_get_contents($path, false, null, max(0, $size - self::LOG_MAX));
 
-        return preg_replace('/\e\[[0-9;]*m/', '', $log);
+        return InstallerLog::strip(preg_replace('/\e\[[0-9;]*m/', '', $log));
+    }
+
+    /**
+     * How far the running update is, from the progress lines of the installer.
+     */
+    public function progress(): ?int
+    {
+        $path = self::directory() . '/panel.log';
+
+        return is_file($path) ? InstallerLog::parse((string) file_get_contents($path))['progress'] : null;
     }
 
     /**
@@ -109,6 +119,7 @@ class UpdateService
             'status' => $this->status(),
             'has_update' => $this->hasUpdate(),
             'log' => $this->log(),
+            'progress' => $this->progress(),
         ];
     }
 

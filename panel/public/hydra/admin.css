@@ -567,6 +567,12 @@
     color: rgb(var(--hydra-accent-300));
 }
 
+/* pterodactyl.css gibt dem ersten aktiven Tab in .nav-tabs-floating eigene (eckige) Radien –
+   spezifischer als die Regeln oben, deshalb hier ausdrücklich zurücksetzen. */
+.hydra-admin .nav-tabs-custom.nav-tabs-floating > .nav-tabs > li:first-child.active,
+.hydra-admin .nav-tabs-custom.nav-tabs-floating > .nav-tabs > li:first-child:hover { border-radius: 0; }
+.hydra-admin .nav-tabs-custom.nav-tabs-floating > .nav-tabs > li:first-child > a { border-radius: var(--hydra-radius-sm); }
+
 .hydra-admin .nav-tabs-custom > .tab-content { background: transparent; color: var(--hydra-text-2); }
 .hydra-admin .nav-tabs-custom > .nav-tabs > li.header { color: var(--hydra-text); }
 
@@ -638,6 +644,28 @@
 
 .hydra-admin .progress { background: var(--hydra-panel-3); border-radius: 999px; box-shadow: none; }
 .hydra-admin .progress-bar { background: rgb(var(--hydra-accent-500)); }
+
+/* Fortschritt der Installer (Nodes > Installation): gestreift und animiert, solange es läuft. */
+.hydra-admin .hydra-install-progress { margin-bottom: 12px; }
+.hydra-admin .hydra-install-progress .progress { height: 10px; margin-bottom: 6px; }
+.hydra-admin .hydra-install-progress .progress-bar {
+    min-width: 10px;
+    border-radius: 999px;
+    transition: width 0.8s ease;
+}
+.hydra-admin .hydra-install-progress .progress.active .progress-bar {
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.18) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.18) 50%, rgba(255, 255, 255, 0.18) 75%, transparent 75%, transparent);
+    background-size: 20px 20px;
+    animation: hydra-progress-stripes 0.8s linear infinite;
+}
+.hydra-admin .hydra-install-progress .progress-bar.progress-bar-success { background-color: rgb(var(--hydra-accent-500)); }
+.hydra-admin .hydra-install-progress .progress-bar.progress-bar-danger { background-color: #e5484d; }
+.hydra-admin .hydra-install-progress-meta { display: flex; justify-content: space-between; gap: 12px; color: var(--hydra-text-2); }
+@keyframes hydra-progress-stripes { from { background-position: 20px 0; } to { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) {
+    .hydra-admin .hydra-install-progress .progress.active .progress-bar { animation: none; }
+    .hydra-admin .hydra-install-progress .progress-bar { transition: none; }
+}
 
 /* SweetAlert */
 .sweet-overlay { background: var(--hydra-overlay) !important; }

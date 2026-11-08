@@ -68,7 +68,76 @@ if [[ -t 1 ]]; then
 else
   C_G=""; C_Y=""; C_R=""; C_B=""; C_D=""; C_0=""
 fi
-step() { printf '\n%s==>%s %s%s%s\n' "$C_G" "$C_0" "$C_B" "$*" "$C_0"; }
+
+# Fortschritt: Jeder Schritt hat eine Prozentangabe (step "Name" <prozent>), lange Befehle laufen
+# über run mit Spinner, Laufzeit und Balken. Ohne Terminal (Installation aus dem Panel, Updates
+# mit Ausgabe in eine Logdatei) gibt es stattdessen Zeilen "##hydra-progress <prozent> <text>",
+# aus denen das Panel einen Fortschrittsbalken macht, und alle 15 s eine "läuft noch"-Zeile.
+TTY=0; [[ -t 1 ]] && TTY=1
+PROGRESS=0
+STEP_NO=0
+STEP_NAME=""
+SPINNER=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
+
+bar() { # bar <prozent> – Balken aus 24 Zeichen
+  local i full=$(( $1 * 24 / 100 )) out=""
+  for (( i = 0; i < 24; i++ )); do
+    if (( i < full )); then out+="█"; else out+="░"; fi
+  done
+  printf '%s%s%s %3d %%' "$C_G" "$out" "$C_0" "$1"
+}
+
+elapsed() { # elapsed <start-sekunden> – m:ss seitdem
+  local s=$(( SECONDS - $1 ))
+  printf '%d:%02d' $(( s / 60 )) $(( s % 60 ))
+}
+
+progress() { # progress <prozent> [text] – Stand setzen, ohne Terminal als Marke ausgeben
+  PROGRESS=$1
+  (( TTY )) || printf '##hydra-progress %d %s\n' "$PROGRESS" "${2:-$STEP_NAME}"
+}
+
+step() { # step "Name" [prozent]
+  STEP_NAME="$1"
+  STEP_NO=$(( STEP_NO + 1 ))
+  if (( TTY )); then
+    printf '\n%s==>%s %s%s%s\n' "$C_G" "$C_0" "$C_B" "$1" "$C_0"
+    [[ -n "${2:-}" ]] && { PROGRESS=$2; printf '    %s\n' "$(bar "$PROGRESS")"; }
+  else
+    printf '\n==> %s\n' "$1"
+    [[ -n "${2:-}" ]] && progress "$2" "$1"
+  fi
+  return 0
+}
+
+run() { # run "Text" befehl … – Befehl im Hintergrund, Ausgabe nur bei einem Fehler
+  local label="$1"; shift
+  local log start=$SECONDS last=$SECONDS pid rc=0 i=0
+  log="$(mktemp /tmp/hydra-run.XXXXXX)"
+  ( trap - ERR; "$@" ) </dev/null >"$log" 2>&1 &
+  pid=$!
+  (( TTY )) || printf '    %s …\n' "$label"
+  while kill -0 "$pid" 2>/dev/null; do
+    if (( TTY )); then
+      printf '\r    %s%s%s %s %s%s%s  %s\e[K' "$C_G" "${SPINNER[i % 10]}" "$C_0" "$label" "$C_D" "$(elapsed "$start")" "$C_0" "$(bar "$PROGRESS")"
+      i=$(( i + 1 ))
+    elif (( SECONDS - last >= 15 )); then
+      last=$SECONDS
+      printf '    … %s läuft noch (%s)\n' "$label" "$(elapsed "$start")"
+    fi
+    sleep 0.15
+  done
+  wait "$pid" || rc=$?
+  (( TTY )) && printf '\r\e[K'
+  if (( rc == 0 )); then
+    printf '    %s✓%s %s %s(%s)%s\n' "$C_G" "$C_0" "$label" "$C_D" "$(elapsed "$start")" "$C_0"
+  else
+    printf '    %s✗ %s (Fehlercode %d, %s)%s\n' "$C_R" "$label" "$rc" "$(elapsed "$start")" "$C_0"
+    grep -v '^\s*$' "$log" | tail -n 25 | sed 's/^/      /'
+  fi
+  rm -f "$log"
+  return "$rc"
+}
 info() { printf '    %s\n' "$*"; }
 warn() { printf '%s  ! %s%s\n' "$C_Y" "$*" "$C_0"; }
 die()  { printf '%s  ✗ %s%s\n' "$C_R" "$*" "$C_0" >&2; exit 1; }
@@ -191,7 +260,7 @@ fi
 
 # ------------------------------------------------------------------ System prüfen
 
-step "System prüfen"
+step "System prüfen" 0
 [[ -r /etc/os-release ]] || die "/etc/os-release fehlt – unbekanntes Betriebssystem."
 # shellcheck disable=SC1091
 . /etc/os-release
@@ -223,12 +292,10 @@ REF="${REF:-main}"
 # und Pakete nur einmal, und es läuft immer der Installer, der zum Quellcode passt.
 if [[ ! -d "$SOURCE" && -z "${HYDRA_REEXEC:-}" ]]; then
   if ! command -v git >/dev/null; then
-    info "Installiere git …"
-    apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git ca-certificates >/dev/null
+    run "git installieren" bash -c 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git ca-certificates'
   fi
   BOOT_DIR="$(mktemp -d)"
-  info "Lade $SOURCE ($REF) …"
-  git_clone "$SOURCE" "$REF" "$BOOT_DIR/repo" \
+  run "Lade $SOURCE ($REF)" git_clone "$SOURCE" "$REF" "$BOOT_DIR/repo" \
     || die "git clone fehlgeschlagen. Ist das Repository privat? Dann --git-token <token> angeben."
   [[ -f "$BOOT_DIR/repo/installer/panel-install.sh" ]] || die "$SOURCE enthält keinen Hydra-Installer."
   export HYDRA_GIT_TOKEN="$GIT_TOKEN"
@@ -335,87 +402,90 @@ install_caddy_github() {
   rm -rf "$tmp"
 }
 
-step "Pakete installieren"
-apt_update || die "apt-get update fehlgeschlagen."
-apt-get install -y -qq curl ca-certificates gnupg lsb-release apt-transport-https rsync git tar unzip cron ufw >/dev/null
-info "Basis-Pakete ok"
+step "Pakete installieren" 3
+run "Paketquellen aktualisieren" apt_update || die "apt-get update fehlgeschlagen."
+progress 6
+run "Basis-Pakete installieren" apt-get install -y -qq curl ca-certificates gnupg lsb-release apt-transport-https rsync git tar unzip cron ufw
+progress 10
 
 # PHP: Die Distributionsversion reicht ab PHP 8.2 (Debian 12: 8.2, Debian 13: 8.4, Ubuntu 24.04: 8.3).
 # Ubuntu 22.04 bringt nur 8.1 mit – dort kommt PHP 8.3 aus dem PPA von Ondřej Surý.
 if [[ "$ID:$VERSION_ID" == ubuntu:22.04 ]]; then
   if ! grep -rqs "ondrej/php" /etc/apt/sources.list.d/; then
-    info "Füge PPA ondrej/php hinzu …"
-    apt-get install -y -qq software-properties-common >/dev/null
-    LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php >/dev/null
-    apt_update || die "apt-get update fehlgeschlagen."
+    run "software-properties-common installieren" apt-get install -y -qq software-properties-common
+    run "PPA ondrej/php hinzufügen" env LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php
+    run "Paketquellen aktualisieren" apt_update || die "apt-get update fehlgeschlagen."
   fi
   PHP_VER=8.3
 else
   PHP_VER="$(apt-cache depends php-cli 2>/dev/null | sed -n 's/.*Depends: php\([0-9.]*\)-cli.*/\1/p' | head -n1)"
   [[ -n "$PHP_VER" ]] || die "PHP-Version der Distribution konnte nicht ermittelt werden."
 fi
-apt-get install -y -qq "php${PHP_VER}-cli" "php${PHP_VER}-fpm" "php${PHP_VER}-common" "php${PHP_VER}-gd" \
+run "PHP $PHP_VER installieren" apt-get install -y -qq "php${PHP_VER}-cli" "php${PHP_VER}-fpm" "php${PHP_VER}-common" "php${PHP_VER}-gd" \
   "php${PHP_VER}-mysql" "php${PHP_VER}-mbstring" "php${PHP_VER}-bcmath" "php${PHP_VER}-xml" \
-  "php${PHP_VER}-curl" "php${PHP_VER}-zip" "php${PHP_VER}-intl" >/dev/null
+  "php${PHP_VER}-curl" "php${PHP_VER}-zip" "php${PHP_VER}-intl"
 PHP_BIN="/usr/bin/php${PHP_VER}"
 PHP_FPM_SOCK="/run/php/php${PHP_VER}-fpm.sock"
 info "PHP $("$PHP_BIN" -r 'echo PHP_VERSION;') ok"
+progress 18
 
-apt-get install -y -qq mariadb-server mariadb-client redis-server >/dev/null
+run "MariaDB und Redis installieren" apt-get install -y -qq mariadb-server mariadb-client redis-server
 systemctl enable --now mariadb redis-server >/dev/null 2>&1
-info "MariaDB und Redis ok"
+progress 25
 
-if ! command -v composer >/dev/null; then
-  info "Installiere Composer …"
+install_composer() {
+  local tmp expected actual
   tmp="$(mktemp -d)"
-  EXPECTED="$(curl -fsSL https://composer.github.io/installer.sig)"
+  expected="$(curl -fsSL https://composer.github.io/installer.sig)"
   curl -fsSL -o "$tmp/composer-setup.php" https://getcomposer.org/installer
-  ACTUAL="$("$PHP_BIN" -r "echo hash_file('sha384', '$tmp/composer-setup.php');")"
-  [[ "$EXPECTED" == "$ACTUAL" ]] || { rm -rf "$tmp"; die "Prüfsumme des Composer-Installers stimmt nicht."; }
+  actual="$("$PHP_BIN" -r "echo hash_file('sha384', '$tmp/composer-setup.php');")"
+  [[ "$expected" == "$actual" ]] || { rm -rf "$tmp"; echo "Prüfsumme des Composer-Installers stimmt nicht."; return 1; }
   "$PHP_BIN" "$tmp/composer-setup.php" --quiet --install-dir=/usr/local/bin --filename=composer
   rm -rf "$tmp"
+}
+if ! command -v composer >/dev/null; then
+  run "Composer installieren" install_composer || die "Composer konnte nicht installiert werden."
 fi
 info "Composer $(COMPOSER_ALLOW_SUPERUSER=1 composer --version 2>/dev/null | awk '{print $3}') ok"
+progress 27
 
 NODE_OK=0
 if command -v node >/dev/null; then
   (( $(node -p 'process.versions.node.split(".")[0]') >= NODE_MAJOR )) && NODE_OK=1
 fi
 if (( ! NODE_OK )); then
-  info "Installiere Node.js $NODE_MAJOR (NodeSource) …"
-  curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | bash - >/dev/null
-  apt-get install -y -qq nodejs >/dev/null
+  run "Node.js $NODE_MAJOR einrichten (NodeSource)" bash -c "curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash -"
+  run "Node.js $NODE_MAJOR installieren" apt-get install -y -qq nodejs
 fi
 if ! command -v yarn >/dev/null || [[ "$(yarn --version 2>/dev/null)" != "$YARN_VERSION" ]]; then
-  npm install -g --silent "yarn@$YARN_VERSION" >/dev/null 2>&1
+  run "Yarn $YARN_VERSION installieren" npm install -g --silent "yarn@$YARN_VERSION"
 fi
 info "Node.js $(node -v), Yarn $(yarn --version) ok"
+progress 34
 
 if [[ -f "$CADDY_LIST.disabled" ]]; then
-  install_caddy_github
+  run "Caddy aus dem GitHub-Release installieren" install_caddy_github
 elif ! command -v caddy >/dev/null; then
-  info "Installiere Caddy (offizielles Repository) …"
   curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor --yes -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
   curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' > "$CADDY_LIST"
-  if ! apt_update || ! apt-get install -y -qq caddy >/dev/null 2>&1; then
+  if ! run "Caddy installieren" bash -c 'apt-get update -qq && apt-get install -y -qq caddy'; then
     warn "Caddy-Repository nicht nutzbar – weiche auf das GitHub-Release aus."
     [[ -f "$CADDY_LIST" ]] && mv -f "$CADDY_LIST" "$CADDY_LIST.disabled"
-    install_caddy_github
+    run "Caddy aus dem GitHub-Release installieren" install_caddy_github
   fi
 fi
 info "Caddy $(caddy version | awk '{print $1}') ok"
 
 # ------------------------------------------------------------------ Quellcode
 
-step "Hydra Panel bereitstellen"
+step "Hydra Panel bereitstellen" 40
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"; die "Abbruch in Zeile $LINENO: $BASH_COMMAND"' ERR
 if [[ -d "$SOURCE" ]]; then
   [[ -f "$SOURCE/panel/artisan" ]] || die "$SOURCE enthält kein Hydra-Repository (panel/artisan fehlt)."
   PANEL_SRC="$SOURCE/panel"
 else
-  info "Lade $SOURCE ($REF) …"
-  git_clone "$SOURCE" "$REF" "$WORK/repo" || die "git clone fehlgeschlagen."
+  run "Lade $SOURCE ($REF)" git_clone "$SOURCE" "$REF" "$WORK/repo" || die "git clone fehlgeschlagen."
   PANEL_SRC="$WORK/repo/panel"
 fi
 
@@ -456,8 +526,9 @@ else
 fi
 
 cd "$INSTALL_DIR"
-info "PHP-Abhängigkeiten (composer install) …"
-COMPOSER_ALLOW_SUPERUSER=1 "$PHP_BIN" /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction --quiet
+progress 43
+run "PHP-Abhängigkeiten installieren (composer)" env COMPOSER_ALLOW_SUPERUSER=1 "$PHP_BIN" /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+progress 52
 
 # webpack braucht beim Bauen gut 1,5 GB Speicher – auf kleinen Servern hilft vorübergehend Swap.
 TEMP_SWAP=""
@@ -468,16 +539,18 @@ if (( MEM_MB + SWAP_MB < 3000 )); then
   fallocate -l 2G "$TEMP_SWAP" 2>/dev/null || dd if=/dev/zero of="$TEMP_SWAP" bs=1M count=2048 status=none
   chmod 600 "$TEMP_SWAP" && mkswap "$TEMP_SWAP" >/dev/null && swapon "$TEMP_SWAP"
 fi
-info "Frontend bauen (yarn install & build) – das dauert ein paar Minuten …"
 install -d public/assets
-yarn install --frozen-lockfile --silent --non-interactive >/dev/null 2>&1 || yarn install --frozen-lockfile --non-interactive
-NODE_OPTIONS=--max-old-space-size=2048 yarn run build:production >/dev/null 2>&1 \
-  || { NODE_OPTIONS=--max-old-space-size=2048 yarn run build:production; die "Frontend-Build fehlgeschlagen."; }
+run "Frontend-Pakete laden (yarn install)" yarn install --frozen-lockfile --non-interactive --no-progress \
+  || die "yarn install fehlgeschlagen."
+progress 60
+info "Das Bauen des Frontends dauert ein paar Minuten."
+run "Frontend bauen (webpack)" env NODE_OPTIONS=--max-old-space-size=2048 yarn run build:production \
+  || die "Frontend-Build fehlgeschlagen."
 if [[ -n "$TEMP_SWAP" ]]; then
   swapoff "$TEMP_SWAP" && rm -f "$TEMP_SWAP"
 fi
 rm -rf "$INSTALL_DIR/node_modules"
-info "Frontend gebaut"
+progress 84
 
 # ------------------------------------------------------------------ Datenbank & .env
 
@@ -494,7 +567,7 @@ set_env() { # set_env KEY VALUE – setzt oder ergänzt einen Eintrag in der .en
 }
 
 if [[ ! -f .env ]]; then
-  step "Datenbank und Konfiguration einrichten"
+  step "Datenbank und Konfiguration einrichten" 86
   DB_PASSWORD="$(random_string 32)"
   mariadb -u root <<SQL
 CREATE DATABASE IF NOT EXISTS hydra CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -528,8 +601,8 @@ else
   NEW_INSTALL=0
 fi
 
-step "Datenbank migrieren"
-"$PHP_BIN" artisan migrate --seed --force --no-interaction | sed 's/^/    /' | tail -n 3
+step "Datenbank migrieren" 88
+run "Datenbank migrieren" "$PHP_BIN" artisan migrate --seed --force --no-interaction
 "$PHP_BIN" artisan view:clear >/dev/null
 "$PHP_BIN" artisan config:clear >/dev/null
 "$PHP_BIN" artisan optimize:clear >/dev/null 2>&1 || true
@@ -539,7 +612,7 @@ step "Datenbank migrieren"
 ADMIN_COUNT="$(mariadb -u root -Nse "SELECT COUNT(*) FROM hydra.users WHERE root_admin = 1" 2>/dev/null || echo 0)"
 CREATED_ADMIN=0
 if [[ "$ADMIN_COUNT" == 0 ]]; then
-  step "Admin anlegen"
+  step "Admin anlegen" 92
   ADMIN_USER="${ADMIN_USER:-admin}"
   ADMIN_PASSWORD="${ADMIN_PASSWORD:-$(random_string 20)}"
   if ! ADMIN_OUTPUT="$("$PHP_BIN" artisan p:user:make --no-interaction --admin=1 --email="$EMAIL" --username="$ADMIN_USER" \
@@ -565,7 +638,7 @@ fi
 
 # ------------------------------------------------------------------ Rechte, PHP, Dienste
 
-step "Dienste einrichten"
+step "Dienste einrichten" 94
 chown -R "$WEB_USER:$WEB_USER" "$INSTALL_DIR"
 chmod -R u+rwX,g+rX,o-rwx "$INSTALL_DIR/storage" "$INSTALL_DIR/bootstrap/cache"
 chmod 640 "$INSTALL_DIR/.env"
@@ -1005,7 +1078,7 @@ info "phpMyAdmin-Addon ok"
 rm -rf "$WORK"
 if [[ -n "${HYDRA_BOOT_DIR:-}" ]]; then rm -rf "$HYDRA_BOOT_DIR"; fi
 
-step "Fertig"
+step "Fertig" 100
 VERSION="$(sed -n "s/.*'version' => '\(.*\)',.*/\1/p" "$INSTALL_DIR/config/app.php" | head -n1)"
 info "Hydra Panel $VERSION läuft unter ${C_B}$APP_URL${C_0}"
 if (( CREATED_ADMIN )); then

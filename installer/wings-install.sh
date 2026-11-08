@@ -63,7 +63,76 @@ if [[ -t 1 ]]; then
 else
   C_G=""; C_Y=""; C_R=""; C_B=""; C_D=""; C_0=""
 fi
-step() { printf '\n%s==>%s %s%s%s\n' "$C_G" "$C_0" "$C_B" "$*" "$C_0"; }
+
+# Fortschritt: Jeder Schritt hat eine Prozentangabe (step "Name" <prozent>), lange Befehle laufen
+# über run mit Spinner, Laufzeit und Balken. Ohne Terminal (Installation aus dem Panel, Updates
+# mit Ausgabe in eine Logdatei) gibt es stattdessen Zeilen "##hydra-progress <prozent> <text>",
+# aus denen das Panel einen Fortschrittsbalken macht, und alle 15 s eine "läuft noch"-Zeile.
+TTY=0; [[ -t 1 ]] && TTY=1
+PROGRESS=0
+STEP_NO=0
+STEP_NAME=""
+SPINNER=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
+
+bar() { # bar <prozent> – Balken aus 24 Zeichen
+  local i full=$(( $1 * 24 / 100 )) out=""
+  for (( i = 0; i < 24; i++ )); do
+    if (( i < full )); then out+="█"; else out+="░"; fi
+  done
+  printf '%s%s%s %3d %%' "$C_G" "$out" "$C_0" "$1"
+}
+
+elapsed() { # elapsed <start-sekunden> – m:ss seitdem
+  local s=$(( SECONDS - $1 ))
+  printf '%d:%02d' $(( s / 60 )) $(( s % 60 ))
+}
+
+progress() { # progress <prozent> [text] – Stand setzen, ohne Terminal als Marke ausgeben
+  PROGRESS=$1
+  (( TTY )) || printf '##hydra-progress %d %s\n' "$PROGRESS" "${2:-$STEP_NAME}"
+}
+
+step() { # step "Name" [prozent]
+  STEP_NAME="$1"
+  STEP_NO=$(( STEP_NO + 1 ))
+  if (( TTY )); then
+    printf '\n%s==>%s %s%s%s\n' "$C_G" "$C_0" "$C_B" "$1" "$C_0"
+    [[ -n "${2:-}" ]] && { PROGRESS=$2; printf '    %s\n' "$(bar "$PROGRESS")"; }
+  else
+    printf '\n==> %s\n' "$1"
+    [[ -n "${2:-}" ]] && progress "$2" "$1"
+  fi
+  return 0
+}
+
+run() { # run "Text" befehl … – Befehl im Hintergrund, Ausgabe nur bei einem Fehler
+  local label="$1"; shift
+  local log start=$SECONDS last=$SECONDS pid rc=0 i=0
+  log="$(mktemp /tmp/hydra-run.XXXXXX)"
+  ( trap - ERR; "$@" ) </dev/null >"$log" 2>&1 &
+  pid=$!
+  (( TTY )) || printf '    %s …\n' "$label"
+  while kill -0 "$pid" 2>/dev/null; do
+    if (( TTY )); then
+      printf '\r    %s%s%s %s %s%s%s  %s\e[K' "$C_G" "${SPINNER[i % 10]}" "$C_0" "$label" "$C_D" "$(elapsed "$start")" "$C_0" "$(bar "$PROGRESS")"
+      i=$(( i + 1 ))
+    elif (( SECONDS - last >= 15 )); then
+      last=$SECONDS
+      printf '    … %s läuft noch (%s)\n' "$label" "$(elapsed "$start")"
+    fi
+    sleep 0.15
+  done
+  wait "$pid" || rc=$?
+  (( TTY )) && printf '\r\e[K'
+  if (( rc == 0 )); then
+    printf '    %s✓%s %s %s(%s)%s\n' "$C_G" "$C_0" "$label" "$C_D" "$(elapsed "$start")" "$C_0"
+  else
+    printf '    %s✗ %s (Fehlercode %d, %s)%s\n' "$C_R" "$label" "$rc" "$(elapsed "$start")" "$C_0"
+    grep -v '^\s*$' "$log" | tail -n 25 | sed 's/^/      /'
+  fi
+  rm -f "$log"
+  return "$rc"
+}
 info() { printf '    %s\n' "$*"; }
 warn() { printf '%s  ! %s%s\n' "$C_Y" "$*" "$C_0"; }
 die()  { printf '%s  ✗ %s%s\n' "$C_R" "$*" "$C_0" >&2; exit 1; }
@@ -183,7 +252,7 @@ fi
 
 # ------------------------------------------------------------------ System prüfen
 
-step "System prüfen"
+step "System prüfen" 0
 [[ -r /etc/os-release ]] || die "/etc/os-release fehlt – unbekanntes Betriebssystem."
 # shellcheck disable=SC1091
 . /etc/os-release
@@ -219,12 +288,10 @@ REF="${REF:-main}"
 # und Pakete nur einmal, und es läuft immer der Installer, der zum Quellcode passt.
 if [[ -n "$SOURCE" && ! -d "$SOURCE" && -z "$BINARY_URL" && -z "${HYDRA_REEXEC:-}" ]]; then
   if ! command -v git >/dev/null; then
-    info "Installiere git …"
-    apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git ca-certificates >/dev/null
+    run "git installieren" bash -c 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git ca-certificates'
   fi
   BOOT_DIR="$(mktemp -d)"
-  info "Lade $SOURCE ($REF) …"
-  git_clone "$SOURCE" "$REF" "$BOOT_DIR/repo" \
+  run "Lade $SOURCE ($REF)" git_clone "$SOURCE" "$REF" "$BOOT_DIR/repo" \
     || die "git clone fehlgeschlagen. Ist das Repository privat? Dann --git-token <token> angeben."
   [[ -f "$BOOT_DIR/repo/installer/wings-install.sh" ]] || die "$SOURCE enthält keinen Hydra-Installer."
   export HYDRA_GIT_TOKEN="$GIT_TOKEN"
@@ -277,20 +344,21 @@ info "Wings:  $( [[ -n "$BINARY_URL" ]] && echo "Binary von $BINARY_URL" || echo
 # ------------------------------------------------------------------ Pakete & Docker
 
 export DEBIAN_FRONTEND=noninteractive
-step "Pakete installieren"
-apt-get update -qq || die "apt-get update fehlgeschlagen."
-apt-get install -y -qq curl ca-certificates gnupg tar git rsync ufw >/dev/null
-info "Basis-Pakete ok"
+step "Pakete installieren" 3
+run "Paketquellen aktualisieren" apt-get update -qq || die "apt-get update fehlgeschlagen."
+progress 6
+run "Basis-Pakete installieren" apt-get install -y -qq curl ca-certificates gnupg tar git rsync ufw
+progress 10
 
 if ! command -v docker >/dev/null; then
-  info "Installiere Docker (offizielles Repository) …"
   install -m 0755 -d /etc/apt/keyrings
   curl -fsSL "https://download.docker.com/linux/$ID/gpg" -o /etc/apt/keyrings/docker.asc
   chmod a+r /etc/apt/keyrings/docker.asc
   echo "deb [arch=$ARCH signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/$ID ${VERSION_CODENAME} stable" \
     > /etc/apt/sources.list.d/docker.list
-  apt-get update -qq || die "apt-get update fehlgeschlagen (Docker-Repository)."
-  apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin >/dev/null
+  run "Docker-Paketquelle laden" apt-get update -qq || die "apt-get update fehlgeschlagen (Docker-Repository)."
+  progress 13
+  run "Docker installieren" apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 fi
 systemctl enable --now docker >/dev/null 2>&1
 info "Docker $(docker version --format '{{.Server.Version}}' 2>/dev/null || echo '?') ok"
@@ -304,14 +372,10 @@ info "Docker $(docker version --format '{{.Server.Version}}' 2>/dev/null || echo
 # java_25_graalvm: GraalVM Community für Java 25 (frei nutzbar, laufend aktualisiert) auf
 # derselben Ubuntu-Basis wie die Java-Yolks. Ältere GraalVM-CE-Versionen bekommen keine
 # Updates mehr, deshalb gibt es nur Java 25.
-step "Hydra-Images bauen"
+step "Hydra-Images bauen" 25
 build_yolk() { # build_yolk <tag> <verzeichnis>
-  if docker build --pull -q -t "hydra/yolks:$1" "$2" >/dev/null 2>"$2/build.log"; then
-    info "hydra/yolks:$1 ok"
-  else
-    warn "hydra/yolks:$1 konnte nicht gebaut werden – Server mit diesem Image starten nicht."
-    tail -n 5 "$2/build.log" | sed 's/^/      /'
-  fi
+  run "Image hydra/yolks:$1 bauen" docker build --pull -t "hydra/yolks:$1" "$2" \
+    || warn "hydra/yolks:$1 konnte nicht gebaut werden – Server mit diesem Image starten nicht."
 }
 YOLK_DIR="$(mktemp -d)"
 cat > "$YOLK_DIR/Dockerfile" <<'EOF'
@@ -357,6 +421,7 @@ eval "$PARSED"
 EOF
 build_yolk java_25_graalvm "$YOLK_DIR"
 rm -rf "$YOLK_DIR"
+progress 45
 
 # Caddy für die Reverse Proxys der Server (Addon "Reverse Proxy"). Ohne Proxys lauscht Caddy
 # auf keinem Port; Wings schreibt die Proxys nach /etc/hydra/caddy/ und lädt Caddy neu.
@@ -383,16 +448,15 @@ install_caddy_github() {
   return 1
 }
 if [[ -f "$CADDY_LIST.disabled" ]]; then
-  install_caddy_github || true
+  run "Caddy aus dem GitHub-Release installieren" install_caddy_github || true
 elif ! command -v caddy >/dev/null; then
-  info "Installiere Caddy (offizielles Repository) …"
   curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor --yes -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
   curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' > "$CADDY_LIST"
-  if ! apt-get update -qq || ! apt-get install -y -qq caddy >/dev/null 2>&1; then
+  if ! run "Caddy installieren" bash -c 'apt-get update -qq && apt-get install -y -qq caddy'; then
     warn "Caddy-Repository nicht nutzbar – weiche auf das GitHub-Release aus."
     mv -f "$CADDY_LIST" "$CADDY_LIST.disabled"
     apt-get update -qq || true
-    install_caddy_github || true
+    run "Caddy aus dem GitHub-Release installieren" install_caddy_github || true
   fi
 fi
 if command -v caddy >/dev/null; then
@@ -441,20 +505,18 @@ fi
 
 # ------------------------------------------------------------------ Wings bauen / laden
 
-step "Hydra Wings bereitstellen"
+step "Hydra Wings bereitstellen" 50
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"; die "Abbruch in Zeile $LINENO: $BASH_COMMAND"' ERR
 
 if [[ -n "$BINARY_URL" ]]; then
-  info "Lade $BINARY_URL …"
-  curl -fsSL -o "$WORK/hydra-wings" "$BINARY_URL" || die "Download der Binary fehlgeschlagen."
+  run "Lade $BINARY_URL" curl -fsSL -o "$WORK/hydra-wings" "$BINARY_URL" || die "Download der Binary fehlgeschlagen."
 else
   if [[ -d "$SOURCE" ]]; then
     [[ -f "$SOURCE/wings/go.mod" ]] || die "$SOURCE enthält kein Hydra-Repository (wings/go.mod fehlt)."
     WINGS_SRC="$SOURCE/wings"
   else
-    info "Lade $SOURCE ($REF) …"
-    git_clone "$SOURCE" "$REF" "$WORK/repo" || die "git clone fehlgeschlagen."
+    run "Lade $SOURCE ($REF)" git_clone "$SOURCE" "$REF" "$WORK/repo" || die "git clone fehlgeschlagen."
     WINGS_SRC="$WORK/repo/wings"
   fi
 
@@ -470,9 +532,8 @@ else
   GO_VERSION="$(sed -n 's/^toolchain go\(.*\)$/\1/p' "$WINGS_SRC/go.mod")"
   [[ -n "$GO_VERSION" ]] || GO_VERSION="$(sed -n 's/^go \(.*\)$/\1/p' "$WINGS_SRC/go.mod")"
   if [[ ! -x "$GO_DIR/bin/go" ]] || [[ "$("$GO_DIR/bin/go" env GOVERSION 2>/dev/null)" != "go$GO_VERSION" ]]; then
-    info "Installiere Go $GO_VERSION …"
     GO_TAR="go${GO_VERSION}.linux-${ARCH}.tar.gz"
-    fetch -o "$WORK/$GO_TAR" "https://go.dev/dl/$GO_TAR" || die "Download von Go $GO_VERSION fehlgeschlagen."
+    run "Lade Go $GO_VERSION" fetch -o "$WORK/$GO_TAR" "https://go.dev/dl/$GO_TAR" || die "Download von Go $GO_VERSION fehlgeschlagen."
     GO_SHA="$(fetch "https://go.dev/dl/?mode=json&include=all" | tr -d ' \n' \
       | grep -o "\"filename\":\"$GO_TAR\",\"os\":\"[a-z]*\",\"arch\":\"[a-z0-9]*\",\"version\":\"[^\"]*\",\"sha256\":\"[0-9a-f]*\"" \
       | sed 's/.*"sha256":"\([0-9a-f]*\)"/\1/' | head -n1 || true)"
@@ -485,23 +546,27 @@ else
     tar -C "$(dirname "$GO_DIR")" -xzf "$WORK/$GO_TAR"
   fi
   info "Go $("$GO_DIR/bin/go" env GOVERSION) ok"
+  progress 58
 
   WINGS_VERSION="$(sed -n 's/^var Version = "\(.*\)"$/\1/p' "$WINGS_SRC/system/const.go")"
   if git -C "$WINGS_SRC" rev-parse --short HEAD >/dev/null 2>&1; then
     WINGS_VERSION="$WINGS_VERSION+$(git -C "$WINGS_SRC" rev-parse --short HEAD)"
   fi
-  info "Baue Hydra Wings $WINGS_VERSION …"
   rsync -a --delete "$WINGS_SRC/" "$WORK/wings/"
   # proxy.golang.org antwortet manchen Hoster-Netzen mit 403 (wie dl.google.com über IPv6).
   # Mit "|" holt Go ein Modul bei jedem Fehler direkt aus seinem Repository (GitHub, GitLab …);
   # die Prüfsummen aus go.sum gelten auch dann.
   GO_PROXY_CHAIN="${GOPROXY:-https://proxy.golang.org|direct}"
-  (cd "$WORK/wings" && CGO_ENABLED=0 GOTOOLCHAIN=local GOPATH=/opt/hydra/gopath GOCACHE=/opt/hydra/gocache \
-    GOPROXY="$GO_PROXY_CHAIN" GOFLAGS=-mod=readonly \
-    "$GO_DIR/bin/go" build -trimpath \
+  go_env() { (cd "$WORK/wings" && env CGO_ENABLED=0 GOTOOLCHAIN=local GOPATH=/opt/hydra/gopath GOCACHE=/opt/hydra/gocache \
+    GOPROXY="$GO_PROXY_CHAIN" GOFLAGS=-mod=readonly "$GO_DIR/bin/go" "$@"); }
+  run "Go-Module laden" go_env mod download || die "Go-Module konnten nicht geladen werden."
+  progress 68
+  info "Das Bauen von Wings dauert ein paar Minuten."
+  run "Baue Hydra Wings $WINGS_VERSION" go_env build -trimpath \
       -ldflags="-s -w -X github.com/pterodactyl/wings/system.Version=$WINGS_VERSION" \
-      -o "$WORK/hydra-wings" .) || die "Wings konnte nicht gebaut werden."
+      -o "$WORK/hydra-wings" . || die "Wings konnte nicht gebaut werden."
 fi
+progress 88
 
 chmod 755 "$WORK/hydra-wings"
 "$WORK/hydra-wings" version >/dev/null 2>&1 || die "Die neue hydra-wings-Binary startet nicht."
@@ -541,8 +606,8 @@ info "Dienst $SERVICE eingerichtet"
 # ------------------------------------------------------------------ SSL
 
 if (( SSL )) && [[ ! -d "/etc/letsencrypt/live/$FQDN" ]]; then
-  step "SSL-Zertifikat für $FQDN"
-  apt-get install -y -qq certbot >/dev/null
+  step "SSL-Zertifikat für $FQDN" 90
+  run "certbot installieren" apt-get install -y -qq certbot
   # Läuft auf dem Server schon ein Webserver auf Port 80 (z. B. Caddy vom Panel), wird er für die
   # Ausstellung und jede Erneuerung kurz angehalten.
   HOOKS=()
@@ -553,7 +618,7 @@ if (( SSL )) && [[ ! -d "/etc/letsencrypt/live/$FQDN" ]]; then
       break
     fi
   done
-  certbot certonly --standalone --non-interactive --agree-tos -m "$EMAIL" -d "$FQDN" \
+  run "Zertifikat ausstellen (Let's Encrypt)" certbot certonly --standalone --non-interactive --agree-tos -m "$EMAIL" -d "$FQDN" \
     "${HOOKS[@]}" --deploy-hook "systemctl try-restart $SERVICE" \
     || die "Zertifikat konnte nicht ausgestellt werden (DNS-Eintrag und Port 80 prüfen)."
   info "Zertifikat unter /etc/letsencrypt/live/$FQDN/ – erneuert sich automatisch"
@@ -562,7 +627,7 @@ fi
 # ------------------------------------------------------------------ Mit dem Panel verbinden
 
 if [[ -n "$PANEL_URL" && -n "$TOKEN" && -n "$NODE_ID" ]]; then
-  step "Mit dem Panel verbinden"
+  step "Mit dem Panel verbinden" 95
   CONFIGURE_ARGS=(configure --panel-url "$PANEL_URL" --token "$TOKEN" --node "$NODE_ID" --config-path "$WINGS_CONFIG" --override)
   (( ALLOW_INSECURE )) && CONFIGURE_ARGS+=(--allow-insecure)
   "$BIN" "${CONFIGURE_ARGS[@]}" || die "Konfiguration vom Panel konnte nicht geladen werden."
@@ -660,7 +725,7 @@ info "Updates aus dem Adminbereich ok"
 rm -rf "$WORK"
 if [[ -n "${HYDRA_BOOT_DIR:-}" ]]; then rm -rf "$HYDRA_BOOT_DIR"; fi
 
-step "Fertig"
+step "Fertig" 100
 if [[ -f "$WINGS_CONFIG" ]]; then
   info "Hydra Wings ist eingerichtet und mit dem Panel verbunden."
 else

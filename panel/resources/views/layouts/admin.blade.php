@@ -43,6 +43,31 @@
         <meta name="_token" content="{{ csrf_token() }}">
         <meta name="robots" content="noindex">
 
+        @php($hydraPwa = app(\Pterodactyl\Services\Hydra\Addons\PwaAddon::class))
+        @if($hydraPwa->enabled() && $hydraPwa->tabs())
+            <script>
+                // Hydra: admin area inside the installed app (addon "pwa"). Runs first, before
+                // any stylesheet loads, so middle clicks never fall through to the browser.
+                (function () {
+                    try {
+                        if (window.parent !== window && window.parent.hydraAttachFrame) {
+                            // In the frame tab: the tab bar takes the links over right away.
+                            window.parent.hydraAttachFrame(document);
+                            return;
+                        }
+                        var app = window.matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay)').matches;
+                        if (window.parent === window && (app || localStorage.getItem('hydra:tabs') === '1')) {
+                            // Loaded straight into the app window: show it as a tab instead.
+                            sessionStorage.setItem('hydra:open-frame', location.pathname + location.search + location.hash);
+                            location.replace('/');
+                        }
+                    } catch (e) {
+                        // Storage blocked or no access to the parent.
+                    }
+                })();
+            </script>
+        @endif
+
         @include('layouts.scripts')
 
         @section('scripts')

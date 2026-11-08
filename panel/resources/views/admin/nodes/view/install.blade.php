@@ -71,6 +71,15 @@
             <div id="sshProgress" hidden>
                 <div class="box-body">
                     <p data-state style="margin-bottom: 10px;"></p>
+                    <div class="hydra-install-progress" data-progress>
+                        <div class="progress progress-striped active">
+                            <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" data-progress-bar></div>
+                        </div>
+                        <div class="hydra-install-progress-meta small">
+                            <span data-stage></span>
+                            <span class="text-muted"><span data-elapsed></span> · <strong data-percent>0 %</strong></span>
+                        </div>
+                    </div>
                     <pre class="hydra-update-log" data-log style="max-height: 420px; overflow: auto; margin: 0;"></pre>
                 </div>
                 <div class="box-footer" data-done hidden>
@@ -133,6 +142,20 @@
             };
             var token = '{{ csrf_token() }}';
             var timer = null;
+            var clock = null;
+            var startedAt = null;
+
+            // Running time next to the progress bar, counted in the browser between the polls.
+            function tick() {
+                var $elapsed = $('#sshProgress [data-elapsed]');
+                if (!startedAt || isNaN(startedAt.getTime())) {
+                    $elapsed.text('');
+                    return;
+                }
+                var seconds = Math.max(0, Math.floor((Date.now() - startedAt.getTime()) / 1000));
+                var time = Math.floor(seconds / 60) + ':' + ('0' + (seconds % 60)).slice(-2);
+                $elapsed.text(lang.elapsed.replace(':time', time));
+            }
 
             function error(xhr) {
                 return (xhr.responseJSON && (xhr.responseJSON.message || (xhr.responseJSON.errors && Object.values(xhr.responseJSON.errors)[0][0]))) || lang.error;
@@ -169,6 +192,21 @@
                 $('#sshProgress [data-state]').attr('class', css).html(text);
 
                 var done = data.state !== 'running';
+                startedAt = data.started_at ? new Date(data.started_at) : null;
+                var percent = Math.max(0, Math.min(100, data.progress || 0));
+                var $wrap = $('#sshProgress [data-progress]');
+                $wrap.find('.progress').toggleClass('active', !done);
+                $wrap.find('[data-progress-bar]')
+                    .css('width', percent + '%')
+                    .attr('aria-valuenow', percent)
+                    .toggleClass('progress-bar-danger', data.state === 'failed')
+                    .toggleClass('progress-bar-success', data.state === 'success');
+                $wrap.find('[data-percent]').text(percent + ' %');
+                $wrap.find('[data-stage]').text(data.stage ? lang.stage.replace(':stage', data.stage) : lang.starting);
+                tick();
+                clearInterval(clock);
+                if (!done) clock = setInterval(tick, 1000);
+
                 $('#sshProgress [data-done]').prop('hidden', !done);
                 $('#sshProgress [data-success-link]').prop('hidden', data.state !== 'success');
 

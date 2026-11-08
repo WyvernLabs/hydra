@@ -146,8 +146,8 @@ return [
         'inbound' => 'Inbound',
         'outbound' => 'Outbound',
         'not_available' => 'n/a',
-        'uptime_days' => ':daysd :hoursh :minutesm',
-        'uptime_hours' => ':hoursh :minutesm :secondss',
+        'uptime_days' => '{{days}}d {{hours}}h {{minutes}}m',
+        'uptime_hours' => '{{hours}}h {{minutes}}m {{seconds}}s',
     ],
 
     'activity' => [

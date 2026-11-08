@@ -257,6 +257,18 @@ if (( ! INSTALLED )); then
     ADMIN_USER="$(ask "Benutzername des Admins" "admin")"
     (( ASSUME_YES )) && ! valid_username "$ADMIN_USER" && die "Bitte einen gültigen Benutzernamen mit --admin angeben."
   done
+  # Passwort des Admins: verdeckt abfragen, leer = zufällig erzeugen (wie mit --yes).
+  if [[ -z "$ADMIN_PASSWORD" ]] && (( ! ASSUME_YES )); then
+    while true; do
+      read -r -s -p "    Passwort des Admins ${C_D}[leer = zufällig]${C_0}: " PW1 </dev/tty; echo
+      [[ -z "$PW1" ]] && break
+      if (( ${#PW1} < 8 )); then warn "Das Passwort muss mindestens 8 Zeichen lang sein."; continue; fi
+      read -r -s -p "    Passwort wiederholen: " PW2 </dev/tty; echo
+      if [[ "$PW1" == "$PW2" ]]; then ADMIN_PASSWORD="$PW1"; break; fi
+      warn "Die Passwörter stimmen nicht überein."
+    done
+    unset PW1 PW2
+  fi
   [[ -n "$TIMEZONE" ]] || TIMEZONE="$(ask "Zeitzone" "Europe/Berlin")"
 fi
 TIMEZONE="${TIMEZONE:-Europe/Berlin}"

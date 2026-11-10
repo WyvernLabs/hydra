@@ -36,6 +36,7 @@ import getServerBackups from '@/api/swr/getServerBackups';
 import { useActivityLogs } from '@/api/server/activity';
 import ActivityLogEntry from '@/components/elements/activity/ActivityLogEntry';
 import { useCpuValue } from '@/lib/usage';
+import { protectedClass } from '@/lib/protectedImage';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import { useLockdownToggle } from '@/components/server/lockdown/Lockdown';
 import PlayerStatsCard from '@/components/server/dashboard/PlayerStatsCard';
@@ -305,6 +306,7 @@ export default () => {
     const connected = ServerContext.useStoreState((state) => state.socket.connected);
     const instance = ServerContext.useStoreState((state) => state.socket.instance);
     const username = useStoreState((state) => state.user.data!.username);
+    const branding = useStoreState((state) => state.settings.data!.branding);
     const [canSftp, canDatabases, canBackups, canActivity, canSchedules] = usePermissions([
         'file.sftp',
         'database.read',
@@ -367,7 +369,12 @@ export default () => {
             {/* Banner of the egg */}
             <div className={'relative mb-4 h-44 overflow-hidden rounded-lg border border-gray-700 sm:h-56'}>
                 {server.banner ? (
-                    <img src={server.banner} alt={''} className={'absolute inset-0 h-full w-full object-cover'} />
+                    <img
+                        src={server.banner}
+                        alt={''}
+                        className={`absolute inset-0 h-full w-full object-cover ${protectedClass(branding)}`}
+                        draggable={false}
+                    />
                 ) : (
                     <div className={'absolute inset-0 bg-gradient-to-br from-primary-700 via-gray-800 to-gray-900'} />
                 )}

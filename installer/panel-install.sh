@@ -1080,7 +1080,8 @@ if [[ -n "${HYDRA_BOOT_DIR:-}" ]]; then rm -rf "$HYDRA_BOOT_DIR"; fi
 
 step "Fertig" 100
 VERSION="$(sed -n "s/.*'version' => '\(.*\)',.*/\1/p" "$INSTALL_DIR/config/app.php" | head -n1)"
-info "Hydra Panel $VERSION läuft unter ${C_B}$APP_URL${C_0}"
+BUILD="$(sed -n "s/.*'build' => \([0-9]*\),.*/\1/p" "$INSTALL_DIR/config/app.php" | head -n1)"
+info "Hydra Panel $VERSION${BUILD:+ (Build $BUILD)} läuft unter ${C_B}$APP_URL${C_0}"
 if (( CREATED_ADMIN )); then
   info "Admin:    $ADMIN_USER / $ADMIN_PASSWORD"
   info "          (gespeichert in $CREDENTIALS_FILE)"

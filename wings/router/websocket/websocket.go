@@ -180,8 +180,8 @@ func (h *Handler) SendJson(v Message) error {
 		}
 	}
 
-	// Hydra: file progress and imports only go to users who can see the files.
-	if v.Event == server.FileProgressEvent || v.Event == server.ImportProgressEvent {
+	// Hydra: file progress, imports and exports only go to users who can see the files.
+	if v.Event == server.FileProgressEvent || v.Event == server.ImportProgressEvent || v.Event == server.ExportProgressEvent {
 		if !j.HasPermission(PermissionReceiveFiles) {
 			return nil
 		}

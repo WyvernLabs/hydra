@@ -54,7 +54,9 @@ export default ({ x, y, items, onClose }: { x: number; y: number; items: MenuIte
                 role={'menu'}
                 onContextMenu={(event) => event.preventDefault()}
                 style={position}
-                className={'fixed z-50 min-w-[13rem] rounded-lg border border-gray-600 bg-gray-800 p-1 shadow-2xl'}
+                className={
+                    'hydra-float fixed z-50 min-w-[13rem] rounded-lg border border-gray-600 bg-gray-800 p-1 shadow-2xl'
+                }
             >
                 {items.map((item, index) => (
                     <React.Fragment key={index}>

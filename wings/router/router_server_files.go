@@ -286,6 +286,8 @@ func getServerPullingFiles(c *gin.Context) {
 	s := ExtractServer(c)
 	c.JSON(http.StatusOK, gin.H{
 		"downloads": downloader.ByServer(s.ID()),
+		// Hydra: downloads that ended in the last minutes, with their result.
+		"hydra_finished": downloader.Finished(s.ID()),
 	})
 }
 
@@ -324,6 +326,12 @@ func postServerPullRemoteFile(c *gin.Context) {
 		return
 	}
 
+	// Hydra: only web addresses can be downloaded.
+	if u.Scheme != "http" && u.Scheme != "https" {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Only http and https links can be downloaded."})
+		return
+	}
+
 	if err := s.Filesystem().HasSpaceErr(true); err != nil {
 		middleware.CaptureAndAbort(c, err)
 		return
@@ -346,7 +354,9 @@ func postServerPullRemoteFile(c *gin.Context) {
 
 	download := func() error {
 		s.Log().WithField("download_id", dl.Identifier).WithField("url", u.String()).Info("starting pull of remote file to disk")
-		if err := dl.Execute(); err != nil {
+		err := dl.Execute()
+		downloader.Finish(dl, err)
+		if err != nil {
 			if !downloader.IsDownloadError(err) {
 				s.Log().WithField("download_id", dl.Identifier).WithField("error", err).Error("failed to pull remote file")
 			}

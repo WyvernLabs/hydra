@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pencil, Plus, Trash2, Users } from 'lucide-react';
+import { Copy, Folder, Pencil, Plus, Trash2, Users } from 'lucide-react';
 import { ServerContext } from '@/state/server';
 import Can from '@/components/elements/Can';
 import { Dialog } from '@/components/elements/dialog';
@@ -10,6 +10,7 @@ import FlashMessageRender from '@/components/FlashMessageRender';
 import getServerSubusers from '@/api/server/users/getServerSubusers';
 import { deleteServerRole, ServerRole, useServerRoles } from '@/api/server/users/roles';
 import RoleModal from '@/components/server/users/RoleModal';
+import CopyRoleDialog from '@/components/server/users/CopyRoleDialog';
 
 // Hydra: the roles of the server on the users page.
 
@@ -22,6 +23,7 @@ export default () => {
     const [editing, setEditing] = useState<ServerRole | null>(null);
     const [modal, setModal] = useState(false);
     const [deleting, setDeleting] = useState<ServerRole | null>(null);
+    const [copying, setCopying] = useState<ServerRole | null>(null);
 
     // Members get the permissions of a changed role, so they are loaded again.
     const reload = () => {
@@ -53,6 +55,7 @@ export default () => {
                 onModalDismissed={() => setModal(false)}
                 onSaved={reload}
             />
+            <CopyRoleDialog role={copying} onClose={() => setCopying(null)} />
             <Dialog.Confirm
                 open={!!deleting}
                 onClose={() => setDeleting(null)}
@@ -103,6 +106,23 @@ export default () => {
                                 <Users className={'h-3 w-3'} />
                                 {role.members}
                             </span>
+                            {role.allowedPaths.length > 0 && (
+                                <span
+                                    className={'flex items-center gap-1 text-xs text-gray-400'}
+                                    title={role.allowedPaths.join(', ')}
+                                >
+                                    <Folder className={'h-3 w-3'} />
+                                    {role.allowedPaths.length}
+                                </span>
+                            )}
+                            <button
+                                type={'button'}
+                                className={'rounded-full p-1.5 text-gray-400 hover:bg-gray-700 hover:text-gray-100'}
+                                title={t('users.roles.copy')}
+                                onClick={() => setCopying(role)}
+                            >
+                                <Copy className={'h-3.5 w-3.5'} />
+                            </button>
                             <Can action={'user.update'}>
                                 <button
                                     type={'button'}

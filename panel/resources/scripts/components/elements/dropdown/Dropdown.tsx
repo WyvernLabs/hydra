@@ -43,7 +43,7 @@ const Dropdown = forwardRef<typeof Menu, Props>(({ as, children }, ref) => {
                 leaveFrom={'transform scale-100 opacity-100'}
                 leaveTo={'transform scale-95 opacity-0'}
             >
-                <Menu.Items className={classNames(styles.items_container, 'w-56')}>
+                <Menu.Items className={classNames(styles.items_container, 'hydra-float w-56')}>
                     <div className={'px-1 py-1'}>{items}</div>
                 </Menu.Items>
             </Transition>

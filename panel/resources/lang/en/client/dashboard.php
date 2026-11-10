@@ -4,6 +4,12 @@ return [
     'title' => 'Servers',
     'my_servers' => 'My servers',
     'others_servers' => "Others' servers",
+    'layout' => [
+        'label' => 'Server list layout',
+        'list' => 'List',
+        'grid2' => '2 columns',
+        'grid3' => '3 columns',
+    ],
     'unknown_owner' => 'Unknown owner',
     'server_count_one' => '1 server is available in this view.',
     'server_count' => ':count servers are available in this view.',

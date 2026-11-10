@@ -70,6 +70,7 @@ return [
         'users' => 'Users',
         'roles' => 'Roles',
         'tickets' => 'Tickets',
+        'support' => 'Game Support',
         'nests' => 'Nests',
         'eggs' => 'Eggs',
     ],
@@ -160,6 +161,13 @@ return [
             'reply' => ['title' => 'Answer', 'description' => 'Answer tickets, write internal notes and upload images.'],
             'manage' => ['title' => 'Manage', 'description' => 'Change status and priority, close and reopen tickets, assign them to team members.'],
             'delete' => ['title' => 'Delete', 'description' => 'Delete tickets together with their messages and images.'],
+        ],
+        'support' => [
+            'view' => ['title' => 'View', 'description' => 'Open servers by their UUID in the game support area and see console and usage (Community > Game Support, addon Game Support).'],
+            'control' => ['title' => 'Control', 'description' => 'Start, stop and restart servers and send console commands in the game support area.'],
+            'suspend' => ['title' => 'Suspend', 'description' => 'Suspend and unsuspend servers in the game support area.'],
+            'reinstall' => ['title' => 'Reinstall', 'description' => 'Reinstall servers in the game support area (files stay, the install script runs again).'],
+            'transfer' => ['title' => 'Transfer', 'description' => 'Move servers to another node in the game support area.'],
         ],
         'nests' => [
             'view' => ['title' => 'View', 'description' => 'See nests.'],

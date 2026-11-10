@@ -20,6 +20,9 @@ class BrandingController extends Controller
     {
         $path = $this->branding->path($type);
         if (is_null($path)) {
+            // Hydra: the link preview image has no bundled default.
+            abort_if($type === 'meta', 404);
+
             return redirect($type === 'logo' ? BrandingService::DEFAULT_LOGO : BrandingService::DEFAULT_FAVICON);
         }
 

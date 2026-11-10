@@ -5,4 +5,7 @@ return [
     'busy' => 'Der Server wird gerade installiert, übertragen oder ist gesperrt.',
     'running' => 'Es läuft bereits ein Import.',
     'restricted' => 'Wer nur auf bestimmte Ordner zugreifen darf, kann keine Server importieren.',
+    // Addon "exporter".
+    'export_running' => 'Es läuft bereits ein Export.',
+    'export_restricted' => 'Wer nur auf bestimmte Ordner zugreifen darf, kann keine Server exportieren.',
 ];

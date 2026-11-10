@@ -12,6 +12,7 @@ use Pterodactyl\Models\HydraGameProfile;
 use Pterodactyl\Services\Hydra\BackgroundService;
 use Pterodactyl\Services\Hydra\Addons\GamesAddon;
 use Illuminate\Auth\Access\AuthorizationException;
+use Pterodactyl\Services\Hydra\Games\EggRequirements;
 use Pterodactyl\Services\Hydra\Games\GameSwitchService;
 use Pterodactyl\Http\Controllers\Api\Client\ClientApiController;
 
@@ -43,6 +44,9 @@ class GameController extends ClientApiController
                     'name' => $egg->name,
                     'description' => $egg->description,
                     'image' => $this->image($egg),
+                    // Hydra: minimum CPU / memory and what this server lacks for it.
+                    'requirements' => EggRequirements::of($egg),
+                    'missing' => (object) EggRequirements::missing($server, $egg),
                 ])->values(),
             ])
             ->sortBy('name')
@@ -50,6 +54,7 @@ class GameController extends ClientApiController
 
         return [
             'current' => $server->egg_id,
+            'limits' => ['cpu' => (int) $server->cpu, 'memory' => (int) $server->memory],
             'max_profiles' => $this->addon->maxProfiles(),
             'nests' => $nests,
             'profiles' => $server->gameProfiles()->with('egg')->latest()->get()->map(fn (HydraGameProfile $profile) => [
@@ -57,6 +62,7 @@ class GameController extends ClientApiController
                 'name' => $profile->name,
                 'egg' => $profile->egg?->name,
                 'image' => $this->image($profile->egg),
+                'missing' => (object) ($profile->egg ? EggRequirements::missing($server, $profile->egg) : []),
                 'size' => $profile->size,
                 'created_at' => $profile->created_at->toAtomString(),
             ])->values(),

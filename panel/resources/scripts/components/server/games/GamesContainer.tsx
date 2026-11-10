@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import classNames from 'classnames';
-import { Gamepad2, Trash2 } from 'lucide-react';
+import { Gamepad2, Lock, Trash2 } from 'lucide-react';
 import { ServerContext } from '@/state/server';
 import useFlash, { useFlashKey } from '@/plugins/useFlash';
 import ServerContentBlock from '@/components/elements/ServerContentBlock';
@@ -17,6 +17,7 @@ import {
     deleteGameProfile,
     GameEgg,
     GameLibrary,
+    GameMissing,
     GameProfile,
     getGameLibrary,
     loadGameProfile,
@@ -29,20 +30,47 @@ import {
 
 type Action = { type: 'switch'; egg: GameEgg } | { type: 'load'; profile: GameProfile };
 
-const Picture = ({ image, name }: { image: string | null; name: string }) =>
+const memory = (mib: number) => bytesToString(mib * 1024 * 1024);
+
+// Hydra: the reason a game is locked, e.g. "Not enough RAM" with the amounts.
+const lockFor = (
+    t: (key: string, options?: any) => string,
+    missing: GameMissing
+): { title: string; lines: string[] } | null => {
+    const keys = Object.keys(missing || {}) as ('cpu' | 'memory')[];
+    if (keys.length === 0) return null;
+
+    const resource = keys.length > 1 ? t('games.resource_both') : t(`games.resource_${keys[0]}`);
+    return {
+        title: t('games.locked_title', { missing: resource }),
+        lines: keys.map((key) =>
+            key === 'cpu'
+                ? t('games.locked_cpu', missing.cpu)
+                : t('games.locked_memory', {
+                      needed: memory(missing.memory!.needed),
+                      available: memory(missing.memory!.available),
+                  })
+        ),
+    };
+};
+
+const Picture = ({ image, name, locked }: { image: string | null; name: string; locked?: boolean }) =>
     image ? (
         <img
             src={image}
             alt={''}
-            className={
-                'absolute inset-0 h-full w-full object-cover transition duration-300 peer-hover:scale-105 peer-hover:blur-sm peer-hover:brightness-50'
-            }
+            className={classNames(
+                'absolute inset-0 h-full w-full object-cover transition duration-300 peer-hover:scale-105 peer-hover:blur-sm peer-hover:brightness-50',
+                // Hydra: locked games turn red.
+                locked && 'hydra-game-locked'
+            )}
         />
     ) : (
         <div
-            className={
-                'absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 transition duration-300 peer-hover:blur-sm peer-hover:brightness-50'
-            }
+            className={classNames(
+                'absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900 transition duration-300 peer-hover:blur-sm peer-hover:brightness-50',
+                locked && 'hydra-game-locked'
+            )}
         >
             <span className={'px-4 text-center font-header text-2xl text-gray-500'}>{name}</span>
         </div>
@@ -56,6 +84,7 @@ const Tile = ({
     disabled,
     onClick,
     children,
+    lock,
 }: {
     title: string;
     subtitle?: string;
@@ -64,6 +93,7 @@ const Tile = ({
     disabled?: boolean;
     onClick: () => void;
     children?: React.ReactNode;
+    lock?: { title: string; lines: string[] } | null;
 }) => (
     <div className={'overflow-hidden rounded-lg border border-gray-700 bg-gray-800 shadow'}>
         <div className={'flex items-center gap-2 border-b border-gray-700 px-4 py-3'}>
@@ -74,10 +104,29 @@ const Tile = ({
             {children}
         </div>
         <div className={'relative m-3 aspect-video overflow-hidden rounded'}>
+            {lock && (
+                // Hydra: the server lacks CPU or memory for this game.
+                <div
+                    className={
+                        'absolute inset-0 z-20 flex flex-col items-center justify-center gap-1 bg-red-900/60 p-3 text-center'
+                    }
+                    role={'note'}
+                >
+                    <Lock className={'h-6 w-6 text-red-100'} />
+                    <p className={'font-header text-lg font-extrabold uppercase tracking-wide text-white drop-shadow'}>
+                        {lock.title}
+                    </p>
+                    {lock.lines.map((line) => (
+                        <p key={line} className={'text-xs font-medium text-red-100 drop-shadow'}>
+                            {line}
+                        </p>
+                    ))}
+                </div>
+            )}
             {/* The button comes first, so hovering it can blur the picture after it. */}
             <button
                 type={'button'}
-                disabled={disabled}
+                disabled={disabled || !!lock}
                 onClick={onClick}
                 className={classNames(
                     'peer absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded px-5 py-2 text-sm font-semibold uppercase tracking-wide shadow-lg transition',
@@ -88,7 +137,7 @@ const Tile = ({
             >
                 {button}
             </button>
-            <Picture image={image} name={title} />
+            <Picture image={image} name={title} locked={!!lock} />
         </div>
     </div>
 );
@@ -305,6 +354,7 @@ export default () => {
                                         image={profile.image}
                                         button={t('games.load')}
                                         disabled={!profile.egg}
+                                        lock={lockFor(t, profile.missing)}
                                         onClick={() => setAction({ type: 'load', profile })}
                                     >
                                         <button
@@ -343,6 +393,7 @@ export default () => {
                                             image={egg.image}
                                             button={current ? t('games.current') : t('games.install')}
                                             disabled={current}
+                                            lock={current ? null : lockFor(t, egg.missing)}
                                             onClick={() => setAction({ type: 'switch', egg })}
                                         >
                                             {current && <Gamepad2 className={'h-4 w-4 text-accent-400'} />}

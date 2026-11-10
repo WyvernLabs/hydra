@@ -8,6 +8,7 @@ import HydraBackdrop from '@/components/hydra/HydraBackdrop';
 import { HydraBackground } from '@/state/settings';
 import { useTranslation } from 'react-i18next';
 import WarningNotices from '@/components/hydra/WarningNotices';
+import { protectedClass } from '@/lib/protectedImage';
 
 interface Props {
     sections: SidebarSection[];
@@ -50,7 +51,12 @@ export default ({ sections, children, background }: Props) => {
                     {open ? <XIcon className={'hydra-nav-icon'} /> : <MenuIcon className={'hydra-nav-icon'} />}
                     <span className={'sr-only'}>{t('nav.menu')}</span>
                 </button>
-                <img src={branding.logo} alt={name} className={'hydra-topbar-logo'} />
+                <img
+                    src={branding.logo}
+                    alt={name}
+                    className={`hydra-topbar-logo ${protectedClass(branding)}`}
+                    draggable={false}
+                />
             </header>
             {open && <div className={'hydra-backdrop'} onClick={() => setOpen(false)} />}
             <Sidebar sections={sections} open={open} onNavigate={() => setOpen(false)} />

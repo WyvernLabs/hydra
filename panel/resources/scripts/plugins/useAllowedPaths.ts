@@ -22,6 +22,15 @@ export const normalizePath = (path: string): string => {
 };
 
 /**
+ * The folders from a form, cleaned up and without duplicates; "/" means the
+ * whole server and is dropped.
+ */
+export const cleanPaths = (paths: string[]): string[] =>
+    Array.from(new Set(paths.filter((p) => p.trim().length > 0).map((p) => normalizePath(p.trim())))).filter(
+        (p) => p !== '/'
+    );
+
+/**
  * Whether the path is one of the folders or inside one of them.
  */
 export const isPathAllowed = (allowed: string[], path: string): boolean => {

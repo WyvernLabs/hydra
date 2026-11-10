@@ -181,6 +181,10 @@ func Configure(m *wserver.Manager, client remote.Client) *gin.Engine {
 		server.POST("/hydra/import", postServerImport)
 		server.GET("/hydra/import", getServerImport)
 		server.DELETE("/hydra/import", deleteServerImport)
+		server.POST("/hydra/export/test", postServerExportTest)
+		server.POST("/hydra/export", postServerExport)
+		server.GET("/hydra/export", getServerExport)
+		server.DELETE("/hydra/export", deleteServerExport)
 		// Hydra: trash of the file manager.
 		server.GET("/hydra/trash", getServerTrash)
 		server.POST("/hydra/trash/restore", postServerTrashRestore)

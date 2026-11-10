@@ -9,8 +9,11 @@ class BackgroundsFormRequest extends AdminFormRequest
 {
     public function rules(): array
     {
-        return [
-            'reset_background' => 'nullable|string|in:login,dashboard',
-        ] + BackgroundService::rules('bg_login') + BackgroundService::rules('bg_dashboard');
+        $rules = ['reset_background' => 'nullable|string|in:' . implode(',', BackgroundService::SLOTS)];
+        foreach (BackgroundService::SLOTS as $slot) {
+            $rules += BackgroundService::rules("bg_$slot");
+        }
+
+        return $rules;
     }
 }

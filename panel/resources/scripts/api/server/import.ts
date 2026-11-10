@@ -1,6 +1,10 @@
 import http from '@/api/http';
 
-// Hydra: import of another server over SFTP (addon "importer").
+// Hydra: import of another server over SFTP (addon "importer") and the
+// export to another server (addon "exporter"), which share the endpoints
+// below /import and /export.
+
+export type TransferKind = 'import' | 'export';
 
 export interface ImportLogin {
     host: string;
@@ -17,6 +21,8 @@ export interface ImportTest {
     fingerprint: string;
     folder: string;
     entries: number;
+    // Export: whether the target folder exists already (it is created otherwise).
+    exists?: boolean;
     // The first entries of the folder, folders end with a slash.
     names: string[];
 }
@@ -30,13 +36,14 @@ export interface ImportStatus {
     error: string | null;
 }
 
-const body = (login: ImportLogin) => ({
+const body = (login: ImportLogin, target?: string) => ({
     host: login.host,
     port: login.port,
     username: login.username,
     password: login.password || null,
     private_key: login.privateKey || null,
     source: login.source,
+    ...(target !== undefined ? { target } : {}),
 });
 
 export const toImportStatus = (data: any): ImportStatus => ({
@@ -48,11 +55,33 @@ export const toImportStatus = (data: any): ImportStatus => ({
     error: data.error || null,
 });
 
-export const getImportStatus = (uuid: string): Promise<ImportStatus> =>
-    http.get(`/api/client/servers/${uuid}/import`).then(({ data }) => toImportStatus(data));
+export const getImportStatus = (uuid: string, kind: TransferKind = 'import'): Promise<ImportStatus> =>
+    http.get(`/api/client/servers/${uuid}/${kind}`).then(({ data }) => toImportStatus(data));
 
-export const testImport = (uuid: string, login: ImportLogin): Promise<ImportTest> =>
-    http.post(`/api/client/servers/${uuid}/import/test`, body(login), { timeout: 40000 }).then(({ data }) => data);
+export const testImport = (
+    uuid: string,
+    login: ImportLogin,
+    kind: TransferKind = 'import',
+    target?: string
+): Promise<ImportTest> =>
+    http
+        .post(`/api/client/servers/${uuid}/${kind}/test`, body(login, kind === 'export' ? target : undefined), {
+            timeout: 40000,
+        })
+        .then(({ data }) => data);
+
+export const startExport = (
+    uuid: string,
+    login: ImportLogin,
+    options: { hostKey: string; target: string }
+): Promise<void> =>
+    http
+        .post(
+            `/api/client/servers/${uuid}/export`,
+            { ...body(login, options.target), host_key: options.hostKey },
+            { timeout: 60000 }
+        )
+        .then(() => undefined);
 
 export const startImport = (
     uuid: string,
@@ -74,5 +103,5 @@ export const startImport = (
         )
         .then(() => undefined);
 
-export const cancelImport = (uuid: string): Promise<void> =>
-    http.delete(`/api/client/servers/${uuid}/import`).then(() => undefined);
+export const cancelImport = (uuid: string, kind: TransferKind = 'import'): Promise<void> =>
+    http.delete(`/api/client/servers/${uuid}/${kind}`).then(() => undefined);

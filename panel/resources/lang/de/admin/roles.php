@@ -70,6 +70,7 @@ return [
         'users' => 'Benutzer',
         'roles' => 'Rollen',
         'tickets' => 'Tickets',
+        'support' => 'Gamesupport',
         'nests' => 'Nests',
         'eggs' => 'Eggs',
     ],
@@ -160,6 +161,13 @@ return [
             'reply' => ['title' => 'Antworten', 'description' => 'Auf Tickets antworten, interne Notizen schreiben und Bilder hochladen.'],
             'manage' => ['title' => 'Verwalten', 'description' => 'Status und Priorität ändern, Tickets schließen und wieder öffnen, Teammitgliedern zuweisen.'],
             'delete' => ['title' => 'Löschen', 'description' => 'Tickets samt Nachrichten und Bildern löschen.'],
+        ],
+        'support' => [
+            'view' => ['title' => 'Ansehen', 'description' => 'Server per UUID im Gamesupport öffnen und Konsole sowie Nutzung sehen (Community > Gamesupport, Addon Gamesupport).'],
+            'control' => ['title' => 'Steuern', 'description' => 'Im Gamesupport Server starten, stoppen, neu starten und Befehle in die Konsole senden.'],
+            'suspend' => ['title' => 'Sperren', 'description' => 'Im Gamesupport Server sperren und entsperren.'],
+            'reinstall' => ['title' => 'Neu installieren', 'description' => 'Im Gamesupport Server neu installieren (die Dateien bleiben, das Installationsskript läuft erneut).'],
+            'transfer' => ['title' => 'Übertragen', 'description' => 'Im Gamesupport Server auf eine andere Node übertragen.'],
         ],
         'nests' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Nests sehen.'],

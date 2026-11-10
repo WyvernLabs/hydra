@@ -65,17 +65,18 @@ func init() {
 	client = &http.Client{
 		Timeout:   time.Hour * 2,
 		Transport: trnspt,
-		// Disallow any redirect on an HTTP call. This is a security requirement: do not modify
-		// this logic without first ensuring that the new target location IS NOT within the current
-		// instance's local network.
-		//
-		// This specific error response just causes the client to not follow the redirect and
-		// returns the actual redirect response to the caller. Not perfect, but simple and most
-		// people won't be using URLs that redirect anyways hopefully?
-		//
-		// We'll re-evaluate this down the road if needed.
+		// Hydra: redirects are followed (many direct links, e.g. GitHub releases, redirect to a
+		// storage host). This is safe because every connection, also one made for a redirect, is
+		// checked against internal addresses in DialContext and checkConnection above. Only
+		// http(s) is allowed and at most five redirects.
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
+			if len(via) >= 5 {
+				return errors.New("downloader: too many redirects")
+			}
+			if req.URL.Scheme != "http" && req.URL.Scheme != "https" {
+				return errors.New("downloader: redirect to an unsupported scheme")
+			}
+			return nil
 		},
 	}
 }
@@ -250,8 +251,16 @@ func (dl *Download) Execute() error {
 		if dl.req.FileName != "" {
 			dl.path = dl.req.FileName
 		} else {
-			parts := strings.Split(dl.req.URL.Path, "/")
+			// Hydra: after a redirect the name comes from the final address.
+			u := dl.req.URL
+			if res.Request != nil && res.Request.URL != nil {
+				u = res.Request.URL
+			}
+			parts := strings.Split(u.Path, "/")
 			dl.path = parts[len(parts)-1]
+		}
+		if dl.path == "" || dl.path == "." || dl.path == ".." {
+			dl.path = "download"
 		}
 	}
 
@@ -370,4 +379,89 @@ func (d *Downloader) remove(dlID string) {
 
 func IsDownloadError(err error) bool {
 	return errors.Is(err, ErrDownloadFailed) || errors.Is(err, ErrInvalidIPAddress) || errors.Is(err, ErrInternalResolution)
+}
+
+// Result (Hydra) is a download that has ended, kept for a few minutes so the
+// Panel can show whether it worked even though it ran in the background.
+type Result struct {
+	Identifier string    `json:"identifier"`
+	URL        string    `json:"url"`
+	Path       string    `json:"path"`
+	Success    bool      `json:"success"`
+	Error      string    `json:"error,omitempty"`
+	FinishedAt time.Time `json:"finished_at"`
+}
+
+const resultLifetime = 10 * time.Minute
+
+var finished = struct {
+	sync.Mutex
+	m map[string][]Result
+}{m: map[string][]Result{}}
+
+// Finish records the end of a download for the server.
+func Finish(dl *Download, err error) {
+	r := Result{
+		Identifier: dl.Identifier,
+		URL:        dl.req.URL.Redacted(),
+		Success:    err == nil,
+		FinishedAt: time.Now(),
+	}
+	if dl.path != "" {
+		r.Path = dl.Path()
+	}
+	if err != nil {
+		r.Error = ErrorCode(err)
+	}
+	sid := dl.server.ID()
+	finished.Lock()
+	defer finished.Unlock()
+	list := append(finished.m[sid], r)
+	if len(list) > 20 {
+		list = list[len(list)-20:]
+	}
+	finished.m[sid] = list
+}
+
+// Finished returns the downloads of the server that ended in the last minutes.
+func Finished(sid string) []Result {
+	finished.Lock()
+	defer finished.Unlock()
+	var keep []Result
+	for _, r := range finished.m[sid] {
+		if time.Since(r.FinishedAt) < resultLifetime {
+			keep = append(keep, r)
+		}
+	}
+	if len(keep) == 0 {
+		delete(finished.m, sid)
+		return []Result{}
+	}
+	finished.m[sid] = keep
+	return keep
+}
+
+// ErrorCode turns the error of a download into a short code the Panel can
+// translate; unknown errors keep their message.
+func ErrorCode(err error) string {
+	msg := err.Error()
+	switch {
+	case errors.Is(err, context.Canceled):
+		return "cancelled"
+	case errors.Is(err, ErrInternalResolution):
+		return "internal"
+	case errors.Is(err, ErrInvalidIPAddress):
+		return "resolve"
+	case strings.Contains(msg, "missing ContentLength"):
+		return "no_length"
+	case strings.Contains(msg, "bad response status"):
+		return "status:" + strings.TrimSpace(msg[strings.LastIndex(msg, ":")+1:])
+	case strings.Contains(msg, "too many redirects"):
+		return "redirects"
+	case strings.Contains(strings.ToLower(msg), "disk"):
+		return "disk"
+	case strings.Contains(msg, "deadline exceeded"), strings.Contains(msg, "timeout"):
+		return "timeout"
+	}
+	return msg
 }

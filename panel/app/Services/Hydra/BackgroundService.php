@@ -9,8 +9,8 @@ use Pterodactyl\Exceptions\DisplayException;
 use Pterodactyl\Contracts\Repository\SettingsRepositoryInterface;
 
 /**
- * Hydra: custom backgrounds for the login page, the dashboard and the server
- * pages of each egg. Every background can be blurred and darkened; without an
+ * Hydra: custom backgrounds for the login page, the dashboard, the admin area
+ * and the server pages of each egg. Every background can be blurred and darkened; without an
  * image the hexagon pattern is used.
  *
  * Login and dashboard are stored as settings ("settings::hydra:backgrounds:*"),
@@ -22,7 +22,8 @@ use Pterodactyl\Contracts\Repository\SettingsRepositoryInterface;
  */
 class BackgroundService
 {
-    public const SLOTS = ['login', 'dashboard'];
+    // Hydra: "admin" is the background of the admin area.
+    public const SLOTS = ['login', 'dashboard', 'admin'];
 
     /**
      * Pictures of an egg besides its background, with their column.

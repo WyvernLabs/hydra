@@ -5,6 +5,25 @@ use Pterodactyl\Http\Controllers\Admin;
 use Pterodactyl\Http\Middleware\Admin\Servers\ServerInstalled;
 
 Route::get('/', [Admin\BaseController::class, 'index'])->name('admin.index');
+Route::get('/news', [Admin\BaseController::class, 'news'])->name('admin.index.news');
+
+/*
+|--------------------------------------------------------------------------
+| Hydra: Game Support (addon "gamesupport")
+|--------------------------------------------------------------------------
+|
+| Endpoint: /admin/support
+|
+*/
+Route::group(['prefix' => 'support', 'middleware' => ['addon:gamesupport', 'admin.can:support.view']], function () {
+    Route::get('/', [Admin\SupportController::class, 'index'])->name('admin.support');
+    Route::post('/', [Admin\SupportController::class, 'open'])->middleware('throttle:30,1');
+    Route::delete('/{server:id}', [Admin\SupportController::class, 'close'])->name('admin.support.close');
+    Route::get('/{server:id}/websocket', [Admin\SupportController::class, 'websocket'])->name('admin.support.websocket');
+    Route::post('/{server:id}/suspension', [Admin\SupportController::class, 'suspension'])->name('admin.support.suspension')->middleware('admin.can:support.suspend');
+    Route::post('/{server:id}/reinstall', [Admin\SupportController::class, 'reinstall'])->name('admin.support.reinstall')->middleware('admin.can:support.reinstall');
+    Route::post('/{server:id}/transfer', [Admin\SupportController::class, 'transfer'])->name('admin.support.transfer')->middleware('admin.can:support.transfer');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -103,6 +122,7 @@ Route::group(['prefix' => 'design'], function () {
     Route::patch('/console', [Admin\Design\ConsoleController::class, 'update'])->middleware('admin.can:design.update');
     Route::get('/eggs', [Admin\Design\EggImageController::class, 'index'])->name('admin.design.eggs')->middleware('admin.can:design.view');
     Route::get('/eggs/{egg:id}', [Admin\Design\EggImageController::class, 'view'])->name('admin.design.eggs.view')->middleware('admin.can:design.view');
+    Route::patch('/eggs/{egg:id}/requirements', [Admin\Design\EggImageController::class, 'requirements'])->name('admin.design.eggs.requirements')->middleware('admin.can:design.update');
     Route::patch('/eggs/{egg:id}/background', [Admin\Design\EggImageController::class, 'background'])->name('admin.design.eggs.background')->middleware('admin.can:design.update');
     Route::patch('/eggs/{egg:id}/{type}', [Admin\Design\EggImageController::class, 'image'])->name('admin.design.eggs.image')->where('type', 'banner|list')->middleware('admin.can:design.update');
     Route::get('/addons', [Admin\Design\AddonController::class, 'index'])->name('admin.design.addons')->middleware('admin.can:addons.view');
@@ -115,6 +135,10 @@ Route::group(['prefix' => 'design'], function () {
     Route::post('/domains', [Admin\Design\DomainController::class, 'store'])->middleware('admin.can:addons.update');
     Route::patch('/domains/{domain:id}', [Admin\Design\DomainController::class, 'update'])->name('admin.design.domains.update')->middleware('admin.can:addons.update');
     Route::delete('/domains/{domain:id}', [Admin\Design\DomainController::class, 'delete'])->name('admin.design.domains.delete')->middleware('admin.can:addons.update');
+    // Hydra: description and link preview of the panel.
+    Route::get('/metadata', [Admin\Design\MetadataController::class, 'index'])->name('admin.design.metadata')->middleware('admin.can:design.view');
+    Route::patch('/metadata', [Admin\Design\MetadataController::class, 'update'])->middleware('admin.can:design.update');
+
     // Hydra: seasonal effects of the panel.
     Route::get('/effects', [Admin\Design\EffectsController::class, 'index'])->name('admin.design.effects')->middleware('admin.can:design.view');
     Route::patch('/effects', [Admin\Design\EffectsController::class, 'update'])->middleware('admin.can:design.update');

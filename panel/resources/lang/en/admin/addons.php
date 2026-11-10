@@ -417,6 +417,24 @@ return [
         'notice' => 'The node of the server does the transfer. Addresses in private networks are blocked, so nobody reaches the internal network of the node. The login is never stored. Who may import is set with the subuser permission "Import Server".',
     ],
 
+    'exporter' => [
+        'name' => 'Server export',
+        'description' => 'Users upload the files of their server to another server over SFTP, e.g. to another host or as a backup. With progress and a log; the button is on the settings page of the server.',
+        'notice' => 'The node of the server does the transfer. Addresses in private networks are blocked. The login is not stored. Who may export is set by the subuser permission "Export Server"; subusers limited to folders cannot export.',
+    ],
+
+    'gamesupport' => [
+        'name' => 'Game support',
+        'description' => 'Support area under Community Management: open a server by its UUID and see console, usage and power buttons in a tab, without opening the server itself. Tabs close after 4 hours.',
+        'notice' => 'Who may use the area is set by the admin permissions "Game Support: View" and "Game Support: Control". The owner sees in the activity log when their server was opened.',
+    ],
+
+    'link_download' => [
+        'name' => 'Download from link',
+        'description' => '"Download from link" button in the file manager: the node fetches a file from a direct link, e.g. a backup or a plugin, into any folder of the server. With progress and cancel.',
+        'notice' => 'At most 3 downloads at once per server, redirects are followed. Addresses in private networks are blocked. Needs the subuser permission "Create files" in the target folder.',
+    ],
+
     'ports' => [
         'name' => 'Automatic ports',
         'description' => 'Servers automatically get the additional ports their egg needs, e.g. the raw, query and RCON port of ARK, and the port numbers are written into the startup variables.',

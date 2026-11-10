@@ -1,3 +1,3 @@
 package system
 
-var Version = "1.0.0-dev"
+var Version = "1.6.0"

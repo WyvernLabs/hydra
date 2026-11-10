@@ -13,6 +13,7 @@ import {
     FolderPlus,
     FolderUp,
     KeyRound,
+    Link2,
     Pencil,
     RefreshCw,
     Scissors,
@@ -64,6 +65,7 @@ import FileList from '@/components/server/files/ide/FileList';
 import EditorArea from '@/components/server/files/ide/EditorArea';
 import ContextMenu, { MenuItem } from '@/components/server/files/ide/ContextMenu';
 import TrashDialog from '@/components/server/files/ide/TrashDialog';
+import LinkDownloadDialog from '@/components/server/files/ide/LinkDownloadDialog';
 import { ChmodDialog, DeleteDialog, NameDialog, UnsavedDialog } from '@/components/server/files/ide/dialogs';
 import '@/components/server/files/ide/ide.css';
 
@@ -90,6 +92,8 @@ type DialogState =
     | { type: 'chmod'; path: string; mode: string }
     | { type: 'unsaved'; id: string }
     | { type: 'trash' }
+    // Hydra: download from a link into the folder (addon "link_download").
+    | { type: 'link'; directory: string }
     | null;
 
 let nextTabId = 0;
@@ -170,6 +174,7 @@ export default () => {
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
     const allowedPaths = ServerContext.useStoreState((state) => state.server.allowedPaths);
     const trashSettings = useStoreState((state) => state.settings.data!.trash);
+    const linkDownload = useStoreState((state) => state.settings.data!.linkDownload.enabled);
     const [canRead, canCreate, canUpdate, canDelete, canDeletePermanent, canArchive] = usePermissions([
         'file.read-content',
         'file.create',
@@ -672,6 +677,13 @@ export default () => {
                 separated: true,
             });
             items.push({ label: t('actions.upload_folder'), icon: FolderUp, onClick: () => pickUpload(dir, true) });
+            if (linkDownload) {
+                items.push({
+                    label: t('actions.download_link'),
+                    icon: Link2,
+                    onClick: () => setDialog({ type: 'link', directory: dir }),
+                });
+            }
         }
         if (cut.length > 0 && canUpdate && writable) {
             items.push({
@@ -793,6 +805,13 @@ export default () => {
                                 disabled={!writableHere}
                                 onClick={() => pickUpload(directory, true)}
                             />
+                            {linkDownload && (
+                                <ToolbarButton
+                                    icon={Link2}
+                                    label={t('actions.download_link')}
+                                    onClick={() => setDialog({ type: 'link', directory })}
+                                />
+                            )}
                         </>
                     )}
                     {(trashSettings.enabled || trashCount > 0) && (
@@ -950,6 +969,15 @@ export default () => {
                         setDialog(null);
                     }}
                 />
+                {linkDownload && canCreate && (
+                    <LinkDownloadDialog
+                        open={dialog?.type === 'link'}
+                        directory={dialog?.type === 'link' ? dialog.directory : directory}
+                        folders={Object.keys(listings).sort()}
+                        onClose={() => setDialog(null)}
+                        onFinished={(path) => refresh(dirname(path))}
+                    />
+                )}
                 <TrashDialog
                     open={dialog?.type === 'trash'}
                     onClose={() => setDialog(null)}

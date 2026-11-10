@@ -11,7 +11,7 @@
     <body class="hydra-body">
         <main class="hydra-public-page hydra-status">
             <a href="{{ route('auth.login') }}" class="hydra-public-page-logo">
-                <img src="{{ $branding->logoUrl() }}" alt="{{ config('app.name', 'Hydra') }}">
+                <img src="{{ $branding->logoUrl() }}" alt="{{ config('app.name', 'Hydra') }}" class="{{ $branding->protectedClass() }}" draggable="false">
             </a>
 
             <div class="hydra-status-overall" data-state="{{ $overall }}">

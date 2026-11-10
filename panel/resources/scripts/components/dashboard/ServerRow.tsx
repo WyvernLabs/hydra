@@ -7,6 +7,10 @@ import getServerResourceUsage, { ServerPowerState, ServerStats } from '@/api/ser
 import { bytesToString, mbToBytes } from '@/lib/formatters';
 import { useServerLink } from '@/components/hydra/serverNavigation';
 import { useCpuValue } from '@/lib/usage';
+import { useStoreState } from 'easy-peasy';
+import { protectedClass } from '@/lib/protectedImage';
+
+export type ServerLayout = 'list' | 'grid2' | 'grid3';
 
 // Hydra: a server in the server list. On the left the picture of its egg
 // (Design > Eggs) with name, ID, address and state, on the right the live
@@ -56,8 +60,32 @@ const Stat = ({
     </div>
 );
 
-export default ({ server, className }: { server: Server; className?: string }) => {
+// Hydra: the card adapts to the layout picked on the dashboard. "grid2" puts
+// picture and usage side by side, "grid3" stacks them for the narrow columns
+// and "list" is one wide row with the usage values next to each other.
+const cardClasses: Record<ServerLayout, string> = {
+    list: 'md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]',
+    grid2: 'sm:grid-cols-2',
+    grid3: 'grid-cols-1',
+};
+
+const statClasses: Record<ServerLayout, string> = {
+    list: 'md:flex-row md:items-center md:divide-y-0 md:divide-x md:[&>*]:flex-1 md:[&>*]:px-4',
+    grid2: '',
+    grid3: '',
+};
+
+export default ({
+    server,
+    className,
+    layout = 'grid2',
+}: {
+    server: Server;
+    className?: string;
+    layout?: ServerLayout;
+}) => {
     const { t } = useTranslation(['client/dashboard', 'client/server']);
+    const branding = useStoreState((state) => state.settings.data!.branding);
     const interval = useRef<Timer>(null) as React.MutableRefObject<Timer>;
     const [isSuspended, setIsSuspended] = useState(server.status === 'suspended');
     const [stats, setStats] = useState<ServerStats | null>(null);
@@ -116,19 +144,20 @@ export default ({ server, className }: { server: Server; className?: string }) =
     return (
         <Link
             to={serverLink(server.id)}
-            className={`hydra-server-row group grid overflow-hidden rounded-lg border border-gray-700 bg-gray-800/80 no-underline backdrop-blur transition-colors hover:border-gray-500 sm:grid-cols-2 ${
-                className || ''
-            }`}
+            className={`hydra-server-row group grid overflow-hidden rounded-lg border border-gray-700 bg-gray-800/80 no-underline backdrop-blur transition-colors hover:border-gray-500 ${
+                cardClasses[layout]
+            } ${className || ''}`}
         >
             {/* Picture with name, ID, address and state */}
-            <div className={'relative flex min-h-[11rem] flex-col p-4'}>
+            <div className={`relative flex flex-col p-4 ${layout === 'list' ? 'min-h-[8.5rem]' : 'min-h-[11rem]'}`}>
                 {picture ? (
                     <img
                         src={picture}
                         alt={''}
-                        className={
-                            'absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
-                        }
+                        className={`absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 ${protectedClass(
+                            branding
+                        )}`}
+                        draggable={false}
                     />
                 ) : (
                     <div
@@ -172,7 +201,9 @@ export default ({ server, className }: { server: Server; className?: string }) =
             </div>
 
             {/* Live usage */}
-            <div className={'flex flex-col justify-center divide-y divide-gray-700/60 px-4 py-1'}>
+            <div
+                className={`flex flex-col justify-center divide-y divide-gray-700/60 px-4 py-1 ${statClasses[layout]}`}
+            >
                 <Stat
                     icon={Cpu}
                     label={t('server.cpu')}

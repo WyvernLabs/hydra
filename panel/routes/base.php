@@ -15,7 +15,7 @@ Route::get('/locales/locale.json', Base\LocaleController::class)
 
 Route::get('/branding/{type}', Base\BrandingController::class)
     ->withoutMiddleware(['auth', RequireTwoFactorAuthentication::class])
-    ->where('type', 'logo|favicon')
+    ->where('type', 'logo|favicon|meta')
     ->name('branding');
 
 // Hydra: the panel as an installable app (addon "pwa").

@@ -2,10 +2,33 @@
 
 return [
     'title' => 'Administration',
-    'heading' => 'Administrative Overview',
+    'heading' => 'Overview',
     'subtitle' => 'A quick glance at your system.',
-    'breadcrumb' => 'Index',
+    'breadcrumb' => 'Overview',
     'system' => 'System Information',
-    'up_to_date' => 'You are running Hydra Panel version <code>:version</code>, based on Pterodactyl Panel <code>:upstream</code>.',
-    'outdated' => 'Your panel is <strong>not up-to-date!</strong> The latest version is <code>:latest</code> and you are currently running version <code>:version</code>. Run <code>hydra-panel update</code> on the panel server to update.',
+    'installed' => 'Installed',
+    'build' => 'Build :build',
+    'based_on' => 'Based on Pterodactyl Panel <code>:upstream</code>.',
+    'up_to_date' => 'The panel is up to date.',
+    'update_available' => 'New version available: <strong>:version</strong> (build :build). See the news below for what changes.',
+    'to_updates' => 'Go to updates',
+    'update_command' => 'Run <code>hydra-panel update</code> on the panel server.',
+
+    'news' => [
+        'title' => 'News',
+        'refresh' => 'Refresh',
+        'checked' => 'Last checked: :time',
+        'never' => 'Not checked online yet',
+        'failed' => 'Check failed',
+        'unreachable' => 'The latest news could not be loaded. Showing the known versions.',
+        'available' => 'Available',
+        'installed' => 'Installed',
+        'empty' => 'No news yet.',
+        'types' => [
+            'new' => 'New',
+            'improved' => 'Improved',
+            'fixed' => 'Fixed',
+            'security' => 'Security',
+        ],
+    ],
 ];

@@ -21,13 +21,16 @@ import {
     ImportMode,
     ImportStatus,
     ImportTest,
+    startExport,
     startImport,
     testImport,
     toImportStatus,
+    TransferKind,
 } from '@/api/server/import';
 
 // Hydra: copies the files of another server over SFTP onto this one (addon
-// "importer"): login, test, transfer with progress and a log of the files.
+// "importer"), or with kind "export" the files of this server onto another
+// one (addon "exporter"): login, test, transfer with progress and a log.
 
 type Phase = 'form' | 'running' | 'done' | 'failed';
 
@@ -42,6 +45,9 @@ const ERRORS: [RegExp, string][] = [
     [/private network/i, 'internal'],
     [/private key/i, 'key'],
     [/source folder could not be read/i, 'source'],
+    [/source folder does not exist/i, 'source'],
+    [/target folder could not be created/i, 'target'],
+    [/could not upload/i, 'upload'],
     [/no folder/i, 'source'],
     [/disk space/i, 'disk'],
     [/too many files/i, 'too_many'],
@@ -62,11 +68,12 @@ const AnimatedCheck = () => (
     </svg>
 );
 
-export default ({ open, onClose }: { open: boolean; onClose: () => void }) => {
-    const { t } = useTranslation('client/import');
+export default ({ open, onClose, kind = 'import' }: { open: boolean; onClose: () => void; kind?: TransferKind }) => {
+    const exporting = kind === 'export';
+    const { t } = useTranslation(exporting ? 'client/export' : 'client/import');
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
-    const profiles = useStoreState((state) => state.settings.data!.importer.profiles);
-    const { clearFlashes, clearAndAddHttpError } = useFlashKey('server:import');
+    const profiles = useStoreState((state) => state.settings.data!.importer.profiles) && !exporting;
+    const { clearFlashes, clearAndAddHttpError } = useFlashKey(`server:${kind}`);
 
     const [host, setHost] = useState('');
     const [port, setPort] = useState(22);
@@ -74,8 +81,9 @@ export default ({ open, onClose }: { open: boolean; onClose: () => void }) => {
     const [auth, setAuth] = useState<'password' | 'key'>('password');
     const [password, setPassword] = useState('');
     const [privateKey, setPrivateKey] = useState('');
-    const [source, setSource] = useState('');
-    const [target, setTarget] = useState('/');
+    // Import: source on the other server, target here. Export: the other way round.
+    const [source, setSource] = useState(exporting ? '/' : '');
+    const [target, setTarget] = useState(exporting ? '' : '/');
     const [mode, setMode] = useState<ImportMode>('keep');
     const [profileName, setProfileName] = useState('');
 
@@ -96,13 +104,16 @@ export default ({ open, onClose }: { open: boolean; onClose: () => void }) => {
     };
 
     // Another login has to be tested again.
-    useEffect(() => setTested(null), [host, port, username, auth, password, privateKey, source]);
+    useEffect(
+        () => setTested(null),
+        [host, port, username, auth, password, privateKey, source, ...(exporting ? [target] : [])]
+    );
 
     // A running import continues while the window is closed; it shows up again.
     useEffect(() => {
         if (!open) return;
         clearFlashes();
-        getImportStatus(uuid)
+        getImportStatus(uuid, kind)
             .then((current) => {
                 if (current.state === 'listing' || current.state === 'copying') {
                     setStatus(current);
@@ -114,7 +125,7 @@ export default ({ open, onClose }: { open: boolean; onClose: () => void }) => {
             .catch(() => undefined);
     }, [open]);
 
-    useWebsocketEvent(SocketEvent.HYDRA_IMPORT_PROGRESS, (data) => {
+    useWebsocketEvent(exporting ? SocketEvent.HYDRA_EXPORT_PROGRESS : SocketEvent.HYDRA_IMPORT_PROGRESS, (data) => {
         try {
             const parsed = JSON.parse(data);
             const next = toImportStatus(parsed.status || {});
@@ -146,7 +157,7 @@ export default ({ open, onClose }: { open: boolean; onClose: () => void }) => {
     const test = () => {
         clearFlashes();
         setBusy(true);
-        testImport(uuid, login)
+        testImport(uuid, login, kind, target.trim())
             .then((result) => setTested(result))
             .catch((error) => clearAndAddHttpError(error))
             .then(() => setBusy(false));
@@ -158,14 +169,17 @@ export default ({ open, onClose }: { open: boolean; onClose: () => void }) => {
         setBusy(true);
         setLines([]);
         setStatus(null);
-        startImport(uuid, login, { hostKey: tested.fingerprint, target, mode, profileName })
+        (exporting
+            ? startExport(uuid, login, { hostKey: tested.fingerprint, target: target.trim() })
+            : startImport(uuid, login, { hostKey: tested.fingerprint, target, mode, profileName })
+        )
             .then(() => setPhase((current) => (current === 'form' ? 'running' : current)))
             .catch((error) => clearAndAddHttpError(error))
             .then(() => setBusy(false));
     };
 
     const cancel = () => {
-        cancelImport(uuid).catch((error) => clearAndAddHttpError(error));
+        cancelImport(uuid, kind).catch((error) => clearAndAddHttpError(error));
     };
 
     const percent = status && status.total > 0 ? Math.min(100, (status.done / status.total) * 100) : null;
@@ -180,7 +194,7 @@ export default ({ open, onClose }: { open: boolean; onClose: () => void }) => {
 
     return (
         <Dialog open={open} onClose={() => !busy && onClose()} preventExternalClose={busy} wide title={t('title')}>
-            <FlashMessageRender byKey={'server:import'} className={'mb-3'} />
+            <FlashMessageRender byKey={`server:${kind}`} className={'mb-3'} />
 
             {phase === 'form' && (
                 <div className={'space-y-4'}>
@@ -280,63 +294,67 @@ export default ({ open, onClose }: { open: boolean; onClose: () => void }) => {
                                 id={'importTarget'}
                                 value={target}
                                 onChange={(event) => setTarget(event.currentTarget.value)}
-                                placeholder={'/'}
+                                placeholder={exporting ? t('target_placeholder') : '/'}
                             />,
                             t('target_help')
                         )}
                     </div>
 
-                    <div>
-                        <Label>{t('mode')}</Label>
-                        <div className={'grid grid-cols-1 gap-2 sm:grid-cols-3'}>
-                            {(['keep', 'wipe', ...(profiles ? ['profile'] : [])] as ImportMode[]).map((item) => (
-                                <label
-                                    key={item}
-                                    className={classNames(
-                                        'cursor-pointer rounded-lg border p-3 text-sm transition-colors',
-                                        mode === item
-                                            ? item === 'wipe'
-                                                ? 'border-red-500 bg-red-500/10'
-                                                : 'border-primary-500 bg-primary-500/10'
-                                            : 'border-gray-700 bg-gray-900/40 hover:border-gray-500'
-                                    )}
-                                >
-                                    <input
-                                        type={'radio'}
-                                        name={'importMode'}
-                                        className={'sr-only'}
-                                        checked={mode === item}
-                                        onChange={() => setMode(item)}
-                                    />
-                                    <span className={'block font-medium text-gray-100'}>{t(`modes.${item}`)}</span>
-                                    <span className={'mt-0.5 block text-xs text-gray-400'}>
-                                        {t(`modes.${item}_help`)}
-                                    </span>
-                                </label>
-                            ))}
-                        </div>
-                        {mode === 'profile' && (
-                            <div className={'mt-3'}>
-                                {field(
-                                    'importProfile',
-                                    t('profile_name'),
-                                    <Input
-                                        id={'importProfile'}
-                                        value={profileName}
-                                        maxLength={60}
-                                        onChange={(event) => setProfileName(event.currentTarget.value)}
-                                        placeholder={t('profile_placeholder')}
-                                    />
-                                )}
+                    {!exporting && (
+                        <div>
+                            <Label>{t('mode')}</Label>
+                            <div className={'grid grid-cols-1 gap-2 sm:grid-cols-3'}>
+                                {(['keep', 'wipe', ...(profiles ? ['profile'] : [])] as ImportMode[]).map((item) => (
+                                    <label
+                                        key={item}
+                                        className={classNames(
+                                            'cursor-pointer rounded-lg border p-3 text-sm transition-colors',
+                                            mode === item
+                                                ? item === 'wipe'
+                                                    ? 'border-red-500 bg-red-500/10'
+                                                    : 'border-primary-500 bg-primary-500/10'
+                                                : 'border-gray-700 bg-gray-900/40 hover:border-gray-500'
+                                        )}
+                                    >
+                                        <input
+                                            type={'radio'}
+                                            name={'importMode'}
+                                            className={'sr-only'}
+                                            checked={mode === item}
+                                            onChange={() => setMode(item)}
+                                        />
+                                        <span className={'block font-medium text-gray-100'}>{t(`modes.${item}`)}</span>
+                                        <span className={'mt-0.5 block text-xs text-gray-400'}>
+                                            {t(`modes.${item}_help`)}
+                                        </span>
+                                    </label>
+                                ))}
                             </div>
-                        )}
-                    </div>
+                            {mode === 'profile' && (
+                                <div className={'mt-3'}>
+                                    {field(
+                                        'importProfile',
+                                        t('profile_name'),
+                                        <Input
+                                            id={'importProfile'}
+                                            value={profileName}
+                                            maxLength={60}
+                                            onChange={(event) => setProfileName(event.currentTarget.value)}
+                                            placeholder={t('profile_placeholder')}
+                                        />
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {tested && (
                         <div className={'rounded-lg border border-green-600/50 bg-green-600/10 p-3 text-sm'}>
                             <p className={'flex items-center gap-2 font-medium text-green-300'}>
                                 <CheckCircle2 className={'h-4 w-4'} />
-                                {t('test_ok', { folder: tested.folder, count: tested.entries })}
+                                {exporting && tested.exists === false
+                                    ? t('test_new', { folder: tested.folder })
+                                    : t('test_ok', { folder: tested.folder, count: tested.entries })}
                             </p>
                             {tested.names.length > 0 && (
                                 <p className={'mt-2 flex flex-wrap gap-1'}>
@@ -458,7 +476,7 @@ export default ({ open, onClose }: { open: boolean; onClose: () => void }) => {
                         >
                             {busy && !tested ? t('testing') : t('test')}
                         </Button.Text>
-                        {mode === 'wipe' ? (
+                        {mode === 'wipe' && !exporting ? (
                             <Button.Danger onClick={start} disabled={busy || !tested}>
                                 {t('start')}
                             </Button.Danger>

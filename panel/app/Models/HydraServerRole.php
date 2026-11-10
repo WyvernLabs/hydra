@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $name
  * @property string $color
  * @property array $permissions
+ * @property array|null $allowed_paths
  * @property \Carbon\CarbonImmutable $created_at
  * @property \Carbon\CarbonImmutable $updated_at
  * @property Server $server
@@ -25,11 +26,12 @@ class HydraServerRole extends Model
 
     protected bool $immutableDates = true;
 
-    protected $fillable = ['server_id', 'name', 'color', 'permissions'];
+    protected $fillable = ['server_id', 'name', 'color', 'permissions', 'allowed_paths'];
 
     protected $casts = [
         'server_id' => 'integer',
         'permissions' => 'array',
+        'allowed_paths' => 'array',
     ];
 
     public static array $validationRules = [
@@ -38,7 +40,17 @@ class HydraServerRole extends Model
         'color' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
         'permissions' => 'present|array',
         'permissions.*' => 'string',
+        'allowed_paths' => 'nullable|array|max:50',
+        'allowed_paths.*' => 'string|max:255',
     ];
+
+    /**
+     * Hydra: the folders of the role, cleaned up; empty for the whole server.
+     */
+    public function paths(): array
+    {
+        return \Pterodactyl\Services\Files\AllowedPaths::clean($this->allowed_paths ?? []);
+    }
 
     public function server(): BelongsTo
     {

@@ -17,4 +17,7 @@ return [
         'profile_not_found' => 'Die Dateien des Profils wurden auf der Node nicht gefunden.',
         'not_empty' => 'Der Server hat noch Dateien.',
     ],
+    // Hydra: Mindestanforderungen eines Eggs (Design > Eggs).
+    'requirements' => 'Für dieses Spiel hat der Server zu wenig :missing.',
+    'resources' => ['cpu' => 'CPU', 'memory' => 'Arbeitsspeicher'],
 ];

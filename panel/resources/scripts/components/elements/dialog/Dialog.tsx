@@ -90,10 +90,10 @@ export default ({
                                     variants={variants}
                                     className={
                                         huge
-                                            ? `${styles.panel} !max-w-6xl`
+                                            ? `${styles.panel} hydra-float !max-w-6xl`
                                             : wide
-                                            ? `${styles.panel} !max-w-4xl`
-                                            : styles.panel
+                                            ? `${styles.panel} hydra-float !max-w-4xl`
+                                            : `${styles.panel} hydra-float`
                                     }
                                 >
                                     <div className={'flex p-6 pb-0 overflow-y-auto'}>

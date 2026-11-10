@@ -14,6 +14,9 @@
             ['admin.servers', __('admin/common.nav.servers'), 'server', starts_with($route, 'admin.servers'), 'servers.view'],
         ],
         __('admin/common.nav.community') => [
+            ...(config('hydra.addons.gamesupport.enabled') ? [
+                ['admin.support', __('admin/common.nav.support'), 'headset', starts_with($route, 'admin.support'), 'support.view'],
+            ] : []),
             ['admin.users', __('admin/common.nav.users'), 'users', starts_with($route, 'admin.users'), 'users.view'],
             ['admin.roles', __('admin/common.nav.roles'), 'shield-check', starts_with($route, 'admin.roles'), 'roles.view'],
             ...(config('hydra.addons.tickets.enabled') ? [
@@ -86,18 +89,19 @@
         <link rel="stylesheet" href="/hydra/admin.css?v={{ substr(md5_file(public_path('hydra/admin.css')), 0, 8) }}">
     </head>
     <body class="hydra-body hydra-admin">
+        @include('partials.hydra.backdrop', ['background' => app(\Pterodactyl\Services\Hydra\BackgroundService::class)->forSlot('admin')])
         <div class="hydra-shell">
             <header class="hydra-topbar">
                 <button type="button" class="hydra-icon-btn" id="hydraMenuToggle">
                     <x-hydra.icon name="menu" />
                     <span class="sr-only">{{ __('admin/common.nav.menu') }}</span>
                 </button>
-                <img src="{{ $branding->logoUrl() }}" alt="{{ config('app.name', 'Hydra') }}" class="hydra-topbar-logo">
+                <img src="{{ $branding->logoUrl() }}" alt="{{ config('app.name', 'Hydra') }}" class="hydra-topbar-logo {{ $branding->protectedClass() }}" draggable="false">
             </header>
             <div class="hydra-backdrop" id="hydraBackdrop" hidden></div>
             <aside class="hydra-sidebar" id="hydraSidebar">
                 <a href="{{ route('admin.index') }}" class="hydra-sidebar-logo">
-                    <img src="{{ $branding->logoUrl() }}" alt="{{ config('app.name', 'Hydra') }}">
+                    <img src="{{ $branding->logoUrl() }}" alt="{{ config('app.name', 'Hydra') }}" class="{{ $branding->protectedClass() }}" draggable="false">
                 </a>
                 <nav class="hydra-nav">
                     @foreach($navigation as $title => $items)

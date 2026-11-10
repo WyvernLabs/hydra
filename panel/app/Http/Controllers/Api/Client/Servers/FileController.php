@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Pterodactyl\Enum\JwtScope;
 use Pterodactyl\Models\Server;
+use Pterodactyl\Models\Permission;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Pterodactyl\Facades\Activity;
 use Pterodactyl\Services\Files\AllowedPaths;
 use Pterodactyl\Services\Hydra\Addons\TrashAddon;
@@ -343,6 +345,49 @@ class FileController extends ClientApiController
             ->property('directory', $request->input('directory'))
             ->property('url', $request->input('url'))
             ->log();
+
+        return new JsonResponse([], Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * Hydra: running downloads from links with their progress, and those that
+     * ended in the last minutes with their result (addon "link_download").
+     */
+    public function pulls(Request $request, Server $server): array
+    {
+        if (!$request->user()->can(Permission::ACTION_FILE_CREATE, $server)) {
+            throw new AccessDeniedHttpException();
+        }
+
+        $data = $this->fileRepository->setServer($server)->pulls();
+        $paths = $this->paths($request, $server);
+
+        return [
+            'downloads' => array_values(array_map(fn (array $download) => [
+                'identifier' => $download['Identifier'] ?? $download['identifier'] ?? '',
+                'progress' => (float) ($download['Progress'] ?? $download['progress'] ?? 0),
+            ], $data['downloads'] ?? [])),
+            // Results of folders the user may not see are left out.
+            'finished' => array_values(array_filter(array_map(fn (array $result) => [
+                'identifier' => (string) ($result['identifier'] ?? ''),
+                'path' => (string) ($result['path'] ?? ''),
+                'success' => (bool) ($result['success'] ?? false),
+                'error' => $result['error'] ?? null,
+                'finished_at' => $result['finished_at'] ?? null,
+            ], $data['hydra_finished'] ?? []), fn (array $result) => $result['path'] === '' || $paths->allows($result['path']))),
+        ];
+    }
+
+    /**
+     * Hydra: stops a running download from a link.
+     */
+    public function cancelPull(Request $request, Server $server, string $download): JsonResponse
+    {
+        if (!$request->user()->can(Permission::ACTION_FILE_CREATE, $server)) {
+            throw new AccessDeniedHttpException();
+        }
+
+        $this->fileRepository->setServer($server)->cancelPull($download);
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
     }

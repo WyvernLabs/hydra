@@ -1,0 +1,327 @@
+{
+    "releases": [
+        {
+            "version": "1.6.0",
+            "build": 59,
+            "date": "2026-11-10",
+            "title": {
+                "de": "Glas-Design und Neuigkeiten im Adminbereich",
+                "en": "Glass design and news in the admin area"
+            },
+            "changes": [
+                {
+                    "type": "new",
+                    "de": "Design > Farben & Logo > Boxen & Flächen: Farbe, Deckkraft, Rahmen und Glas-Weichzeichnung aller Boxen einstellbar, mit Vorlagen und Live-Vorschau.",
+                    "en": "Design > Colors & Logo > Boxes & surfaces: color, opacity, border and glass blur of all boxes, with presets and a live preview."
+                },
+                {
+                    "type": "new",
+                    "de": "Übersicht im Adminbereich zeigt die Neuigkeiten jeder Version und meldet, wenn ein Update bereitsteht. Aktualisiert sich alle 10 Minuten oder per Knopfdruck.",
+                    "en": "The admin overview shows the news of every version and reports when an update is available. Refreshes every 10 minutes or at the push of a button."
+                },
+                {
+                    "type": "new",
+                    "de": "Serverliste wahlweise als Liste untereinander, in 2 oder in 3 Spalten. Jeder Benutzer wählt seine Ansicht selbst.",
+                    "en": "Server list as a list, in 2 or in 3 columns. Every user picks their own layout."
+                },
+                {
+                    "type": "new",
+                    "de": "Design > Metadaten: Titel, Beschreibung, Vorschaubild und Farbe für geteilte Links (Discord, WhatsApp, X) sowie Freigabe für Suchmaschinen.",
+                    "en": "Design > Metadata: title, description, preview image and color for shared links (Discord, WhatsApp, X), plus search engine indexing."
+                },
+                {
+                    "type": "new",
+                    "de": "Logo und Egg-Bilder sind vor „Bild speichern“, Ziehen und langem Drücken geschützt (abschaltbar unter Farben & Logo).",
+                    "en": "Logo and egg pictures are protected against \"Save image\", dragging and long press (can be switched off under Colors & Logo)."
+                },
+                {
+                    "type": "new",
+                    "de": "Aktivitätslog des Servers mit Filter nach Benutzer, Aktion und Freitext. Es erscheinen nur passende Einträge.",
+                    "en": "Server activity log with a filter by user, action and free text. Only matching entries are shown."
+                },
+                {
+                    "type": "new",
+                    "de": "Addon Gamesupport: Server per UUID im Adminbereich öffnen und in einem Tab Konsole, Nutzung und Power-Knöpfe nutzen, Server sperren, entsperren, neu installieren und übertragen (je eigenes Recht) sowie Links zu Server- und Besitzerverwaltung. Tabs schließen sich nach 4 Stunden.",
+                    "en": "Game support addon: open servers by their UUID in the admin area and use console, usage and power buttons in a tab, suspend, unsuspend, reinstall and transfer servers (each with its own permission) and links to server and owner management. Tabs close after 4 hours."
+                },
+                {
+                    "type": "new",
+                    "de": "Mindestanforderungen je Egg (CPU und RAM) unter Design > Eggs. Spiele, für die der Server zu klein ist, erscheinen im Spielewechsel gesperrt mit Begründung.",
+                    "en": "Minimum requirements per egg (CPU and RAM) under Design > Eggs. Games the server is too small for are shown locked with the reason in the game library."
+                },
+                {
+                    "type": "new",
+                    "de": "Addon Server-Export: die Dateien eines Servers per SFTP auf einen anderen Server hochladen, mit Fortschritt und Protokoll (Recht „Server exportieren“).",
+                    "en": "Server export addon: upload the files of a server to another server over SFTP, with progress and a log (permission \"Export Server\")."
+                },
+                {
+                    "type": "new",
+                    "de": "Addon Download von Link: Dateien wie Backups oder Plugins direkt von einem Link in einen wählbaren Ordner des Servers laden, mit Fortschritt und Abbrechen.",
+                    "en": "Download from link addon: fetch files such as backups or plugins right from a link into a folder of the server, with progress and cancel."
+                },
+                {
+                    "type": "new",
+                    "de": "Eigener Hintergrund für den Adminbereich unter Design > Hintergründe.",
+                    "en": "Own background for the admin area under Design > Backgrounds."
+                },
+                {
+                    "type": "improved",
+                    "de": "Downloads von Links folgen Weiterleitungen (z. B. GitHub-Releases), jede Verbindung wird weiterhin gegen interne Adressen geprüft.",
+                    "en": "Downloads from links follow redirects (e.g. GitHub releases); every connection is still checked against internal addresses."
+                },
+                {
+                    "type": "new",
+                    "de": "Server-Rollen lassen sich mit einem Klick auf andere eigene Server kopieren. Gleichnamige Rollen werden dort ersetzt.",
+                    "en": "Server roles can be copied to your other servers with one click. Roles with the same name are replaced there."
+                },
+                {
+                    "type": "new",
+                    "de": "Server-Rollen können Ordnerrechte haben. Mitglieder bekommen die Ordner der Rolle automatisch.",
+                    "en": "Server roles can have folder permissions. Members get the folders of the role automatically."
+                },
+                {
+                    "type": "improved",
+                    "de": "Rechte von Rollen und Unterbenutzern: Knöpfe „Alle auswählen“ und „Alle abwählen“, mehr Abstand zur Kategorie-Checkbox.",
+                    "en": "Permissions of roles and subusers: \"Select all\" and \"Deselect all\" buttons, more space next to the category checkbox."
+                },
+                {
+                    "type": "improved",
+                    "de": "Panel und Wings tragen jetzt eine echte Versionsnummer mit Build statt 1.0.0-dev.",
+                    "en": "Panel and Wings now carry a real version number with build instead of 1.0.0-dev."
+                },
+                {
+                    "type": "improved",
+                    "de": "Dialoge, Menüs und Tooltips bleiben auch beim Glas-Design gut lesbar.",
+                    "en": "Dialogs, menus and tooltips stay readable with the glass design."
+                }
+            ]
+        },
+        {
+            "version": "1.5.1",
+            "build": 58,
+            "date": "2026-11-08",
+            "title": {
+                "de": "Installer mit Fortschrittsanzeige",
+                "en": "Installers with progress display"
+            },
+            "changes": [
+                {
+                    "type": "new",
+                    "de": "Der Panel-Installer fragt das Admin-Passwort bei der Installation ab (leer = zufällig).",
+                    "en": "The panel installer asks for the admin password during installation (empty = random)."
+                },
+                {
+                    "type": "improved",
+                    "de": "Fortschrittsanzeige in beiden Installern und bei der Node-Installation aus dem Panel.",
+                    "en": "Progress display in both installers and when installing a node from the panel."
+                },
+                {
+                    "type": "improved",
+                    "de": "Mittelklick öffnet Adminseiten im App-Modus in einem neuen Tab.",
+                    "en": "Middle click opens admin pages in a new tab in app mode."
+                },
+                {
+                    "type": "fixed",
+                    "de": "Laufzeitanzeige auf Englisch und Darstellung des ersten Tabs korrigiert.",
+                    "en": "Fixed the English uptime text and the look of the first tab."
+                }
+            ]
+        },
+        {
+            "version": "1.5.0",
+            "build": 56,
+            "date": "2026-11-06",
+            "title": {
+                "de": "Statusseite, Discord-Bot und Ankündigungen",
+                "en": "Status page, Discord bot and announcements"
+            },
+            "changes": [
+                {
+                    "type": "new",
+                    "de": "Ankündigungen unter Design: allgemein oder für einzelne Nodes, mit fünf Typen und Live-Vorschau.",
+                    "en": "Announcements under Design: general or for single nodes, with five types and a live preview."
+                },
+                {
+                    "type": "new",
+                    "de": "Addon Statusseite: öffentliche Seite mit Verfügbarkeit von Nodes und Diensten der letzten 7 Tage.",
+                    "en": "Status page addon: public page with the availability of nodes and services over the last 7 days."
+                },
+                {
+                    "type": "new",
+                    "de": "Addon Discord: Konten verknüpfen, Rollen vergeben, Ticket-Benachrichtigungen per DM.",
+                    "en": "Discord addon: link accounts, assign roles, ticket notifications via DM."
+                },
+                {
+                    "type": "new",
+                    "de": "Saisonale Effekte (Halloween, Weihnachten, Silvester), von jedem Benutzer einzeln abschaltbar.",
+                    "en": "Seasonal effects (Halloween, Christmas, New Year), each user can switch parts off."
+                },
+                {
+                    "type": "new",
+                    "de": "Addon Server-Templates: neue Server nur mit Name und Besitzer erstellen.",
+                    "en": "Server templates addon: create new servers with just a name and an owner."
+                },
+                {
+                    "type": "new",
+                    "de": "Ressourcen-Pool: eigene Standorte und Nodes pro Benutzer, Ports frei wählbar.",
+                    "en": "Resource pool: own locations and nodes per user, freely selectable ports."
+                },
+                {
+                    "type": "improved",
+                    "de": "Rate-Limits und Wartezeiten erscheinen in der Sprache des Benutzers.",
+                    "en": "Rate limits and waiting times are shown in the user's language."
+                }
+            ]
+        },
+        {
+            "version": "1.4.0",
+            "build": 50,
+            "date": "2026-10-26",
+            "title": {
+                "de": "Nodes aus dem Panel installieren und API-Dokumentation",
+                "en": "Install nodes from the panel and API documentation"
+            },
+            "changes": [
+                {
+                    "type": "new",
+                    "de": "Nodes direkt aus dem Panel installieren, per SSH oder mit einem kurzen Einmal-Befehl.",
+                    "en": "Install nodes right from the panel, via SSH or with a short one-time command."
+                },
+                {
+                    "type": "new",
+                    "de": "API-Dokumentation im Adminbereich, Application-API mit Verwarnungen und Kontosperren.",
+                    "en": "API documentation in the admin area, application API with warnings and bans."
+                },
+                {
+                    "type": "new",
+                    "de": "Neue Standard-Eggs, automatische Ports, GraalVM und Installer per curl.",
+                    "en": "New default eggs, automatic ports, GraalVM and installers via curl."
+                },
+                {
+                    "type": "improved",
+                    "de": "Uploads im Dateimanager standardmäßig bis 16 GB statt 100 MB.",
+                    "en": "File manager uploads up to 16 GB by default instead of 100 MB."
+                },
+                {
+                    "type": "security",
+                    "de": "Schreib-Endpunkte der Application-API prüfen nur noch das Admin-Recht ihrer Aktion.",
+                    "en": "Write endpoints of the application API only check the admin permission of their action."
+                },
+                {
+                    "type": "fixed",
+                    "de": "Installer: E-Mail und Benutzername vorab prüfen, Go-Module bei Proxy-Fehlern direkt laden.",
+                    "en": "Installers: check email and username up front, load Go modules directly when the proxy fails."
+                }
+            ]
+        },
+        {
+            "version": "1.3.0",
+            "build": 39,
+            "date": "2026-10-24",
+            "title": {
+                "de": "Dateimanager als IDE, Ressourcen-Pool und App",
+                "en": "File manager as an IDE, resource pool and app"
+            },
+            "changes": [
+                {
+                    "type": "new",
+                    "de": "Dateimanager als IDE mit Papierkorb, Versionswechsler und .env-Editor.",
+                    "en": "File manager as an IDE with trash, version switcher and .env editor."
+                },
+                {
+                    "type": "new",
+                    "de": "Node-Firewall, Datenbanken mit phpMyAdmin, Server-Dashboard, Sperren und Autodelete.",
+                    "en": "Node firewall, databases with phpMyAdmin, server dashboard, bans and autodelete."
+                },
+                {
+                    "type": "new",
+                    "de": "MOTD, Ressourcen-Pool, Spielerstatistik, Server-Import und Server-Rollen.",
+                    "en": "MOTD, resource pool, player statistics, server import and server roles."
+                },
+                {
+                    "type": "new",
+                    "de": "Panel als App installierbar (PWA) mit Tabs.",
+                    "en": "Panel installable as an app (PWA) with tabs."
+                }
+            ]
+        },
+        {
+            "version": "1.2.0",
+            "build": 36,
+            "date": "2026-10-20",
+            "title": {
+                "de": "Addons, Turnstile und Registrierung",
+                "en": "Addons, Turnstile and registration"
+            },
+            "changes": [
+                {
+                    "type": "new",
+                    "de": "Addon-System unter Design > Addons, erste Addons: Cloudflare Turnstile und Registrierung.",
+                    "en": "Addon system under Design > Addons, first addons: Cloudflare Turnstile and registration."
+                },
+                {
+                    "type": "new",
+                    "de": "Server-Navigation im Adminbereich bearbeitbar, Lucide-Icons.",
+                    "en": "Server navigation editable in the admin area, Lucide icons."
+                },
+                {
+                    "type": "improved",
+                    "de": "Gesperrte Server: Dateien, Datenbanken und Backups bleiben erreichbar.",
+                    "en": "Suspended servers: files, databases and backups stay reachable."
+                }
+            ]
+        },
+        {
+            "version": "1.1.0",
+            "build": 32,
+            "date": "2026-10-19",
+            "title": {
+                "de": "Rollen, Profile und Updates per Knopfdruck",
+                "en": "Roles, profiles and one-click updates"
+            },
+            "changes": [
+                {
+                    "type": "new",
+                    "de": "Admin-Rollen mit Rechten und Ordnerrechte für Unterbenutzer.",
+                    "en": "Admin roles with permissions and folder permissions for subusers."
+                },
+                {
+                    "type": "new",
+                    "de": "Benutzerprofile mit Profilbild, Banner, Biografie und Online-Status.",
+                    "en": "User profiles with avatar, banner, bio and online status."
+                },
+                {
+                    "type": "new",
+                    "de": "Eigene Hintergründe, Links & Seiten und ein eigener Design-Bereich im Adminbereich.",
+                    "en": "Custom backgrounds, links & pages and an own Design area in the admin area."
+                },
+                {
+                    "type": "new",
+                    "de": "Panel und Nodes per Knopfdruck aus dem Adminbereich aktualisieren, Live-Auslastung der Nodes.",
+                    "en": "Update the panel and nodes from the admin area with one click, live node usage."
+                }
+            ]
+        },
+        {
+            "version": "1.0.0",
+            "build": 18,
+            "date": "2026-10-18",
+            "title": {
+                "de": "Erste Hydra-Version",
+                "en": "First Hydra release"
+            },
+            "changes": [
+                {
+                    "type": "new",
+                    "de": "Neues Design für Kunden- und Adminbereich, Akzentfarbe, Logo und Favicon einstellbar.",
+                    "en": "New design for the client and admin area, configurable accent color, logo and favicon."
+                },
+                {
+                    "type": "new",
+                    "de": "Installer für Panel und Wings, komplett auf Deutsch und Englisch übersetzt.",
+                    "en": "Installers for panel and Wings, fully translated into German and English."
+                }
+            ]
+        }
+    ]
+}

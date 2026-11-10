@@ -112,6 +112,8 @@ Route::group([
         ->name('api:client:server.ws');
     Route::get('/resources', Client\Servers\ResourceUtilizationController::class)->name('api:client:server.resources');
     Route::get('/activity', Client\Servers\ActivityLogController::class)->name('api:client:server.activity');
+    // Hydra: users and actions of the log, for its filter.
+    Route::get('/activity/filters', [Client\Servers\ActivityLogController::class, 'filters']);
     // Hydra: players online over time (addon "player_stats").
     Route::get('/players', Client\Servers\PlayerStatsController::class)->middleware('addon:player_stats');
 
@@ -159,8 +161,13 @@ Route::group([
         Route::post('/delete', [Client\Servers\FileController::class, 'delete']);
         Route::post('/create-folder', [Client\Servers\FileController::class, 'create']);
         Route::post('/chmod', [Client\Servers\FileController::class, 'chmod']);
-        Route::middleware([ResourceLimit::FilePull->middleware()])
+        // Hydra: downloads from a link (addon "link_download"), with their progress.
+        Route::middleware(['addon:link_download', ResourceLimit::FilePull->middleware()])
             ->post('/pull', [Client\Servers\FileController::class, 'pull']);
+        Route::middleware('addon:link_download')->group(function () {
+            Route::get('/pull', [Client\Servers\FileController::class, 'pulls']);
+            Route::delete('/pull/{download}', [Client\Servers\FileController::class, 'cancelPull'])->whereUuid('download');
+        });
         Route::get('/upload', Client\Servers\FileUploadController::class);
     });
 
@@ -200,6 +207,9 @@ Route::group([
         Route::post('/', [Client\Servers\ServerRoleController::class, 'store']);
         Route::patch('/{role}', [Client\Servers\ServerRoleController::class, 'update'])->whereNumber('role');
         Route::delete('/{role}', [Client\Servers\ServerRoleController::class, 'delete'])->whereNumber('role');
+        Route::get('/targets', [Client\Servers\ServerRoleController::class, 'targets']);
+        Route::post('/{role}/copy', [Client\Servers\ServerRoleController::class, 'copy'])->whereNumber('role')
+            ->middleware('throttle:10,1');
     });
 
     Route::group(['prefix' => '/users'], function () {
@@ -236,6 +246,14 @@ Route::group([
         Route::post('/test', [Client\Servers\ImportController::class, 'test'])->middleware('throttle:10,1');
         Route::post('/', [Client\Servers\ImportController::class, 'start'])->middleware('throttle:5,1');
         Route::delete('/', [Client\Servers\ImportController::class, 'cancel']);
+    });
+
+    // Hydra: export to another server over SFTP (addon "exporter").
+    Route::prefix('/export')->middleware('addon:exporter')->group(function () {
+        Route::get('/', [Client\Servers\ExportController::class, 'status']);
+        Route::post('/test', [Client\Servers\ExportController::class, 'test'])->middleware('throttle:10,1');
+        Route::post('/', [Client\Servers\ExportController::class, 'start'])->middleware('throttle:5,1');
+        Route::delete('/', [Client\Servers\ExportController::class, 'cancel']);
     });
 
     // Hydra: game library (addon "games").

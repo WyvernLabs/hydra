@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Server } from '@/api/server/getServer';
 import getServers from '@/api/getServers';
-import ServerRow from '@/components/dashboard/ServerRow';
+import ServerRow, { ServerLayout } from '@/components/dashboard/ServerRow';
 import Spinner from '@/components/elements/Spinner';
 import PageContentBlock from '@/components/elements/PageContentBlock';
 import useFlash from '@/plugins/useFlash';
@@ -16,6 +16,20 @@ import { useTranslation } from 'react-i18next';
 import { getResourcePool, ResourcePool } from '@/api/account/pool';
 import ResourcePoolCard from '@/components/dashboard/pool/ResourcePoolCard';
 import Announcements from '@/components/hydra/Announcements';
+import { List, Columns2, Columns3 } from 'lucide-react';
+
+// Hydra: how the server cards are arranged, chosen by every user.
+const layouts: { key: ServerLayout; icon: React.ComponentType<{ className?: string }> }[] = [
+    { key: 'list', icon: List },
+    { key: 'grid2', icon: Columns2 },
+    { key: 'grid3', icon: Columns3 },
+];
+
+const gridClasses: Record<ServerLayout, string> = {
+    list: 'grid grid-cols-1 gap-3',
+    grid2: 'grid grid-cols-1 gap-4 xl:grid-cols-2',
+    grid3: 'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3',
+};
 
 // Hydra: the greeting depends on the time of day.
 const greetingKey = (): string => {
@@ -52,6 +66,8 @@ export default () => {
     const name = useStoreState((state) => state.user.data!.nameFirst || state.user.data!.username);
     const rootAdmin = useStoreState((state) => state.user.data!.serverAccess);
     const [showOnlyAdmin, setShowOnlyAdmin] = usePersistedState(`${uuid}:show_all_servers`, false);
+    const [storedLayout, setLayout] = usePersistedState<ServerLayout>(`${uuid}:server_layout`, 'grid2');
+    const layout: ServerLayout = storedLayout && storedLayout in gridClasses ? storedLayout : 'grid2';
     const showOthers = showOnlyAdmin && rootAdmin;
 
     const {
@@ -109,6 +125,26 @@ export default () => {
                                 : t(total === 1 ? 'server_count_one' : 'server_count', { count: total })}
                         </p>
                     </div>
+                    <div
+                        className={'hydra-segmented hydra-layout-switch'}
+                        role={'radiogroup'}
+                        aria-label={t('layout.label')}
+                    >
+                        {layouts.map(({ key, icon: Icon }) => (
+                            <button
+                                key={key}
+                                type={'button'}
+                                role={'radio'}
+                                aria-checked={layout === key}
+                                aria-label={t(`layout.${key}`)}
+                                title={t(`layout.${key}`)}
+                                className={layout === key ? 'active' : undefined}
+                                onClick={() => setLayout(key)}
+                            >
+                                <Icon className={'h-4 w-4'} />
+                            </button>
+                        ))}
+                    </div>
                     {rootAdmin && (
                         <div className={'hydra-segmented'} role={'tablist'}>
                             <button
@@ -156,18 +192,17 @@ export default () => {
                             groupByOwner(items).map((group) => (
                                 <div key={group.key} className={'hydra-dashboard-group'}>
                                     <div className={'hydra-nav-title'}>{group.title || t('unknown_owner')}</div>
-                                    <div className={'grid grid-cols-1 gap-4 xl:grid-cols-2'}>
+                                    <div className={gridClasses[layout]}>
                                         {group.servers.map((server) => (
-                                            <ServerRow key={server.uuid} server={server} />
+                                            <ServerRow key={server.uuid} server={server} layout={layout} />
                                         ))}
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            // Hydra: two cards per row on wide screens.
-                            <div className={'grid grid-cols-1 gap-4 xl:grid-cols-2'}>
+                            <div className={gridClasses[layout]}>
                                 {items.map((server) => (
-                                    <ServerRow key={server.uuid} server={server} />
+                                    <ServerRow key={server.uuid} server={server} layout={layout} />
                                 ))}
                             </div>
                         )

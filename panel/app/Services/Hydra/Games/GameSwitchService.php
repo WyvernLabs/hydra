@@ -48,6 +48,7 @@ class GameSwitchService
         if ($egg->id === $server->egg_id) {
             throw new DisplayException(__('server/games.already_installed'));
         }
+        $this->assertRequirements($server, $egg);
 
         $this->clear($server, $keep, $name);
 
@@ -91,6 +92,7 @@ class GameSwitchService
         if (!$egg) {
             throw new DisplayException(__('server/games.egg_missing'));
         }
+        $this->assertRequirements($server, $egg);
 
         $this->clear($server, $keep, $name);
         $this->profiles->setServer($server)->load($profile->uuid);
@@ -170,5 +172,21 @@ class GameSwitchService
             'startup_done' => $server->hydra_startup_done,
             'size' => $size,
         ]);
+    }
+
+    /**
+     * Hydra: the server must have at least the CPU and memory the egg needs
+     * (Design > Eggs).
+     *
+     * @throws DisplayException
+     */
+    private function assertRequirements(Server $server, Egg $egg): void
+    {
+        $missing = EggRequirements::missing($server, $egg);
+        if (!empty($missing)) {
+            throw new DisplayException(__('server/games.requirements', [
+                'missing' => implode(', ', array_map(fn (string $key) => __("server/games.resources.$key"), array_keys($missing))),
+            ]));
+        }
     }
 }

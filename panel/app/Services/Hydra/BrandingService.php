@@ -124,6 +124,34 @@ class BrandingService
         config()->set("hydra.branding.$type", null);
     }
 
+    /**
+     * Whether logo and egg pictures are shielded against "save image",
+     * dragging and long press (Design > Colors & Logo). On by default.
+     */
+    public function protectsImages(): bool
+    {
+        return filter_var(config('hydra.branding.protect', true) ?? true, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    public function setProtectImages(bool $protect): void
+    {
+        if ($protect) {
+            $this->settings->forget('settings::hydra:branding:protect');
+        } else {
+            $this->settings->set('settings::hydra:branding:protect', 'false');
+        }
+
+        config()->set('hydra.branding.protect', $protect);
+    }
+
+    /**
+     * CSS class for protected pictures, empty while the protection is off.
+     */
+    public function protectedClass(): string
+    {
+        return $this->protectsImages() ? 'hydra-protected' : '';
+    }
+
     public function setAccent(string $color): void
     {
         $color = strtolower($color);
@@ -140,6 +168,7 @@ class BrandingService
             'accent' => $this->accent(),
             'logo' => $this->logoUrl(),
             'favicon' => $this->faviconUrl(),
+            'protect' => $this->protectsImages(),
         ];
     }
 

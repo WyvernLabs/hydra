@@ -9,6 +9,7 @@ import Tooltip from '@/components/elements/tooltip/Tooltip';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 import { useTranslation } from 'react-i18next';
 import { useInstallPrompt } from '@/lib/pwa';
+import { protectedClass } from '@/lib/protectedImage';
 
 type IconComponent = React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
 
@@ -100,7 +101,7 @@ export default ({ sections, open, onNavigate }: Props) => {
         <aside className={classNames('hydra-sidebar', { 'hydra-sidebar--open': open })}>
             <SpinnerOverlay visible={isLoggingOut} />
             <Link to={'/'} className={'hydra-sidebar-logo'} onClick={onNavigate}>
-                <img src={branding.logo} alt={name} />
+                <img src={branding.logo} alt={name} className={protectedClass(branding)} draggable={false} />
             </Link>
             <nav className={'hydra-nav'}>
                 {sections.map((section) => (

@@ -34,14 +34,34 @@
     --hydra-accent-900: 46 78 22;
     --hydra-accent-ink: 15 26 6;
 
+    /*
+     * Boxes and surfaces (Design > Colors & Logo > Boxes & surfaces), replaced at
+     * runtime by SurfaceService::cssVariables(). Tailwind's bg-gray-600…900 use
+     * --hydra-surface-*, border-gray-600…800 use --hydra-line-*, both multiplied
+     * with the alpha values. --hydra-backdrop is the glass blur of the boxes.
+     */
+    --hydra-surface-900: 20 20 20;
+    --hydra-surface-800: 31 31 31;
+    --hydra-surface-700: 38 38 38;
+    --hydra-surface-650: 45 45 45;
+    --hydra-surface-600: 58 58 58;
+    --hydra-line: 46 46 46;
+    --hydra-line-600: 58 58 58;
+    --hydra-line-700: 38 38 38;
+    --hydra-line-800: 31 31 31;
+    --hydra-surface-alpha: 1;
+    --hydra-float-alpha: 1;
+    --hydra-line-alpha: 1;
+    --hydra-backdrop: none;
+
     /* Semantic surfaces, modelled after the Sylas panel. */
     --hydra-bg: rgb(var(--hydra-gray-900));
     --hydra-pattern: url("/hydra/hex-dark.svg");
-    --hydra-panel: rgb(var(--hydra-gray-800));
-    --hydra-panel-2: rgb(var(--hydra-gray-700));
-    --hydra-panel-3: rgb(45 45 45);
-    --hydra-border: rgb(46 46 46);
-    --hydra-border-strong: rgb(var(--hydra-gray-600));
+    --hydra-panel: rgb(var(--hydra-surface-800) / var(--hydra-surface-alpha));
+    --hydra-panel-2: rgb(var(--hydra-surface-700) / var(--hydra-surface-alpha));
+    --hydra-panel-3: rgb(var(--hydra-surface-650) / var(--hydra-surface-alpha));
+    --hydra-border: rgb(var(--hydra-line) / var(--hydra-line-alpha));
+    --hydra-border-strong: rgb(var(--hydra-line-600) / var(--hydra-line-alpha));
     --hydra-text: rgb(var(--hydra-gray-100));
     --hydra-text-2: rgb(var(--hydra-gray-200));
     --hydra-muted: rgb(var(--hydra-gray-400));
@@ -77,3 +97,44 @@
 ::-webkit-scrollbar-corner { background: transparent; }
 
 ::selection { background: rgb(var(--hydra-accent-500) / 0.35); }
+
+/*
+ * Glass style: the boxes blur what lies behind them. --hydra-backdrop is "none"
+ * unless a blur is configured (Design > Colors & Logo > Boxes & surfaces).
+ */
+.hydra-sidebar,
+.hydra-topbar,
+.hydra-card,
+.hydra-box,
+.hydra-dashboard-hero,
+.hydra-dashboard-pool,
+.hydra-profile-card,
+.hydra-glass,
+.hydra-admin .content-header,
+.hydra-admin .box,
+.hydra-admin .small-box,
+.hydra-admin .nav-tabs-custom,
+.hydra-admin .callout,
+.hydra-usage-card,
+.hydra-addon-card {
+    -webkit-backdrop-filter: var(--hydra-backdrop);
+    backdrop-filter: var(--hydra-backdrop);
+}
+
+/*
+ * Dialogs, dropdowns and tooltips lie on top of other content and stay mostly
+ * opaque (--hydra-float-alpha) so they remain readable with a glass style.
+ */
+.hydra-float,
+.hydra-admin .modal-content,
+.hydra-admin .dropdown-menu,
+.select2-dropdown,
+.tooltip-inner,
+.popover {
+    --hydra-surface-alpha: var(--hydra-float-alpha);
+    --hydra-panel: rgb(var(--hydra-surface-800) / var(--hydra-float-alpha));
+    --hydra-panel-2: rgb(var(--hydra-surface-700) / var(--hydra-float-alpha));
+    --hydra-panel-3: rgb(var(--hydra-surface-650) / var(--hydra-float-alpha));
+    -webkit-backdrop-filter: var(--hydra-backdrop);
+    backdrop-filter: var(--hydra-backdrop);
+}

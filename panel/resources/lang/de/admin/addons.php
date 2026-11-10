@@ -417,6 +417,24 @@ return [
         'notice' => 'Die Übertragung macht der Node des Servers. Adressen in privaten Netzen sind gesperrt, damit niemand das interne Netz des Nodes erreicht. Die Zugangsdaten werden nicht gespeichert. Wer importieren darf, regelt das Unterbenutzer-Recht „Server importieren“.',
     ],
 
+    'exporter' => [
+        'name' => 'Server-Export',
+        'description' => 'Nutzer laden die Dateien ihres Servers per SFTP auf einen anderen Server hoch, z. B. zu einem anderen Hoster oder als Sicherung. Mit Fortschritt und Protokoll, der Knopf steht in den Einstellungen des Servers.',
+        'notice' => 'Die Übertragung macht der Node des Servers. Adressen in privaten Netzen sind gesperrt. Die Zugangsdaten werden nicht gespeichert. Wer exportieren darf, regelt das Unterbenutzer-Recht „Server exportieren“; Unterbenutzer mit Ordnerbeschränkung können nicht exportieren.',
+    ],
+
+    'gamesupport' => [
+        'name' => 'Gamesupport',
+        'description' => 'Supportbereich unter Community Management: Server per UUID öffnen und in einem Tab Konsole, Nutzung und Power-Knöpfe sehen, ohne den Server selbst zu öffnen. Tabs schließen sich nach 4 Stunden.',
+        'notice' => 'Wer den Bereich nutzen darf, regeln die Admin-Rechte „Gamesupport: Ansehen“ und „Gamesupport: Steuern“. Der Besitzer sieht im Aktivitätslog, wenn sein Server geöffnet wurde.',
+    ],
+
+    'link_download' => [
+        'name' => 'Download von Link',
+        'description' => 'Knopf „Von Link herunterladen“ im Dateimanager: Der Node holt eine Datei von einem direkten Link, z. B. ein Backup oder Plugin, in einen frei wählbaren Ordner des Servers. Mit Fortschritt und Abbrechen.',
+        'notice' => 'Höchstens 3 Downloads gleichzeitig pro Server, Weiterleitungen werden verfolgt. Adressen in privaten Netzen sind gesperrt. Nötig ist das Unterbenutzer-Recht „Dateien anlegen“ im Zielordner.',
+    ],
+
     'ports' => [
         'name' => 'Automatische Ports',
         'description' => 'Server bekommen die zusätzlichen Ports, die ihr Egg braucht, automatisch, z. B. Raw-, Query- und RCON-Port von ARK. Die Portnummern werden in die Startvariablen eingetragen.',

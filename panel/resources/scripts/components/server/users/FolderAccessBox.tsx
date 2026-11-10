@@ -12,6 +12,8 @@ interface Props {
     isEditable: boolean;
     // Folders the logged in user is limited to, empty for the whole server.
     ownPaths: string[];
+    // Hydra: other help text, e.g. for roles.
+    help?: string;
     className?: string;
 }
 
@@ -19,7 +21,7 @@ interface Props {
  * Hydra: lets the server owner limit a subuser to certain folders, e.g. a
  * builder to "plugins/WorldEdit" and "world/build".
  */
-const FolderAccessBox = ({ isEditable, ownPaths, className }: Props) => {
+const FolderAccessBox = ({ isEditable, ownPaths, help, className }: Props) => {
     const { t } = useTranslation('client/server');
     const [{ value: restricted }, , { setValue: setRestricted }] = useField<boolean>('restrictFolders');
     const [{ value: paths }, { error }, { setValue: setPaths }] = useField<string[]>('allowedPaths');
@@ -29,7 +31,7 @@ const FolderAccessBox = ({ isEditable, ownPaths, className }: Props) => {
 
     return (
         <TitledGreyBox title={<p css={tw`text-sm uppercase`}>{t('users.folders')}</p>} className={className}>
-            <p css={tw`text-sm text-neutral-400 mb-4`}>{t('users.folders_help')}</p>
+            <p css={tw`text-sm text-neutral-400 mb-4`}>{help || t('users.folders_help')}</p>
             <div css={tw`flex flex-wrap gap-6 mb-4`}>
                 <label css={tw`flex items-center gap-2 text-sm cursor-pointer`}>
                     <Input

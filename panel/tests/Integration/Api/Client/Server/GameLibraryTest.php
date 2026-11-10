@@ -162,4 +162,44 @@ class GameLibraryTest extends ClientApiIntegrationTestCase
         config()->set('hydra.addons.games.enabled', false);
         $this->actingAs($owner)->getJson($this->link($server, '/games'))->assertNotFound();
     }
+
+    public function testGamesNeedTheirMinimumResources(): void
+    {
+        [$user, $server] = $this->generateTestAccount();
+        $server->forceFill(['cpu' => 100, 'memory' => 2048])->save();
+        $egg = $this->otherEgg($server);
+        $egg->forceFill(['hydra_min_cpu' => 200, 'hydra_min_memory' => 4096])->save();
+
+        $games = $this->actingAs($user)->getJson($this->link($server, '/games'))->assertOk()->json();
+        $listed = collect($games['nests'])->flatMap(fn ($nest) => $nest['eggs'])->firstWhere('id', $egg->id);
+        $this->assertSame(['cpu' => 200, 'memory' => 4096], $listed['requirements']);
+        $this->assertSame(['needed' => 200, 'available' => 100], $listed['missing']['cpu']);
+        $this->assertSame(['needed' => 4096, 'available' => 2048], $listed['missing']['memory']);
+
+        // The switch is refused as well, not only hidden in the browser.
+        $this->actingAs($user)->postJson($this->link($server, '/games/switch'), ['egg' => $egg->id, 'keep' => false])
+            ->assertStatus(400);
+        $this->assertSame($server->egg_id, $server->refresh()->egg_id);
+        $this->assertEmpty($this->actions);
+
+        // Unlimited servers always meet the minimum.
+        $server->forceFill(['cpu' => 0, 'memory' => 0])->save();
+        $games = $this->actingAs($user)->getJson($this->link($server, '/games'))->assertOk()->json();
+        $listed = collect($games['nests'])->flatMap(fn ($nest) => $nest['eggs'])->firstWhere('id', $egg->id);
+        $this->assertSame([], (array) $listed['missing']);
+    }
+
+    public function testAdminSetsTheMinimumResources(): void
+    {
+        $admin = \Pterodactyl\Models\User::factory()->admin()->create();
+        /** @var Egg $egg */
+        $egg = Egg::query()->firstOrFail();
+
+        $this->actingAs($admin)->patch("/admin/design/eggs/$egg->id/requirements", ['min_cpu' => 150, 'min_memory' => 0])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+        $egg->refresh();
+        $this->assertSame(150, (int) $egg->hydra_min_cpu);
+        $this->assertNull($egg->hydra_min_memory);
+    }
 }

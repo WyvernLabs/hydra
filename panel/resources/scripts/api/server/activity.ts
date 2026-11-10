@@ -7,7 +7,20 @@ import useFilteredObject from '@/plugins/useFilteredObject';
 import { useServerSWRKey } from '@/plugins/useSWRKey';
 import { ServerContext } from '@/state/server';
 
-export type ActivityLogFilters = QueryBuilderParams<'ip' | 'event', 'timestamp'>;
+// Hydra: "actor" (user ID), "action" (exact event) and "search" (free text) filter the log.
+export type ActivityLogFilters = QueryBuilderParams<'ip' | 'event' | 'actor' | 'action' | 'search', 'timestamp'>;
+
+export interface ActivityFilterOptions {
+    actors: { id: number; username: string }[];
+    events: { event: string; label: string }[];
+}
+
+// Hydra: users and actions that appear in the log of the server.
+export const getActivityFilterOptions = (uuid: string): Promise<ActivityFilterOptions> =>
+    http.get(`/api/client/servers/${uuid}/activity/filters`).then(({ data }) => ({
+        actors: data.actors || [],
+        events: data.events || [],
+    }));
 
 const useActivityLogs = (
     filters?: ActivityLogFilters,

@@ -472,6 +472,14 @@ a { color: rgb(var(--hydra-accent-400)); }
     color: var(--hydra-on-accent);
 }
 
+/* Layout of the server cards (list, 2 or 3 columns), icons only. */
+.hydra-layout-switch { margin-left: auto; }
+.hydra-layout-switch button { display: inline-flex; align-items: center; padding: 7px 10px; }
+.hydra-dashboard-hero > .hydra-layout-switch + .hydra-segmented { margin-left: -12px; }
+
+/* On phones every layout is one column anyway. */
+@media (max-width: 767px) { .hydra-layout-switch { display: none; } }
+
 /* ---------------------------------------------------------------- Boxes (client area) */
 
 .hydra-section-title {
@@ -1308,3 +1316,37 @@ a { color: rgb(var(--hydra-accent-400)); }
 .hydra-status-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-bottom: 16px; font-size: 12px; color: var(--hydra-text); opacity: 0.8; }
 .hydra-status-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .hydra-status-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #475569; }
+
+/*
+ * Protected pictures (logo, egg pictures; Design > Colors & Logo). The picture
+ * itself never receives the pointer: right click, dragging and long press hit
+ * the element behind it, so the browser offers no "save image".
+ */
+img.hydra-protected {
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+}
+
+/* Select / deselect every permission (roles and subusers). */
+.hydra-permission-bulk {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--hydra-panel-2);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius-sm);
+    color: var(--hydra-text-2);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+}
+.hydra-permission-bulk:hover:not(:disabled) { border-color: rgb(var(--hydra-accent-500)); color: var(--hydra-text); }
+.hydra-permission-bulk:disabled { opacity: .45; cursor: default; }
+
+/* Game library: a game the server lacks CPU or memory for (Design > Eggs). */
+.hydra-game-locked { filter: grayscale(.4) sepia(1) saturate(4) hue-rotate(-35deg) brightness(.55); }

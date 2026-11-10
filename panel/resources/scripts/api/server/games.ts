@@ -2,11 +2,16 @@ import http from '@/api/http';
 
 // Hydra: game library (addon "games").
 
+// Hydra: what a server lacks for an egg (Design > Eggs), CPU in % and memory in MiB.
+export type GameMissing = Partial<Record<'cpu' | 'memory', { needed: number; available: number }>>;
+
 export interface GameEgg {
     id: number;
     name: string;
     description: string | null;
     image: string | null;
+    requirements: { cpu: number | null; memory: number | null };
+    missing: GameMissing;
 }
 
 export interface GameNest {
@@ -20,6 +25,7 @@ export interface GameProfile {
     name: string;
     egg: string | null;
     image: string | null;
+    missing: GameMissing;
     size: number;
     createdAt: Date;
 }
@@ -38,7 +44,11 @@ export const getGameLibrary = async (uuid: string): Promise<GameLibrary> => {
         current: data.current,
         maxProfiles: data.max_profiles,
         nests: data.nests,
-        profiles: (data.profiles || []).map((p: any) => ({ ...p, createdAt: new Date(p.created_at) })),
+        profiles: (data.profiles || []).map((p: any) => ({
+            ...p,
+            missing: p.missing || {},
+            createdAt: new Date(p.created_at),
+        })),
     };
 };
 

@@ -43,6 +43,9 @@ export interface SiteSettings {
     games: boolean;
     // Hydra: import of another server over SFTP; "profiles": current files can be kept as game profile.
     importer: { enabled: boolean; profiles: boolean };
+    // Hydra: export to another server over SFTP and downloads from links (addons).
+    exporter: { enabled: boolean };
+    linkDownload: { enabled: boolean };
     // Hydra: installable app; "tabs" opens pages in tabs inside the app window.
     pwa: { enabled: boolean; tabs: boolean };
     // Hydra: resource pool with the user's own servers (addon).
@@ -60,6 +63,8 @@ export interface SiteSettings {
         accent: string;
         logo: string;
         favicon: string;
+        // Hydra: logo and egg pictures shielded against saving (Design > Colors & Logo).
+        protect: boolean;
     };
     profileUploadLimit: number;
     links: PanelLinkItem[];

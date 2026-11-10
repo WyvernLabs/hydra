@@ -77,6 +77,8 @@ class Permission extends Model
     public const ACTION_SETTINGS_VERSION = 'settings.version';
     // Hydra: copy the files of another server over SFTP (addon "importer").
     public const ACTION_SETTINGS_IMPORT = 'settings.import';
+    // Hydra: upload the files of the server to another server over SFTP (addon "exporter").
+    public const ACTION_SETTINGS_EXPORT = 'settings.export';
 
     public const ACTION_ACTIVITY_READ = 'activity.read';
 
@@ -222,6 +224,7 @@ class Permission extends Model
                 'game' => 'Allows a user to switch the game of this server and to load or delete game profiles. Danger: the files of the server are replaced.',
                 'version' => 'Allows a user to install another Minecraft software or version on this server. Danger: files of the server can be replaced or deleted.',
                 'import' => 'Allows a user to copy the files of another server over SFTP onto this server. Danger: files of the server can be replaced or deleted.',
+                'export' => 'Allows a user to upload all files of this server to another server over SFTP. Danger: everything on the server, including passwords in configuration files, leaves the panel.',
             ],
         ],
 

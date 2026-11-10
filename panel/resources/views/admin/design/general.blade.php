@@ -47,6 +47,92 @@
             </div>
         </div>
         <div class="row">
+            <div class="col-xs-12">
+                <div class="box" id="hydraSurfaces">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">{{ __('admin/design.surfaces.title') }}</h3>
+                    </div>
+                    <div class="box-body">
+                        <p class="text-muted">{{ __('admin/design.surfaces.help') }}</p>
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div class="form-group">
+                                    <label class="control-label">{{ __('admin/design.general.presets') }}</label>
+                                    <div class="hydra-surface-presets">
+                                        @foreach($surfacePresets as $key => $preset)
+                                            <button type="button" class="hydra-surface-preset" data-surface-preset='@json($preset)'>
+                                                <span class="hydra-surface-preset-swatch" style="background: {{ $preset['box'] }}; border-color: {{ $preset['border'] }};">
+                                                    <span style="background: {{ $preset['inner'] }};"></span>
+                                                </span>
+                                                {{ __('admin/design.surfaces.presets.' . $key) }}
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    @foreach(['box', 'inner', 'border'] as $key)
+                                        <div class="form-group col-sm-4 col-md-12 col-lg-4">
+                                            <label class="control-label">{{ __('admin/design.surfaces.' . $key) }}</label>
+                                            <div class="hydra-color-field">
+                                                <input type="color" value="{{ old('surface.' . $key, $surfaces[$key]) }}" data-surface-picker="{{ $key }}" />
+                                                <input type="text" class="form-control" name="surface[{{ $key }}]" value="{{ old('surface.' . $key, $surfaces[$key]) }}" pattern="#[0-9a-fA-F]{6}" maxlength="7" data-surface="{{ $key }}" />
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <p class="text-muted"><small>{{ __('admin/design.surfaces.colors_help') }}</small></p>
+                                @foreach(['opacity' => '%', 'border_opacity' => '%', 'blur' => 'px'] as $key => $unit)
+                                    <div class="form-group">
+                                        <label class="control-label">
+                                            {{ __('admin/design.surfaces.' . $key) }}
+                                            <span class="text-muted"><span data-surface-value="{{ $key }}">{{ old('surface.' . $key, $surfaces[$key]) }}</span> {{ $unit }}</span>
+                                        </label>
+                                        <input type="range" name="surface[{{ $key }}]" min="{{ $surfaceLimits[$key][0] }}" max="{{ $surfaceLimits[$key][1] }}" value="{{ old('surface.' . $key, $surfaces[$key]) }}" data-surface="{{ $key }}" />
+                                        <p class="text-muted no-margin"><small>{{ __('admin/design.surfaces.' . $key . '_help', ['min' => \Pterodactyl\Services\Hydra\SurfaceService::MIN_FLOAT_OPACITY]) }}</small></p>
+                                    </div>
+                                @endforeach
+                                <button type="button" class="btn btn-sm btn-default" data-surface-preset='@json($surfaceDefaults)'>
+                                    <i class="fa fa-undo"></i> {{ __('admin/design.surfaces.reset') }}
+                                </button>
+                            </div>
+                            <div class="col-md-7">
+                                <label class="control-label">{{ __('admin/design.surfaces.preview') }}</label>
+                                <div class="hydra-surface-stage" data-surface-stage>
+                                    <div class="hydra-surface-stage-bg" @if($previewBackground['image']) style="background: url('{{ $previewBackground['image'] }}') center / cover; filter: blur({{ $previewBackground['blur'] }}px);" @endif></div>
+                                    <div class="hydra-surface-stage-dim" style="opacity: {{ $previewBackground['dim'] / 100 }};"></div>
+                                    <div class="hydra-surface-stage-content">
+                                        <div class="pv-sidebar">
+                                            <img src="{{ $branding->logoUrl() }}" alt="" />
+                                            <span class="pv-nav is-active"></span>
+                                            <span class="pv-nav"></span>
+                                            <span class="pv-nav"></span>
+                                            <span class="pv-nav"></span>
+                                        </div>
+                                        <div class="pv-main">
+                                            <div class="pv-box">
+                                                <div class="pv-box-header">{{ __('admin/design.surfaces.preview_box') }}</div>
+                                                <div class="pv-box-body">
+                                                    <div class="pv-row"><span class="pv-dot"></span>{{ __('admin/design.surfaces.preview_row') }}<small>2 / 4 GB</small></div>
+                                                    <div class="pv-row"><span class="pv-dot is-off"></span>{{ __('admin/design.surfaces.preview_row') }} 2<small>0 / 2 GB</small></div>
+                                                    <div class="pv-input">{{ __('admin/design.surfaces.preview_input') }}</div>
+                                                    <span class="pv-button">{{ __('admin/common.actions.save') }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="pv-box pv-box--small">
+                                                <div class="pv-box-header">{{ __('admin/design.surfaces.preview_small') }}</div>
+                                                <div class="pv-box-body"><div class="pv-bar"><span></span></div></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-muted"><small>{{ __('admin/design.surfaces.preview_help') }}</small></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
             <div class="col-md-6">
                 <div class="box">
                     <div class="box-header with-border">
@@ -62,11 +148,17 @@
                             <p class="text-muted"><small>{{ __('admin/design.general.logo_help') }}</small></p>
                         </div>
                         @if($hasCustomLogo)
-                            <div class="checkbox checkbox-primary no-margin-bottom">
+                            <div class="checkbox checkbox-primary">
                                 <input id="resetLogo" name="reset_logo" type="checkbox" value="1" />
                                 <label for="resetLogo">{{ __('admin/design.general.logo_reset') }}</label>
                             </div>
                         @endif
+                        <input type="hidden" name="protect_images" value="0" />
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input id="protectImages" name="protect_images" type="checkbox" value="1" @if(old('protect_images', $branding->protectsImages())) checked @endif />
+                            <label for="protectImages">{{ __('admin/design.general.protect_images') }}</label>
+                        </div>
+                        <p class="text-muted no-margin"><small>{{ __('admin/design.general.protect_images_help') }}</small></p>
                     </div>
                 </div>
             </div>
@@ -127,6 +219,76 @@
             document.querySelectorAll('.hydra-swatch').forEach(function (swatch) {
                 swatch.addEventListener('click', function () { apply(swatch.dataset.color); });
             });
+        })();
+
+        // Boxes & surfaces: keeps pickers, text fields and sliders in sync and
+        // shows the result in the preview (same math as SurfaceService).
+        (function () {
+            var root = document.getElementById('hydraSurfaces');
+            if (!root) return;
+            var stage = root.querySelector('[data-surface-stage]');
+            var valid = /^#[0-9a-fA-F]{6}$/;
+            var minFloat = {{ \Pterodactyl\Services\Hydra\SurfaceService::MIN_FLOAT_OPACITY }};
+
+            function field(key) { return root.querySelector('[data-surface="' + key + '"]'); }
+
+            function rgb(hex, ratio) {
+                var target = ratio >= 0 ? 255 : 0, amount = Math.abs(ratio || 0);
+                return [1, 3, 5].map(function (i) {
+                    var channel = parseInt(hex.substr(i, 2), 16);
+                    return Math.round(channel + (target - channel) * amount);
+                }).join(' ');
+            }
+
+            function update() {
+                var colors = {};
+                ['box', 'inner', 'border'].forEach(function (key) {
+                    var value = field(key).value.trim();
+                    if (valid.test(value)) {
+                        root.querySelector('[data-surface-picker="' + key + '"]').value = value.toLowerCase();
+                    }
+                    colors[key] = valid.test(value) ? value : root.querySelector('[data-surface-picker="' + key + '"]').value;
+                });
+                ['opacity', 'border_opacity', 'blur'].forEach(function (key) {
+                    root.querySelector('[data-surface-value="' + key + '"]').textContent = field(key).value;
+                });
+
+                var alpha = field('opacity').value / 100;
+                var blur = parseInt(field('blur').value, 10);
+                var vars = {
+                    '--pv-box': rgb(colors.box, 0),
+                    '--pv-inner': rgb(colors.inner, 0),
+                    '--pv-inner-2': rgb(colors.inner, 0.093),
+                    '--pv-deep': rgb(colors.box, -0.355),
+                    '--pv-line': rgb(colors.border, 0),
+                    '--pv-alpha': alpha,
+                    '--pv-float-alpha': Math.max(alpha, minFloat / 100),
+                    '--pv-line-alpha': field('border_opacity').value / 100,
+                    '--pv-backdrop': blur > 0 ? 'blur(' + blur + 'px) saturate(140%)' : 'none'
+                };
+                Object.keys(vars).forEach(function (name) { stage.style.setProperty(name, vars[name]); });
+            }
+
+            root.querySelectorAll('[data-surface-picker]').forEach(function (picker) {
+                picker.addEventListener('input', function () {
+                    field(picker.dataset.surfacePicker).value = picker.value;
+                    update();
+                });
+            });
+            root.querySelectorAll('[data-surface]').forEach(function (input) {
+                input.addEventListener('input', update);
+            });
+            root.querySelectorAll('[data-surface-preset]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    var preset = JSON.parse(button.dataset.surfacePreset);
+                    Object.keys(preset).forEach(function (key) {
+                        if (field(key)) field(key).value = preset[key];
+                    });
+                    update();
+                });
+            });
+
+            update();
         })();
     </script>
 @endsection

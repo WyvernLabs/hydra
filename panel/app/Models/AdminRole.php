@@ -42,6 +42,8 @@ class AdminRole extends Model
         'users' => ['view', 'create', 'update', 'warn', 'ban', 'pool', 'delete'],
         'roles' => ['view', 'create', 'update', 'delete', 'assign'],
         'tickets' => ['view', 'reply', 'manage', 'delete'],
+        // Hydra: game support area (addon "gamesupport").
+        'support' => ['view', 'control', 'suspend', 'reinstall', 'transfer'],
         'nests' => ['view', 'create', 'update', 'delete'],
         'eggs' => ['view', 'create', 'update', 'import', 'delete'],
     ];

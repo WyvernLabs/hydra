@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import { Form, Formik } from 'formik';
-import { array, object, string } from 'yup';
+import { array, boolean, object, string } from 'yup';
 import tw from 'twin.macro';
 import { useTranslation } from 'react-i18next';
 import { Actions, useStoreActions } from 'easy-peasy';
@@ -13,10 +13,20 @@ import FlashMessageRender from '@/components/FlashMessageRender';
 import ModalContext from '@/context/ModalContext';
 import asModal from '@/hoc/asModal';
 import PermissionList from '@/components/server/users/PermissionList';
-import { RoleValues, saveServerRole, ServerRole } from '@/api/server/users/roles';
+import { saveServerRole, ServerRole } from '@/api/server/users/roles';
+import FolderAccessBox from '@/components/server/users/FolderAccessBox';
+import { cleanPaths, coversPaths } from '@/plugins/useAllowedPaths';
 
 // Hydra: creates or changes a role of the server. Members of the role get its
-// new permissions right away.
+// new permissions and folders right away.
+
+interface Values {
+    name: string;
+    color: string;
+    permissions: string[];
+    restrictFolders: boolean;
+    allowedPaths: string[];
+}
 
 interface Props {
     role?: ServerRole;
@@ -28,6 +38,7 @@ const COLORS = ['#74c236', '#3b82f6', '#f59e0b', '#ef4444', '#a855f7', '#14b8a6'
 const RoleModal = ({ role, onSaved }: Props) => {
     const { t } = useTranslation('client/server');
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
+    const ownPaths = ServerContext.useStoreState((state) => state.server.allowedPaths);
     const { dismiss, setPropOverrides } = useContext(ModalContext);
     const { clearFlashes, clearAndAddHttpError } = useStoreActions(
         (actions: Actions<ApplicationStore>) => actions.flashes
@@ -35,10 +46,19 @@ const RoleModal = ({ role, onSaved }: Props) => {
 
     useEffect(() => () => clearFlashes('role:edit'), []);
 
-    const submit = (values: RoleValues) => {
+    const submit = (values: Values) => {
         setPropOverrides({ showSpinnerOverlay: true });
         clearFlashes('role:edit');
-        saveServerRole(uuid, values, role?.id)
+        saveServerRole(
+            uuid,
+            {
+                name: values.name,
+                color: values.color,
+                permissions: values.permissions,
+                allowedPaths: values.restrictFolders ? cleanPaths(values.allowedPaths) : [],
+            },
+            role?.id
+        )
             .then(() => {
                 onSaved();
                 dismiss();
@@ -52,15 +72,35 @@ const RoleModal = ({ role, onSaved }: Props) => {
     return (
         <Formik
             onSubmit={submit}
-            initialValues={{
-                name: role?.name || '',
-                color: role?.color || COLORS[0],
-                permissions: role?.permissions || [],
-            }}
+            initialValues={
+                {
+                    name: role?.name || '',
+                    color: role?.color || COLORS[0],
+                    permissions: role?.permissions || [],
+                    restrictFolders: (role?.allowedPaths.length || 0) > 0 || ownPaths.length > 0,
+                    allowedPaths: role?.allowedPaths.length ? role.allowedPaths : ownPaths,
+                } as Values
+            }
             validationSchema={object().shape({
                 name: string().trim().max(60).required(t('users.roles.name_required')),
                 color: string().matches(/^#[0-9a-fA-F]{6}$/),
                 permissions: array().of(string()),
+                restrictFolders: boolean(),
+                allowedPaths: array()
+                    .of(string())
+                    .when('restrictFolders', {
+                        is: true,
+                        then: array()
+                            .of(string())
+                            .test(
+                                'required',
+                                t('users.folders_required'),
+                                (value?: string[]) => cleanPaths(value || []).length > 0
+                            )
+                            .test('own', `${t('users.folders_own_only')} ${ownPaths.join(', ')}`, (value?: string[]) =>
+                                coversPaths(ownPaths, cleanPaths(value || []))
+                            ),
+                    }),
             })}
         >
             {({ values, setFieldValue }) => (
@@ -99,6 +139,12 @@ const RoleModal = ({ role, onSaved }: Props) => {
                             </div>
                         </div>
                     </div>
+                    <FolderAccessBox
+                        isEditable
+                        ownPaths={ownPaths}
+                        help={t('users.roles.folders_help')}
+                        css={tw`mt-6`}
+                    />
                     <div css={tw`my-6`}>
                         <PermissionList isEditable />
                     </div>

@@ -10,8 +10,8 @@ use Pterodactyl\Services\Hydra\BackgroundService;
 use Pterodactyl\Http\Requests\Admin\Design\BackgroundsFormRequest;
 
 /**
- * Hydra: backgrounds of the login page and the dashboard (Design >
- * Backgrounds). Those of the eggs are set under Design > Eggs.
+ * Hydra: backgrounds of the login page, the dashboard and the admin area
+ * (Design > Backgrounds). Those of the eggs are set under Design > Eggs.
  */
 class BackgroundController extends Controller
 {

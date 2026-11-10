@@ -63,7 +63,7 @@ const TransferRow = ({ transfer }: { transfer: FileTransfer }) => {
     const onClose = transfer.kind === 'upload' && running ? () => cancelTransfer(transfer.id) : undefined;
 
     return (
-        <div className={'rounded-lg border border-gray-700 bg-gray-800/95 p-3 shadow-lg backdrop-blur'}>
+        <div className={'hydra-float rounded-lg border border-gray-700 bg-gray-800/95 p-3 shadow-lg backdrop-blur'}>
             <div className={'flex items-center gap-2'}>
                 <Icon
                     className={classNames('h-4 w-4 shrink-0', {

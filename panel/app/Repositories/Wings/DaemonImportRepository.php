@@ -18,26 +18,39 @@ use Pterodactyl\Exceptions\Http\Connection\DaemonConnectionException;
 class DaemonImportRepository extends DaemonRepository
 {
     /**
+     * Path of the endpoints on the node, "export" for DaemonExportRepository.
+     */
+    protected string $kind = 'import';
+
+    /**
      * Logs in and returns the fingerprint of the host key and what is in the source folder.
      */
     public function test(array $sftp, string $source): array
     {
-        return $this->request('POST', 'import/test', ['sftp' => $sftp, 'source' => $source], 30);
+        return $this->request('POST', "$this->kind/test", ['sftp' => $sftp, 'source' => $source], 30);
     }
 
     public function start(array $sftp, string $source, string $target): void
     {
-        $this->request('POST', 'import', ['sftp' => $sftp, 'source' => $source, 'target' => $target], 30);
+        $this->request('POST', $this->kind, ['sftp' => $sftp, 'source' => $source, 'target' => $target], 30);
     }
 
     public function status(): array
     {
-        return $this->request('GET', 'import', null, 10);
+        return $this->request('GET', $this->kind, null, 10);
     }
 
     public function cancel(): void
     {
-        $this->request('DELETE', 'import', null, 10);
+        $this->request('DELETE', $this->kind, null, 10);
+    }
+
+    /**
+     * Hydra: like test(), with the target folder on the other server (export).
+     */
+    public function testTarget(array $sftp, string $source, string $target): array
+    {
+        return $this->request('POST', "$this->kind/test", ['sftp' => $sftp, 'source' => $source, 'target' => $target], 30);
     }
 
     /**
@@ -47,7 +60,7 @@ class DaemonImportRepository extends DaemonRepository
      * @throws DaemonConnectionException
      * @throws DisplayException
      */
-    private function request(string $method, string $path, ?array $json, int $timeout): array
+    protected function request(string $method, string $path, ?array $json, int $timeout): array
     {
         Assert::isInstanceOf($this->server, Server::class);
 

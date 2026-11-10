@@ -21,6 +21,7 @@ return [
         'locations' => 'Locations',
         'nodes' => 'Nodes',
         'servers' => 'Servers',
+        'support' => 'Game Support',
         'users' => 'Users',
         'roles' => 'Roles',
         'tickets' => 'Tickets',

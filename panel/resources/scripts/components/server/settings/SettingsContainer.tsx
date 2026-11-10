@@ -9,6 +9,7 @@ import Can from '@/components/elements/Can';
 import ReinstallServerBox from '@/components/server/settings/ReinstallServerBox';
 import LockdownServerBox from '@/components/server/settings/LockdownServerBox';
 import ImportServerBox from '@/components/server/settings/ImportServerBox';
+import ExportServerBox from '@/components/server/settings/ExportServerBox';
 import tw from 'twin.macro';
 import Input from '@/components/elements/Input';
 import Label from '@/components/elements/Label';
@@ -26,6 +27,7 @@ export default () => {
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
     const node = ServerContext.useStoreState((state) => state.server.data!.node);
     const importer = useStoreState((state: ApplicationStore) => state.settings.data!.importer.enabled);
+    const exporter = useStoreState((state: ApplicationStore) => state.settings.data!.exporter.enabled);
     // An import writes into every folder, which subusers limited to some folders may not.
     const restricted = ServerContext.useStoreState((state) => state.server.allowedPaths.length > 0);
     const sftp = ServerContext.useStoreState((state) => state.server.data!.sftpDetails, isEqual);
@@ -70,6 +72,12 @@ export default () => {
                     {importer && !restricted && (
                         <Can action={'settings.import'}>
                             <ImportServerBox />
+                        </Can>
+                    )}
+                    {/* Hydra: export to another server over SFTP (addon "exporter"). */}
+                    {exporter && !restricted && (
+                        <Can action={'settings.export'}>
+                            <ExportServerBox />
                         </Can>
                     )}
                     <Can action={'settings.reinstall'}>

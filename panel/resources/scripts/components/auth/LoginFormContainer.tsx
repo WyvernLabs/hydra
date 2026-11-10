@@ -5,6 +5,7 @@ import FlashMessageRender from '@/components/FlashMessageRender';
 import tw from 'twin.macro';
 import { useStoreState } from '@/state/hooks';
 import Footer from '@/components/hydra/Footer';
+import { protectedClass } from '@/lib/protectedImage';
 
 type Props = React.DetailedHTMLProps<React.FormHTMLAttributes<HTMLFormElement>, HTMLFormElement> & {
     title?: string;
@@ -18,11 +19,16 @@ const Container = styled.div`
 
 export default forwardRef<HTMLFormElement, Props>(({ title, ...props }, ref) => {
     const name = useStoreState((state) => state.settings.data!.name);
-    const logo = useStoreState((state) => state.settings.data!.branding.logo);
+    const branding = useStoreState((state) => state.settings.data!.branding);
 
     return (
         <Container>
-            <img src={logo} alt={name} className={'hydra-auth-logo'} />
+            <img
+                src={branding.logo}
+                alt={name}
+                className={`hydra-auth-logo ${protectedClass(branding)}`}
+                draggable={false}
+            />
             <FlashMessageRender css={tw`mb-2 px-1`} />
             <Form {...props} ref={ref}>
                 <div className={'hydra-card'} css={tw`w-full p-6 md:p-8`}>

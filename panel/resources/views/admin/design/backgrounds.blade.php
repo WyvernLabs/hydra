@@ -23,7 +23,7 @@
         {!! method_field('PATCH') !!}
         <div class="row">
             @foreach($backgrounds as $slot => $background)
-                <div class="col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <div class="box">
                         <div class="box-header with-border">
                             <h3 class="box-title">{{ __("admin/design.backgrounds.$slot") }}</h3>

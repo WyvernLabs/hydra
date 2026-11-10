@@ -82,6 +82,9 @@ class AssetComposer
             'games' => app(\Pterodactyl\Services\Hydra\Addons\GamesAddon::class)->enabled(),
             // Hydra: import of another server over SFTP (Design > Addons).
             'importer' => app(\Pterodactyl\Services\Hydra\Addons\ImporterAddon::class)->toArray(),
+            // Hydra: export to another server over SFTP and downloads from links (Design > Addons).
+            'exporter' => app(\Pterodactyl\Services\Hydra\Addons\ExporterAddon::class)->toArray(),
+            'linkDownload' => app(\Pterodactyl\Services\Hydra\Addons\LinkDownloadAddon::class)->toArray(),
             // Hydra: installable app with tabs (Design > Addons).
             'pwa' => app(\Pterodactyl\Services\Hydra\Addons\PwaAddon::class)->toArray(),
             // Hydra: resource pool with the user's own servers (Design > Addons).

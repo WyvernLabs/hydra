@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Prologue\Alerts\AlertsMessageBag;
 use Pterodactyl\Http\Controllers\Controller;
 use Pterodactyl\Services\Hydra\BackgroundService;
+use Pterodactyl\Services\Hydra\Games\EggRequirements;
 
 /**
  * Hydra: pictures of every egg (Design > Eggs): the background of the server
@@ -60,6 +61,23 @@ class EggImageController extends Controller
         }
 
         $this->alert->success(__('admin/design.backgrounds.saved'))->flash();
+
+        return redirect()->route('admin.design.eggs.view', $egg->id);
+    }
+
+    /**
+     * Hydra: minimum CPU and memory a server needs to switch to the egg in
+     * the game library.
+     */
+    public function requirements(Request $request, Egg $egg): RedirectResponse
+    {
+        $data = $request->validate([
+            'min_cpu' => 'nullable|integer|min:0|max:100000',
+            'min_memory' => 'nullable|integer|min:0|max:10485760',
+        ]);
+
+        EggRequirements::save($egg, $data['min_cpu'] ?? null, $data['min_memory'] ?? null);
+        $this->alert->success(__('admin/design.requirements.saved'))->flash();
 
         return redirect()->route('admin.design.eggs.view', $egg->id);
     }

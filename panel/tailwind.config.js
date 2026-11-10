@@ -26,6 +26,37 @@ const scale = (name) =>
 const gray = scale('gray');
 const accent = scale('accent');
 
+// Hydra: backgrounds and borders of boxes (Design > Colors & Logo > Boxes &
+// surfaces). bg-gray-600…900 and border-gray-600…800 use their own variables
+// and are multiplied with the configured opacity, so boxes can be made
+// translucent ("glass") without touching gray text. The lighter shades stay
+// the plain gray scale.
+const surface = (name, alpha) => ({ opacityVariable, opacityValue }) => {
+    const factor = `var(${alpha}, 1)`;
+    if (opacityValue !== undefined) {
+        return `rgb(var(${name}) / calc(${opacityValue} * ${factor}))`;
+    }
+    if (opacityVariable !== undefined) {
+        return `rgb(var(${name}) / calc(var(${opacityVariable}, 1) * ${factor}))`;
+    }
+    return `rgb(var(${name}) / ${factor})`;
+};
+
+const surfaceBackground = {
+    ...gray,
+    600: surface('--hydra-surface-600', '--hydra-surface-alpha'),
+    700: surface('--hydra-surface-700', '--hydra-surface-alpha'),
+    800: surface('--hydra-surface-800', '--hydra-surface-alpha'),
+    900: surface('--hydra-surface-900', '--hydra-surface-alpha'),
+};
+
+const surfaceBorder = {
+    ...gray,
+    600: surface('--hydra-line-600', '--hydra-line-alpha'),
+    700: surface('--hydra-line-700', '--hydra-line-alpha'),
+    800: surface('--hydra-line-800', '--hydra-line-alpha'),
+};
+
 module.exports = {
     content: [
         './resources/scripts/**/*.{js,ts,tsx}',
@@ -64,7 +95,13 @@ module.exports = {
             },
             borderColor: theme => ({
                 default: theme('colors.neutral.400', 'currentColor'),
+                gray: surfaceBorder,
+                neutral: surfaceBorder,
             }),
+            backgroundColor: {
+                gray: surfaceBackground,
+                neutral: surfaceBackground,
+            },
         },
     },
     plugins: [

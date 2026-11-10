@@ -52,6 +52,33 @@ class BackgroundTest extends HttpTestCase
         $this->assertFileDoesNotExist($path);
     }
 
+    public function testAdminAreaHasItsOwnBackground(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $service = $this->app->make(BackgroundService::class);
+
+        $this->actingAs($admin)->post('/admin/design/backgrounds', $this->appearance([
+            'bg_admin_image' => UploadedFile::fake()->createWithContent('admin.gif', base64_decode(self::GIF)),
+            'bg_admin_blur' => 6,
+            'bg_admin_dim' => 30,
+        ]))->assertSessionHasNoErrors()->assertRedirect();
+
+        $admin_bg = $service->forSlot('admin');
+        $this->assertStringStartsWith('/backgrounds/admin-', $admin_bg['image']);
+        $this->assertSame([6, 30], [$admin_bg['blur'], $admin_bg['dim']]);
+        // The other slots are untouched.
+        $this->assertSame(['image' => null, 'blur' => 0, 'dim' => 0], $service->forSlot('dashboard'));
+
+        $html = view('partials.hydra.backdrop', ['background' => $admin_bg])->render();
+        $this->assertStringContainsString('hydra-backdrop-layer', $html);
+        $this->assertStringContainsString($admin_bg['image'], $html);
+        $this->assertStringContainsString('blur(6px)', $html);
+
+        $this->actingAs($admin)->post('/admin/design/backgrounds', $this->appearance(['reset_background' => 'admin']))->assertRedirect();
+        $this->assertSame(['image' => null, 'blur' => 0, 'dim' => 0], $service->forSlot('admin'));
+        $this->assertSame('', trim(view('partials.hydra.backdrop', ['background' => $service->forSlot('admin')])->render()));
+    }
+
     public function testValuesAreLimited(): void
     {
         $admin = User::factory()->admin()->create();

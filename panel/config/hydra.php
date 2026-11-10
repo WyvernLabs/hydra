@@ -17,6 +17,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | News
+    |--------------------------------------------------------------------------
+    |
+    | Changelog shown on the admin overview (resources/hydra/changelog.json of
+    | the source repository). Set HYDRA_NEWS_URL to an empty value to only
+    | show the news bundled with the installed version.
+    |
+    */
+    'news' => [
+        'url' => env('HYDRA_NEWS_URL', 'https://raw.githubusercontent.com/WyvernLabs/hydra/main/panel/resources/hydra/changelog.json'),
+        'interval' => 10,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Hydra Branding
     |--------------------------------------------------------------------------
     |
@@ -95,6 +110,12 @@ return [
     |               are offline, starting, stopping or suspended ("states", JSON).
     | importer:     users copy the files of another server over SFTP onto
     |               theirs (settings page of the server).
+    | exporter:     users upload the files of their server to another server
+    |               over SFTP (settings page of the server).
+    | link_download: "Download from link" in the file manager, the node fetches
+    |               a file from a direct link into a folder of the server.
+    | gamesupport:  support area in the admin area: open a server by its UUID
+    |               in a tab with console, usage and power buttons (4 hours).
     | ports:        servers get the additional ports of their egg automatically
     |               (eggs.hydra_ports, set on the egg page).
     | player_stats: players online on Minecraft Java servers of the "eggs"
@@ -189,6 +210,15 @@ return [
             'states' => null,
         ],
         'importer' => [
+            'enabled' => true,
+        ],
+        'exporter' => [
+            'enabled' => true,
+        ],
+        'link_download' => [
+            'enabled' => true,
+        ],
+        'gamesupport' => [
             'enabled' => true,
         ],
         'ports' => [

@@ -75,7 +75,8 @@ class SubuserController extends ClientApiController
             $this->getDefaultPermissions($request, $role)
         );
 
-        $paths = $this->getAllowedPaths($request);
+        // Hydra: a role brings its folders too.
+        $paths = $role ? $role->paths() : $this->getAllowedPaths($request);
         if (!empty($paths) || $role) {
             $this->repository->update($response->id, array_filter([
                 'allowed_paths' => empty($paths) ? null : $paths,
@@ -120,7 +121,7 @@ class SubuserController extends ClientApiController
         sort($current);
 
         // Hydra: folders are only changed when the request contains them.
-        $paths = $request->has('allowed_paths') ? ($this->getAllowedPaths($request) ?? []) : null;
+        $paths = $role ? $role->paths() : ($request->has('allowed_paths') ? ($this->getAllowedPaths($request) ?? []) : null);
         $currentPaths = AllowedPaths::clean($subuser->allowed_paths ?? []);
         $pathsChanged = !is_null($paths) && $paths !== $currentPaths;
 
@@ -215,6 +216,7 @@ class SubuserController extends ClientApiController
         $role = HydraServerRole::query()->where('server_id', $server->id)->find((int) $request->input('role'))
             ?? throw new NotFoundHttpException(__('server/users.role_not_found'));
         $this->roles->assertAssignable($request->user(), $server, $role->permissions);
+        $this->roles->assertPathsAssignable($request->user(), $server, $role->paths());
 
         return $role;
     }

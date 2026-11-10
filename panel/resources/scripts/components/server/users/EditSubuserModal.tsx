@@ -20,7 +20,7 @@ import { useServerRoles } from '@/api/server/users/roles';
 import ModalContext from '@/context/ModalContext';
 import { useTranslation } from 'react-i18next';
 import FolderAccessBox from '@/components/server/users/FolderAccessBox';
-import { coversPaths, normalizePath } from '@/plugins/useAllowedPaths';
+import { cleanPaths, coversPaths } from '@/plugins/useAllowedPaths';
 
 type Props = {
     subuser?: Subuser;
@@ -34,12 +34,6 @@ interface Values {
     restrictFolders: boolean;
     allowedPaths: string[];
 }
-
-// Hydra: the folders from the form, cleaned up; "/" means the whole server.
-const cleanPaths = (paths: string[]): string[] =>
-    Array.from(new Set(paths.filter((p) => p.trim().length > 0).map((p) => normalizePath(p.trim())))).filter(
-        (p) => p !== '/'
-    );
 
 // Hydra: a role brings its permissions; own permissions are ticked one by one.
 const RolePicker = ({ isEditable }: { isEditable: boolean }) => {
@@ -59,7 +53,12 @@ const RolePicker = ({ isEditable }: { isEditable: boolean }) => {
                 onChange={(event) => {
                     const role = roles.find((item) => String(item.id) === event.currentTarget.value);
                     setFieldValue('role', event.currentTarget.value);
-                    if (role) setFieldValue('permissions', role.permissions);
+                    if (role) {
+                        // The role brings its permissions and folders.
+                        setFieldValue('permissions', role.permissions);
+                        setFieldValue('restrictFolders', role.allowedPaths.length > 0);
+                        setFieldValue('allowedPaths', role.allowedPaths);
+                    }
                 }}
             >
                 <option value={''}>{t('users.roles.own')}</option>
@@ -78,6 +77,13 @@ const RolePermissions = ({ isEditable }: { isEditable: boolean }) => {
     const { values } = useFormikContext<Values>();
 
     return <PermissionList isEditable={isEditable && !values.role} />;
+};
+
+// Hydra: with a role the folders come from it as well.
+const RoleFolders = ({ isEditable, ownPaths }: { isEditable: boolean; ownPaths: string[] }) => {
+    const { values } = useFormikContext<Values>();
+
+    return <FolderAccessBox isEditable={isEditable && !values.role} ownPaths={ownPaths} css={tw`mt-6`} />;
 };
 
 const EditSubuserModal = ({ subuser }: Props) => {
@@ -195,8 +201,8 @@ const EditSubuserModal = ({ subuser }: Props) => {
                         />
                     </div>
                 )}
-                <FolderAccessBox isEditable={canEditUser} ownPaths={ownPaths} css={tw`mt-6`} />
                 <RolePicker isEditable={canEditUser} />
+                <RoleFolders isEditable={canEditUser} ownPaths={ownPaths} />
                 <div css={tw`my-6`}>
                     <RolePermissions isEditable={canEditUser} />
                 </div>

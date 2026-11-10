@@ -14,6 +14,7 @@ export enum SocketEvent {
     HYDRA_FILE_PROGRESS = 'hydra file progress',
     HYDRA_BACKUP_PROGRESS = 'hydra backup progress',
     HYDRA_IMPORT_PROGRESS = 'hydra import progress',
+    HYDRA_EXPORT_PROGRESS = 'hydra export progress',
 }
 
 export enum SocketRequest {

@@ -295,6 +295,41 @@ class DaemonFileRepository extends DaemonRepository
      *
      * @throws DaemonConnectionException
      */
+    /**
+     * Hydra: running downloads with their progress and those that ended in
+     * the last minutes with their result.
+     *
+     * @throws DaemonConnectionException
+     */
+    public function pulls(): array
+    {
+        Assert::isInstanceOf($this->server, Server::class);
+
+        try {
+            $response = $this->getHttpClient()->get(sprintf('/api/servers/%s/files/pull', $this->server->uuid), ['timeout' => 10]);
+        } catch (TransferException $exception) {
+            throw new DaemonConnectionException($exception);
+        }
+
+        return json_decode($response->getBody()->__toString(), true) ?? [];
+    }
+
+    /**
+     * Hydra: stops a running download.
+     *
+     * @throws DaemonConnectionException
+     */
+    public function cancelPull(string $download): void
+    {
+        Assert::isInstanceOf($this->server, Server::class);
+
+        try {
+            $this->getHttpClient()->delete(sprintf('/api/servers/%s/files/pull/%s', $this->server->uuid, $download), ['timeout' => 10]);
+        } catch (TransferException $exception) {
+            throw new DaemonConnectionException($exception);
+        }
+    }
+
     public function pull(string $url, ?string $directory, array $params = []): ResponseInterface
     {
         Assert::isInstanceOf($this->server, Server::class);

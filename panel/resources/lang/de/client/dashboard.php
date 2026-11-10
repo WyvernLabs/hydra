@@ -4,6 +4,12 @@ return [
     'title' => 'Server',
     'my_servers' => 'Meine Server',
     'others_servers' => 'Server von anderen',
+    'layout' => [
+        'label' => 'Ansicht der Serverliste',
+        'list' => 'Liste untereinander',
+        'grid2' => '2 Spalten',
+        'grid3' => '3 Spalten',
+    ],
     'unknown_owner' => 'Unbekannter Besitzer',
     'server_count_one' => 'In dieser Ansicht ist 1 Server verfügbar.',
     'server_count' => 'In dieser Ansicht sind :count Server verfügbar.',

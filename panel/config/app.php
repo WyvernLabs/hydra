@@ -6,11 +6,14 @@ return [
     |--------------------------------------------------------------------------
     | Application Version
     |--------------------------------------------------------------------------
-    | This value is set when creating a Pterodactyl release. You should not
-    | change this value if you are not maintaining your own internal versions.
+    | Hydra: version and build of this release. Both must match the newest
+    | entry of resources/hydra/changelog.json (checked by NewsTest). The build
+    | is the running number of the release commit (git rev-list --count HEAD).
     */
 
-    'version' => '1.0.0-dev',
+    'version' => '1.6.0',
+
+    'build' => 59,
 
     /*
     |--------------------------------------------------------------------------

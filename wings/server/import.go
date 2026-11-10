@@ -45,6 +45,9 @@ type importJob struct {
 	// Files copied since the last event.
 	lines []string
 	last  time.Time
+	// Hydra: event the progress is sent as, ImportProgressEvent when empty
+	// (exports use the same job with ExportProgressEvent).
+	event string
 }
 
 var imports = struct {
@@ -282,7 +285,11 @@ func (j *importJob) publish(s *Server) {
 	}
 	j.lines = nil
 	j.last = time.Now()
-	s.Events().Publish(ImportProgressEvent, map[string]interface{}{
+	event := j.event
+	if event == "" {
+		event = ImportProgressEvent
+	}
+	s.Events().Publish(event, map[string]interface{}{
 		"status":  j.status,
 		"lines":   lines,
 		"skipped": skipped,

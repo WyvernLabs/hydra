@@ -115,3 +115,96 @@ func deleteServerImport(c *gin.Context) {
 	middleware.ExtractServer(c).CancelImport()
 	c.Status(http.StatusNoContent)
 }
+
+// Hydra: export of the server's files to another server over SFTP (addon
+// "exporter"). Same request as an import: "source" is the folder on this
+// server, "target" the folder on the other one.
+
+// postServerExportTest logs in to the other server, trusting any host key,
+// and returns the fingerprint of the key and what is in the target folder
+// (which may not exist yet).
+func postServerExportTest(c *gin.Context) {
+	s := middleware.ExtractServer(c)
+	data, ok := bindImportRequest(c)
+	if !ok {
+		return
+	}
+	if st, err := s.Filesystem().Stat(strings.TrimSpace(data.Source)); err != nil || !st.IsDir() {
+		if strings.Trim(strings.TrimSpace(data.Source), "/") != "" {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "The source folder does not exist on this server."})
+			return
+		}
+	}
+	conn, err := data.Sftp.Connect(c.Request.Context(), true)
+	if err != nil {
+		abortSftp(c, err)
+		return
+	}
+	defer conn.Close()
+
+	target := strings.TrimSpace(data.Target)
+	if target == "" {
+		target = "."
+	}
+	names := make([]string, 0, 20)
+	count := 0
+	exists := false
+	if entries, err := conn.ReadDir(target); err == nil {
+		exists = true
+		count = len(entries)
+		for _, e := range entries {
+			if len(names) == 20 {
+				break
+			}
+			name := e.Name()
+			if e.IsDir() {
+				name += "/"
+			}
+			names = append(names, name)
+		}
+	}
+	folder, _ := conn.RealPath(target)
+	if folder == "" {
+		folder = target
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"fingerprint": conn.Fingerprint,
+		"folder":      path.Clean(folder),
+		"exists":      exists,
+		"entries":     count,
+		"names":       names,
+	})
+}
+
+// postServerExport starts an export; its progress is sent over the websocket.
+func postServerExport(c *gin.Context) {
+	s := middleware.ExtractServer(c)
+	data, ok := bindImportRequest(c)
+	if !ok {
+		return
+	}
+	if data.Sftp.HostKey == "" {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Test the connection first."})
+		return
+	}
+	if err := s.StartExport(data.Sftp, data.Source, data.Target); err != nil {
+		if errors.Is(err, server.ErrExportRunning) {
+			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": "An export is running already."})
+			return
+		}
+		abortSftp(c, err)
+		return
+	}
+	c.Status(http.StatusAccepted)
+}
+
+// getServerExport returns the state of the last export.
+func getServerExport(c *gin.Context) {
+	c.JSON(http.StatusOK, middleware.ExtractServer(c).ExportStatus())
+}
+
+// deleteServerExport stops a running export.
+func deleteServerExport(c *gin.Context) {
+	middleware.ExtractServer(c).CancelExport()
+	c.Status(http.StatusNoContent)
+}

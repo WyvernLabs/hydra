@@ -144,9 +144,20 @@ return [
             'create' => 'Rolle :name angelegt',
             'update' => 'Rolle :name geändert',
             'delete' => 'Rolle :name gelöscht',
+            'copy' => 'Rolle :name von Server :from übernommen',
         ],
         'import' => [
             'start' => 'Import von :host (:source) nach :target gestartet (Modus: :mode)',
+        ],
+        'export' => [
+            'start' => 'Export von :source zu :host (:target) gestartet',
+        ],
+        'support' => [
+            'open' => 'Server im Gamesupport des Teams geöffnet',
+            'suspend' => 'Server im Gamesupport gesperrt',
+            'unsuspend' => 'Server im Gamesupport entsperrt',
+            'reinstall' => 'Neuinstallation im Gamesupport gestartet',
+            'transfer' => 'Übertragung von :from nach :to im Gamesupport gestartet',
         ],
         'game' => [
             'switch' => 'Spiel von :from zu :to gewechselt (Dateien behalten: :kept)',

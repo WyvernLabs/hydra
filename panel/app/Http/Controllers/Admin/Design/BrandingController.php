@@ -7,15 +7,21 @@ use Illuminate\Http\RedirectResponse;
 use Prologue\Alerts\AlertsMessageBag;
 use Pterodactyl\Http\Controllers\Controller;
 use Pterodactyl\Services\Hydra\BrandingService;
+use Pterodactyl\Services\Hydra\SurfaceService;
+use Pterodactyl\Services\Hydra\BackgroundService;
 use Pterodactyl\Http\Requests\Admin\Design\BrandingFormRequest;
 
 /**
- * Hydra: accent color, logo and favicon (Design > Colors & Logo).
+ * Hydra: accent color, logo, favicon and the boxes (Design > Colors & Logo).
  */
 class BrandingController extends Controller
 {
-    public function __construct(private AlertsMessageBag $alert, private BrandingService $branding)
-    {
+    public function __construct(
+        private AlertsMessageBag $alert,
+        private BrandingService $branding,
+        private SurfaceService $surfaces,
+        private BackgroundService $backgrounds,
+    ) {
     }
 
     public function index(): View
@@ -24,12 +30,24 @@ class BrandingController extends Controller
             'defaultAccent' => BrandingService::DEFAULT_ACCENT,
             'hasCustomLogo' => !is_null($this->branding->path('logo')),
             'hasCustomFavicon' => !is_null($this->branding->path('favicon')),
+            'surfaces' => $this->surfaces->values(),
+            'surfaceDefaults' => SurfaceService::DEFAULTS,
+            'surfacePresets' => SurfaceService::PRESETS,
+            'surfaceLimits' => SurfaceService::NUMBERS,
+            // The preview shows the boxes in front of the dashboard background.
+            'previewBackground' => $this->backgrounds->forSlot('dashboard'),
         ]);
     }
 
     public function update(BrandingFormRequest $request): RedirectResponse
     {
         $this->branding->setAccent($request->input('accent'));
+        if ($request->has('protect_images')) {
+            $this->branding->setProtectImages($request->boolean('protect_images'));
+        }
+        if ($request->has('surface')) {
+            $this->surfaces->save((array) $request->input('surface'));
+        }
 
         foreach (['logo', 'favicon'] as $type) {
             if ($request->hasFile($type)) {

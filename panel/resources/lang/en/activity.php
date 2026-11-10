@@ -146,9 +146,20 @@ return [
             'create' => 'Created role :name',
             'update' => 'Changed role :name',
             'delete' => 'Deleted role :name',
+            'copy' => 'Took over role :name from server :from',
         ],
         'import' => [
             'start' => 'Started an import from :host (:source) to :target (mode: :mode)',
+        ],
+        'export' => [
+            'start' => 'Started an export of :source to :host (:target)',
+        ],
+        'support' => [
+            'open' => 'Opened the server in the game support of the team',
+            'suspend' => 'Suspended the server in game support',
+            'unsuspend' => 'Unsuspended the server in game support',
+            'reinstall' => 'Started a reinstall in game support',
+            'transfer' => 'Started a transfer from :from to :to in game support',
         ],
         'game' => [
             'switch' => 'Switched the game from :from to :to (files kept: :kept)',

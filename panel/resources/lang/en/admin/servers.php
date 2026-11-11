@@ -194,6 +194,26 @@ return [
     ],
 
 
+    // Hydra: servers with a limited runtime.
+    'expiry' => [
+        'title' => 'Runtime',
+        'column' => 'Runtime',
+        'field' => 'Expires on',
+        'optional' => 'optional',
+        'help' => 'Leave empty = unlimited. Time zone of the panel: :zone. Once the time is up, the server is suspended within a minute.',
+        'create_help' => 'Leave empty for an unlimited server. When it expires, the server is suspended automatically.',
+        'unlimited' => 'This server runs without a time limit.',
+        'until' => 'Expires on :date',
+        'date_format' => 'Y-m-d H:i',
+        'day' => 'd',
+        'expired' => 'Expired',
+        'add_days' => '+:days days',
+        'clear' => 'Remove',
+        'suspended_hint' => 'The server was suspended because its runtime expired. A new date in the future unsuspends it automatically.',
+        'saved' => 'The runtime of the server has been saved.',
+        'cleared' => 'The runtime has been removed, the server now runs without a time limit.',
+    ],
+
     'manage' => [
         'subtitle' => 'Additional actions to control this server.',
         'reinstall' => 'Reinstall Server',

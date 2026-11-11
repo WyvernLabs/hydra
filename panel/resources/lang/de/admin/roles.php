@@ -71,6 +71,7 @@ return [
         'roles' => 'Rollen',
         'tickets' => 'Tickets',
         'support' => 'Gamesupport',
+        'knowledgebase' => 'Wissensdatenbank',
         'nests' => 'Nests',
         'eggs' => 'Eggs',
     ],
@@ -139,6 +140,7 @@ return [
             'access' => ['title' => 'Jeden Server öffnen', 'description' => 'Jeden Server im Kundenbereich mit vollen Rechten öffnen, wie der Besitzer.'],
             'suspended' => ['title' => 'Gesperrte Server nutzen', 'description' => 'Gesperrte Server weiter voll nutzen (Konsole, Starten, alle Reiter). Andere Benutzer behalten nur Dateien, Datenbanken und Backups. Zusammen mit „Jeden Server öffnen“ gilt das für alle Server.'],
             'lockdown' => ['title' => 'Server-Lockdown', 'description' => 'Server in den Lockdown versetzen und ihn wieder aufheben (auch im Adminbereich unter „Verwalten“) sowie Server im Lockdown weiter nutzen. Ohne dieses Recht kann nur der Besitzer einen Server im Lockdown nutzen.'],
+            'expiry' => ['title' => 'Laufzeit', 'description' => 'Ablaufdatum eines Servers setzen, verlängern oder entfernen (beim Erstellen und unter „Verwalten“). Läuft die Zeit ab, wird der Server automatisch gesperrt.'],
         ],
         'users' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Benutzer und ihre Daten sehen.'],
@@ -168,6 +170,11 @@ return [
             'suspend' => ['title' => 'Sperren', 'description' => 'Im Gamesupport Server sperren und entsperren.'],
             'reinstall' => ['title' => 'Neu installieren', 'description' => 'Im Gamesupport Server neu installieren (die Dateien bleiben, das Installationsskript läuft erneut).'],
             'transfer' => ['title' => 'Übertragen', 'description' => 'Im Gamesupport Server auf eine andere Node übertragen.'],
+        ],
+        'knowledgebase' => [
+            'view' => ['title' => 'Ansehen', 'description' => 'Die Wissensdatenbank im Adminbereich öffnen, auch Entwürfe lesen.'],
+            'update' => ['title' => 'Bearbeiten', 'description' => 'Kategorien und Beiträge anlegen und ändern sowie Bilder und Videos hochladen.'],
+            'delete' => ['title' => 'Löschen', 'description' => 'Kategorien (mit allem darin) und Beiträge löschen.'],
         ],
         'nests' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Nests sehen.'],

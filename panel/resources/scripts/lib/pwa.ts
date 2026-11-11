@@ -45,6 +45,9 @@ export const isStandalone = (): boolean =>
  * browser after localStorage "hydra:tabs" was set to "1" (for trying it out).
  */
 export const wantsTabs = (): boolean => {
+    // Never inside a frame, e.g. the live preview of the designer.
+    if (window.self !== window.top) return false;
+
     try {
         if (localStorage.getItem('hydra:tabs') === '1') return true;
     } catch {

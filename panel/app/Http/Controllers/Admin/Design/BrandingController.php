@@ -12,7 +12,8 @@ use Pterodactyl\Services\Hydra\BackgroundService;
 use Pterodactyl\Http\Requests\Admin\Design\BrandingFormRequest;
 
 /**
- * Hydra: accent color, logo, favicon and the boxes (Design > Colors & Logo).
+ * Hydra: accent color and the boxes (Designer > Colors). Logo and favicon are
+ * set under Designer > Images (BackgroundController) but still accepted here.
  */
 class BrandingController extends Controller
 {
@@ -34,8 +35,6 @@ class BrandingController extends Controller
             'surfaceDefaults' => SurfaceService::DEFAULTS,
             'surfacePresets' => SurfaceService::PRESETS,
             'surfaceLimits' => SurfaceService::NUMBERS,
-            // The preview shows the boxes in front of the dashboard background.
-            'previewBackground' => $this->backgrounds->forSlot('dashboard'),
         ]);
     }
 

@@ -38,13 +38,15 @@ class AdminRole extends Model
         'databases' => ['view', 'create', 'update', 'delete'],
         'locations' => ['view', 'create', 'update', 'delete'],
         'nodes' => ['view', 'create', 'update', 'allocations', 'configuration', 'install', 'database', 'firewall', 'backups', 'delete'],
-        'servers' => ['view', 'create', 'templates', 'details', 'build', 'startup', 'databases', 'manage', 'transfer', 'delete', 'access', 'suspended', 'lockdown'],
+        'servers' => ['view', 'create', 'templates', 'details', 'build', 'startup', 'databases', 'manage', 'transfer', 'delete', 'access', 'suspended', 'lockdown', 'expiry'],
         'users' => ['view', 'create', 'update', 'warn', 'ban', 'pool', 'delete'],
         'roles' => ['view', 'create', 'update', 'delete', 'assign'],
         'tickets' => ['view', 'reply', 'manage', 'delete'],
         // Hydra: game support area (addon "gamesupport").
         'support' => ['view', 'control', 'suspend', 'reinstall', 'transfer'],
         'nests' => ['view', 'create', 'update', 'delete'],
+        // Hydra: knowledgebase (addon "knowledgebase").
+        'knowledgebase' => ['view', 'update', 'delete'],
         'eggs' => ['view', 'create', 'update', 'import', 'delete'],
     ];
 

@@ -17,6 +17,7 @@ return [
         'settings' => 'Settings',
         'design' => 'Design',
         'api' => 'Application API',
+        'knowledgebase' => 'Knowledgebase',
         'databases' => 'Databases',
         'locations' => 'Locations',
         'nodes' => 'Nodes',

@@ -7,21 +7,67 @@ return [
     'title' => 'Design',
     'subtitle' => 'Look and content of the panel.',
     'tabs' => [
-        'general' => 'Colors & Logo',
+        'general' => 'Colors',
+        'login' => 'Login',
         'metadata' => 'Metadata',
-        'backgrounds' => 'Backgrounds',
+        'backgrounds' => 'Images',
         'eggs' => 'Eggs',
         'console' => 'Console',
         'links' => 'Links & Pages',
         'navigation' => 'Navigation',
         'announcements' => 'Announcements',
         'effects' => 'Effects',
+        'maintenance' => 'Maintenance page',
         'addons' => 'Addons',
     ],
 
+    // Hydra: the designer (own area for all design settings with a live preview).
+    'designer' => [
+        'title' => 'Designer',
+        'back' => 'Back to the admin area',
+        'sections' => 'Settings',
+        'preview' => 'Live preview',
+        'device' => 'Device',
+        'desktop' => 'Desktop',
+        'tablet' => 'Tablet',
+        'mobile' => 'Mobile',
+        'reload' => 'Reload preview',
+        'open' => 'Open in new tab',
+        'hint' => 'The preview shows changes right away; they are only stored with "Save".',
+        'page_dashboard' => 'Dashboard',
+        'page_login' => 'Login',
+    ],
+
+    // Hydra: look of the login page (Designer > Login).
+    'login' => [
+        'title' => 'Login',
+        'subtitle_page' => 'Style, picture and texts of the login page.',
+        'style' => 'Style',
+        'styles' => [
+            'classic' => 'Classic',
+            'classic_help' => 'The form as a card in the middle of the login background.',
+            'split' => 'Split',
+            'split_help' => 'One card: the form on one side, a picture on the other.',
+            'side' => 'Side',
+            'side_help' => 'The form on one half of the screen, the picture fills the other and fades out.',
+        ],
+        'mirror' => 'Mirrored (form on the right, picture on the left)',
+        'mirror_help' => 'Only for "Split" and "Side". Phones always show only the form.',
+        'image' => 'Picture',
+        'image_help' => 'For "Split" and "Side". Without a picture of its own the <a href=":url">login background</a> is used, without that the hexagon pattern in the accent color. PNG, JPG, GIF or WEBP.',
+        'image_reset' => 'Remove own picture',
+        'texts' => 'Texts',
+        'heading' => 'Heading',
+        'subtitle' => 'Subtitle',
+        'info' => 'Info box below the form',
+        'info_placeholder' => 'Optional, e.g. a note about a demo account or maintenance',
+        'texts_help' => 'Empty fields show the default text (grey). With the "Classic" style the subtitle only appears when you enter one. The info box stays hidden while empty.',
+        'saved' => 'The login page has been saved.',
+    ],
+
     'general' => [
-        'title' => 'Appearance',
-        'subtitle' => 'Accent color, logo and favicon of the panel.',
+        'title' => 'Colors',
+        'subtitle' => 'Accent color and boxes of the panel.',
         'accent' => 'Accent Color',
         'color' => 'Color',
         'accent_help' => 'Used for buttons, links, the active navigation entry and highlights in the client and admin area. Default: <code>:default</code>.',
@@ -65,10 +111,10 @@ return [
         'saved' => 'The metadata has been saved.',
     ],
 
-    // Hydra: colors and transparency of the boxes (Design > Colors & Logo).
+    // Hydra: colors and transparency of the boxes (Designer > Colors).
     'surfaces' => [
         'title' => 'Boxes & surfaces',
-        'help' => 'Colors and transparency of all boxes, cards, the sidebar and the inner fields in the client and admin area. With a lower opacity and a blur the boxes turn into frosted glass in front of the background (Design > Backgrounds).',
+        'help' => 'Colors and transparency of all boxes, cards, the sidebar and the inner fields in the client and admin area. With a lower opacity and a blur the boxes turn into frosted glass in front of the background (Designer > Images).',
         'box' => 'Box color',
         'inner' => 'Inner fields',
         'border' => 'Border color',
@@ -106,12 +152,14 @@ return [
     ],
 
     'backgrounds' => [
+        'subtitle' => 'Logo, favicon and backgrounds of the panel.',
+        'login_hint' => 'The background of the login page is set under <a href=":url">Login</a>.',
         'login' => 'Login Background',
         'login_help' => 'Background of the login page and the other pages for visitors who are not logged in.',
         'dashboard' => 'Dashboard Background',
         'dashboard_help' => 'Background of the client area. Servers whose egg has no own background use it too.',
         'admin' => 'Admin area background',
-        'admin_help' => 'Background of every page in the admin area. With the glass design under Colors & Logo it shines through the boxes.',
+        'admin_help' => 'Background of every page in the admin area. With the glass design under Colors it shines through the boxes.',
         'egg' => 'Server Background',
         'egg_help' => 'Background of the server pages (console, files, …) of servers with this egg. Without one, the dashboard background is used.',
         'image' => 'Image',
@@ -125,6 +173,24 @@ return [
         'saved' => 'The background has been saved.',
         'eggs_hint' => 'The backgrounds of the server pages of each egg are set under <a href=":url">Design > Eggs</a>.',
         'egg_inherits' => 'Dashboard background',
+    ],
+
+    // Hydra: the "503 Service Unavailable" page shown during updates (Design > Maintenance page).
+    'maintenance' => [
+        'title' => 'Maintenance page',
+        'subtitle' => 'What visitors see while the panel is being updated.',
+        'texts' => 'Texts',
+        'heading' => 'Title',
+        'description' => 'Description',
+        'texts_help' => 'Empty fields show the default text (grey). The page picks the language matching the visitor’s browser.',
+        'logo' => 'Show the logo in the box',
+        'logo_help' => 'The logo from Images. Images larger than 256 KB are replaced by the Hydra logo because the page is delivered without PHP.',
+        'background' => 'Background',
+        'background_help' => 'Without an image of its own the hexagon pattern is shown. The box takes its color, transparency and blur from "Boxes & surfaces" under Colors.',
+        'preview' => 'Preview',
+        'preview_help' => 'This is how the page looks (saved state). It appears during updates and for any other 503 error and reloads by itself as soon as the panel is reachable again.',
+        'open_preview' => 'Open in new tab',
+        'saved' => 'The maintenance page has been saved.',
     ],
 
     'effects' => [

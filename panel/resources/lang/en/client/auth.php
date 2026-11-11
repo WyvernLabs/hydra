@@ -5,6 +5,8 @@ return [
 
     'login' => [
         'title' => 'Login to Continue',
+        // Hydra: subtitle of the split and side styles (Designer > Login).
+        'subtitle' => 'Access your servers, consoles and files.',
         // Hydra: logged out after a ban.
         'banned_notice' => 'You have been logged out because this account has been banned. You will see the reason when you log in.',
         'username' => 'Username',

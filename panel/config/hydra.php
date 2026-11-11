@@ -256,6 +256,12 @@ return [
         'server_templates' => [
             'enabled' => false,
         ],
+        'knowledgebase' => [
+            'enabled' => false,
+            'path' => 'knowledgebase',
+            'public' => false,
+            'upload_limit' => 50,
+        ],
         'resource_pool' => [
             'enabled' => false,
             'eggs' => [],

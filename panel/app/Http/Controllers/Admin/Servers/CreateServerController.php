@@ -14,6 +14,7 @@ use Pterodactyl\Repositories\Eloquent\NodeRepository;
 use Pterodactyl\Http\Requests\Admin\ServerFormRequest;
 use Pterodactyl\Services\Servers\ServerCreationService;
 use Pterodactyl\Services\Hydra\Backups\BackupStorage;
+use Pterodactyl\Services\Hydra\ServerExpiryService;
 
 class CreateServerController extends Controller
 {
@@ -25,6 +26,7 @@ class CreateServerController extends Controller
         private NestRepository $nestRepository,
         private NodeRepository $nodeRepository,
         private ServerCreationService $creationService,
+        private ServerExpiryService $expiry,
     ) {
     }
 
@@ -70,7 +72,19 @@ class CreateServerController extends Controller
      */
     public function store(ServerFormRequest $request): RedirectResponse
     {
-        $data = $request->except(['_token', 'backup_storage_gb']);
+        // Hydra: optional runtime, only for admins who may set it.
+        $canExpire = $request->user()->hasAdminPermission('servers.expiry');
+        $expiresAt = null;
+        if ($canExpire) {
+            $request->validate(
+                ['hydra_expires_at' => 'nullable|date_format:' . ServerExpiryService::INPUT_FORMAT . '|after:now'],
+                [],
+                ['hydra_expires_at' => __('admin/servers.expiry.field')]
+            );
+            $expiresAt = ServerExpiryService::parse($request->input('hydra_expires_at'));
+        }
+
+        $data = $request->except(['_token', 'backup_storage_gb', 'hydra_expires_at']);
         // Hydra: the backup space is entered in GB.
         $data['backup_storage_limit'] = BackupStorage::mbFromGb($request->input('backup_storage_gb'));
         if (!empty($data['custom_image'])) {
@@ -79,6 +93,9 @@ class CreateServerController extends Controller
         }
 
         $server = $this->creationService->handle($data);
+        if ($expiresAt) {
+            $this->expiry->set($server, $expiresAt);
+        }
 
         $this->alert->success(trans('admin/server.alerts.server_created'))->flash();
 

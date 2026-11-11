@@ -19,6 +19,30 @@ class UpdateService
 {
     public const ACTIONS = ['check', 'update'];
 
+    /**
+     * Phases of an update for the progress display: where each one starts
+     * (the "##hydra-progress" percentages of installer/panel-install.sh) and
+     * roughly how many seconds it takes. Between two markers the admin area
+     * estimates the progress from these durations. Translated in
+     * admin/settings.updates.phases.
+     */
+    public const PHASES = [
+        'prepare' => [0, 15],
+        'packages' => [3, 45],
+        'download' => [40, 20],
+        'composer' => [43, 60],
+        'yarn' => [52, 60],
+        'build' => [60, 240],
+        'database' => [84, 25],
+        'services' => [94, 20],
+        'done' => [100, 0],
+    ];
+
+    /**
+     * From this percentage on the panel is in maintenance mode.
+     */
+    public const MAINTENANCE_FROM = 40;
+
     private const LOG_MAX = 64 * 1024;
 
     public static function directory(): string

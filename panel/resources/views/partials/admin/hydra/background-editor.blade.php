@@ -11,7 +11,7 @@
     </div>
     <div class="form-group">
         <label class="control-label">{{ __('admin/design.backgrounds.image') }}</label>
-        <input type="file" name="{{ $prefix }}_image" class="form-control" accept=".png,.jpg,.jpeg,.gif,.webp" data-bg-file>
+        <input type="file" name="{{ $prefix }}_image" class="form-control" accept=".png,.jpg,.jpeg,.gif,.webp" data-bg-file data-current="{{ $background['image'] }}">
         <p class="text-muted"><small>{{ $help ?? __('admin/design.backgrounds.image_help') }}</small></p>
     </div>
     <div class="row">

@@ -154,6 +154,11 @@ return [
         'export' => [
             'start' => 'Started an export of :source to :host (:target)',
         ],
+        'expiry' => [
+            'update' => 'Set the runtime until :until',
+            'clear' => 'Removed the runtime',
+            'expired' => 'Runtime expired, server suspended',
+        ],
         'support' => [
             'open' => 'Opened the server in the game support of the team',
             'suspend' => 'Suspended the server in game support',

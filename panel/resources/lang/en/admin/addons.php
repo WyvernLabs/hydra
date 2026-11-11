@@ -185,6 +185,22 @@ return [
         ],
     ],
 
+    'knowledgebase' => [
+        'name' => 'Knowledgebase',
+        'description' => 'Guides and answers for your customers: categories, subcategories and posts with Discord formatting, pictures and videos in every language. Managed under Service Management > Knowledgebase, shown to users in the sidebar.',
+        'path' => 'Address',
+        'path_help' => 'The knowledgebase is reachable at this address, e.g. /help or /docs. Lower case letters, digits and dashes.',
+        'public' => 'Reachable without logging in',
+        'public_help' => 'Visitors without an account can read the posts as well. Otherwise only users who are logged in.',
+        'upload_limit' => 'Largest picture or video (MB)',
+        'manage' => 'Manage knowledgebase',
+        'open' => 'Open',
+        'summary_path' => 'Address: :url',
+        'summary_public' => 'Public, also without logging in',
+        'summary_private' => 'Only for users who are logged in',
+        'summary_posts' => ':count post(s)',
+    ],
+
     'status' => [
         'name' => 'Status page',
         'description' => 'A public page under /status shows your nodes and own applications with their availability per hour of the last 7 days.',

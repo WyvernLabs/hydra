@@ -185,6 +185,22 @@ return [
         ],
     ],
 
+    'knowledgebase' => [
+        'name' => 'Wissensdatenbank',
+        'description' => 'Anleitungen und Antworten für deine Kunden: Kategorien, Unterkategorien und Beiträge mit Discord-Formatierung, Bildern und Videos in jeder Sprache. Verwaltet unter Service-Verwaltung > Wissensdatenbank, für Benutzer in der Seitenleiste.',
+        'path' => 'Adresse',
+        'path_help' => 'Unter dieser Adresse ist die Wissensdatenbank erreichbar, z. B. /wissen oder /hilfe. Kleinbuchstaben, Zahlen und Bindestriche.',
+        'public' => 'Ohne Anmeldung erreichbar',
+        'public_help' => 'Auch Besucher ohne Konto können die Beiträge lesen. Sonst nur angemeldete Benutzer.',
+        'upload_limit' => 'Maximale Dateigröße für Bilder und Videos (MB)',
+        'manage' => 'Wissensdatenbank verwalten',
+        'open' => 'Öffnen',
+        'summary_path' => 'Adresse: :url',
+        'summary_public' => 'Öffentlich, auch ohne Anmeldung',
+        'summary_private' => 'Nur für angemeldete Benutzer',
+        'summary_posts' => ':count Beitrag/Beiträge',
+    ],
+
     'status' => [
         'name' => 'Statusseite',
         'description' => 'Eine öffentliche Seite unter /status zeigt deine Nodes und eigene Anwendungen mit ihrer Verfügbarkeit pro Stunde der letzten 7 Tage.',

@@ -24,11 +24,19 @@
             ] : []),
         ],
         __('admin/common.nav.service') => [
+            ...(config('hydra.addons.knowledgebase.enabled') ? [
+                ['admin.knowledgebase', __('admin/common.nav.knowledgebase'), 'book-open', starts_with($route, 'admin.knowledgebase'), 'knowledgebase.view'],
+            ] : []),
             ['admin.databases', __('admin/common.nav.databases'), 'database', starts_with($route, 'admin.databases'), 'databases.view'],
             ['admin.api.index', __('admin/common.nav.api'), 'code', starts_with($route, 'admin.api'), 'api.view'],
             ['admin.nests', __('admin/common.nav.nests'), 'layers', starts_with($route, 'admin.nests'), 'nests.view'],
         ],
     ];
+    // Hydra: the design pages form the designer with its own sidebar and live preview.
+    $designerTab = trim($__env->yieldContent('hydra-designer'));
+    $designerPreview = trim($__env->yieldContent('designer-preview'));
+    // Hydra: areas with a sidebar of their own (e.g. the knowledgebase).
+    $customSidebar = trim($__env->yieldContent('hydra-sidebar'));
     foreach ($navigation as $title => $items) {
         $navigation[$title] = array_filter($items, fn ($item) => is_null($item[4]) || $adminUser->hasAdminPermission($item[4]));
         if (empty($navigation[$title])) {
@@ -88,7 +96,7 @@
         @include('partials.hydra.head')
         <link rel="stylesheet" href="/hydra/admin.css?v={{ substr(md5_file(public_path('hydra/admin.css')), 0, 8) }}">
     </head>
-    <body class="hydra-body hydra-admin">
+    <body class="hydra-body hydra-admin @if($designerTab !== '' || $customSidebar !== '') hydra-designer @endif">
         @include('partials.hydra.backdrop', ['background' => app(\Pterodactyl\Services\Hydra\BackgroundService::class)->forSlot('admin')])
         <div class="hydra-shell">
             <header class="hydra-topbar">
@@ -99,6 +107,11 @@
                 <img src="{{ $branding->logoUrl() }}" alt="{{ config('app.name', 'Hydra') }}" class="hydra-topbar-logo {{ $branding->protectedClass() }}" draggable="false">
             </header>
             <div class="hydra-backdrop" id="hydraBackdrop" hidden></div>
+            @if($customSidebar !== '')
+                {!! $customSidebar !!}
+            @elseif($designerTab !== '')
+                @include('partials.admin.design.designer-sidebar')
+            @else
             <aside class="hydra-sidebar" id="hydraSidebar">
                 <a href="{{ route('admin.index') }}" class="hydra-sidebar-logo">
                     <img src="{{ $branding->logoUrl() }}" alt="{{ config('app.name', 'Hydra') }}" class="{{ $branding->protectedClass() }}" draggable="false">
@@ -133,6 +146,7 @@
                     </a>
                 </div>
             </aside>
+            @endif
             <main class="hydra-main hydra-admin-main">
                 <section class="content-header">
                     @yield('content-header')
@@ -159,7 +173,16 @@
                             @endforeach
                         </div>
                     </div>
-                    @yield('content')
+                    @if($designerPreview !== '')
+                        <div class="hydra-designer-split">
+                            <div class="hydra-designer-settings">
+                                @yield('content')
+                            </div>
+                            @include('partials.admin.design.designer-preview', ['pages' => $designerPreview])
+                        </div>
+                    @else
+                        @yield('content')
+                    @endif
                 </section>
                 <footer class="hydra-footer">
                     @include('partials.hydra.credit') {{ $appVersion }}
@@ -196,6 +219,9 @@
             {!! Theme::js('vendor/bootstrap-notify/bootstrap-notify.min.js?t={cache-version}') !!}
             {!! Theme::js('vendor/select2/select2.full.min.js?t={cache-version}') !!}
             {!! Theme::js('js/admin/functions.js?t={cache-version}') !!}
+            @if($designerPreview !== '')
+                <script src="/hydra/designer.js?v={{ substr(md5_file(public_path('hydra/designer.js')), 0, 8) }}"></script>
+            @endif
             <script src="/js/autocomplete.js" type="application/javascript"></script>
 
             @if(Auth::user()->isAdmin())

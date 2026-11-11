@@ -11,9 +11,9 @@ return [
     | is the running number of the release commit (git rev-list --count HEAD).
     */
 
-    'version' => '1.6.0',
+    'version' => '1.7.0',
 
-    'build' => 59,
+    'build' => 60,
 
     /*
     |--------------------------------------------------------------------------

@@ -92,4 +92,21 @@ return [
     'disable' => 'Disable',
     'save' => 'Save',
     'copyright' => '&copy; :year Hydra',
+    // Hydra: knowledgebase (addon "knowledgebase").
+    'kb' => [
+        'title' => 'Knowledgebase',
+        'no_posts' => 'No posts yet',
+        'no_categories' => 'No categories yet',
+        'search' => 'Search posts …',
+        'no_results' => 'No post matches your search.',
+        'back' => 'Back to the panel',
+        'login' => 'Log in',
+        'welcome' => 'Welcome to the knowledgebase',
+        'welcome_text' => 'Pick a category on the left or search for a topic.',
+        'posts' => ':count post|:count posts',
+        'updated' => 'Updated on :date',
+        'previous' => 'Previous post',
+        'next' => 'Next post',
+        'draft' => 'Draft',
+    ],
 ];

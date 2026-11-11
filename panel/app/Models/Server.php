@@ -27,6 +27,8 @@ use Pterodactyl\Exceptions\Http\Server\ServerStateConflictException;
  * @property string|null $status
  * @property \Carbon\Carbon|null $hydra_suspended_at
  * @property \Carbon\Carbon|null $hydra_lockdown_at
+ * @property \Carbon\Carbon|null $hydra_expires_at
+ * @property \Carbon\Carbon|null $hydra_expired_at
  * @property string|null $hydra_startup_done
  * @property array|null $hydra_minecraft
  * @property bool $skip_scripts
@@ -218,6 +220,8 @@ class Server extends Model implements Identifiable
         'installed_at' => 'datetime',
         'hydra_suspended_at' => 'datetime',
         'hydra_lockdown_at' => 'datetime',
+        'hydra_expires_at' => 'datetime',
+        'hydra_expired_at' => 'datetime',
         'hydra_minecraft' => 'array',
     ];
 

@@ -61,6 +61,15 @@ class SettingsServiceProvider extends ServiceProvider
         'hydra:console:prefix',
         'hydra:console:daemon_prefix',
         'hydra:effects:event',
+        'hydra:login:style',
+        'hydra:login:mirror',
+        'hydra:login:image',
+        'hydra:login:texts',
+        'hydra:maintenance:texts',
+        'hydra:maintenance:logo',
+        'hydra:maintenance:image',
+        'hydra:maintenance:blur',
+        'hydra:maintenance:dim',
     ];
 
     /**

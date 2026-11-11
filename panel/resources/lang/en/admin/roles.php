@@ -71,6 +71,7 @@ return [
         'roles' => 'Roles',
         'tickets' => 'Tickets',
         'support' => 'Game Support',
+        'knowledgebase' => 'Knowledgebase',
         'nests' => 'Nests',
         'eggs' => 'Eggs',
     ],
@@ -139,6 +140,7 @@ return [
             'access' => ['title' => 'Open any server', 'description' => 'Open every server in the client area with full rights, like the owner.'],
             'suspended' => ['title' => 'Use suspended servers', 'description' => 'Keep full access to suspended servers (console, start, every tab). Other users only keep files, databases and backups. Together with "Open any server" this works for every server.'],
             'lockdown' => ['title' => 'Lockdown servers', 'description' => 'Put servers into lockdown and lift it again (also in the admin area under "Manage"), and keep using servers in lockdown. Without this only the owner can use a server in lockdown.'],
+            'expiry' => ['title' => 'Runtime', 'description' => 'Set, extend or remove the expiry date of a server (when creating it and under "Manage"). When the time runs out, the server is suspended automatically.'],
         ],
         'users' => [
             'view' => ['title' => 'View', 'description' => 'See users and their details.'],
@@ -168,6 +170,11 @@ return [
             'suspend' => ['title' => 'Suspend', 'description' => 'Suspend and unsuspend servers in the game support area.'],
             'reinstall' => ['title' => 'Reinstall', 'description' => 'Reinstall servers in the game support area (files stay, the install script runs again).'],
             'transfer' => ['title' => 'Transfer', 'description' => 'Move servers to another node in the game support area.'],
+        ],
+        'knowledgebase' => [
+            'view' => ['title' => 'View', 'description' => 'Open the knowledgebase in the admin area, including drafts.'],
+            'update' => ['title' => 'Edit', 'description' => 'Create and change categories and posts and upload pictures and videos.'],
+            'delete' => ['title' => 'Delete', 'description' => 'Delete categories (with everything in them) and posts.'],
         ],
         'nests' => [
             'view' => ['title' => 'View', 'description' => 'See nests.'],

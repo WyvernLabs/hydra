@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck as ShieldCheckIcon, LayoutGrid as ViewGridIcon } from 'lucide-react';
+import { ShieldCheck as ShieldCheckIcon, LayoutGrid as ViewGridIcon, BookOpen as BookOpenIcon } from 'lucide-react';
 import { useStoreState } from '@/state/hooks';
 import SearchContainer from '@/components/dashboard/search/SearchContainer';
 import { SidebarItem, SidebarSection } from '@/components/hydra/Sidebar';
@@ -12,12 +12,18 @@ import { linkIcon } from '@/components/hydra/LinkIcon';
  */
 export const useWorkspaceSection = (): SidebarSection => {
     const adminAccess = useStoreState((state) => state.user.data!.adminAccess);
+    const knowledgebase = useStoreState((state) => state.settings.data!.knowledgebase);
     const { t } = useTranslation();
 
     const items: Array<SidebarItem | React.ReactElement> = [
         <SearchContainer key={'search'} />,
         { key: 'dashboard', name: t('nav.dashboard'), icon: ViewGridIcon, to: '/', exact: true },
     ];
+
+    // Hydra: knowledgebase addon (its own page with its own sidebar).
+    if (knowledgebase?.enabled) {
+        items.push({ key: 'knowledgebase', name: t('nav.knowledgebase'), icon: BookOpenIcon, href: knowledgebase.url });
+    }
 
     if (adminAccess) {
         items.push({ key: 'admin', name: t('nav.administration'), icon: ShieldCheckIcon, href: '/admin' });

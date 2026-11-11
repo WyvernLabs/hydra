@@ -193,6 +193,26 @@ return [
     ],
 
 
+    // Hydra: zeitlich begrenzte Server (Laufzeit).
+    'expiry' => [
+        'title' => 'Laufzeit',
+        'column' => 'Laufzeit',
+        'field' => 'Läuft ab am',
+        'optional' => 'optional',
+        'help' => 'Leer lassen = unbegrenzt. Zeitzone des Panels: :zone. Ist die Zeit abgelaufen, wird der Server innerhalb einer Minute gesperrt.',
+        'create_help' => 'Leer lassen für einen unbegrenzten Server. Nach Ablauf wird der Server automatisch gesperrt.',
+        'unlimited' => 'Dieser Server läuft unbegrenzt.',
+        'until' => 'Läuft ab am :date',
+        'date_format' => 'd.m.Y \u\m H:i \U\h\r',
+        'day' => 'T',
+        'expired' => 'Abgelaufen',
+        'add_days' => '+:days Tage',
+        'clear' => 'Entfernen',
+        'suspended_hint' => 'Der Server wurde wegen der abgelaufenen Laufzeit gesperrt. Mit einem neuen Datum in der Zukunft wird er automatisch wieder entsperrt.',
+        'saved' => 'Die Laufzeit des Servers wurde gespeichert.',
+        'cleared' => 'Die Laufzeit wurde entfernt, der Server läuft jetzt unbegrenzt.',
+    ],
+
     'manage' => [
         'subtitle' => 'Weitere Aktionen für diesen Server.',
         'reinstall' => 'Neu installieren',

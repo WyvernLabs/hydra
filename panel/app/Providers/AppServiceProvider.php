@@ -27,6 +27,11 @@ class AppServiceProvider extends ServiceProvider
 
         Paginator::useBootstrap();
 
+        // Hydra: the admin area follows a running panel update through maintenance mode.
+        \Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::except(
+            \Pterodactyl\Services\Hydra\MaintenancePageService::EXCEPT
+        );
+
         // If the APP_URL value is set with https:// make sure we force it here. Theoretically
         // this should just work with the proxy logic, but there are a lot of cases where it
         // doesn't, and it triggers a lot of support requests, so lets just head it off here.

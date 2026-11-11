@@ -115,6 +115,8 @@ class ServerTransformer extends BaseClientTransformer
                 'locked_out' => !$server->lockdownAllows($this->getUser()),
             ],
             'skip_scripts' => $server->skip_scripts,
+            // Hydra: end of the runtime, null = unlimited (see ServerExpiryService).
+            'expires_at' => $server->hydra_expires_at?->toAtomString(),
         ];
     }
 

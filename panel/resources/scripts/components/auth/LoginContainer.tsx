@@ -11,6 +11,7 @@ import Button from '@/components/elements/Button';
 import Turnstile, { TurnstileHandle, useTurnstile } from '@/components/auth/Turnstile';
 import useFlash from '@/plugins/useFlash';
 import { useTranslation } from 'react-i18next';
+import { useLoginDesign } from '@/lib/designer';
 
 interface Values {
     username: string;
@@ -25,6 +26,9 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
     const { clearFlashes, clearAndAddHttpError, addFlash } = useFlash();
     const turnstile = useTurnstile('login');
     const registration = useStoreState((state) => state.settings.data!.registration);
+    // Hydra: texts from Designer > Login. The classic style keeps its look without a subtitle.
+    const design = useLoginDesign();
+    const subtitle = design.subtitle || (design.style === 'classic' ? null : t('login.subtitle'));
 
     useEffect(() => {
         clearFlashes();
@@ -75,7 +79,7 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
             })}
         >
             {({ isSubmitting }) => (
-                <LoginFormContainer title={t('login.title')}>
+                <LoginFormContainer title={design.title || t('login.title')} subtitle={subtitle} info={design.info}>
                     <Field type={'text'} label={t('login.username')} name={'username'} disabled={isSubmitting} />
                     <div css={tw`mt-6`}>
                         <Field

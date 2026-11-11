@@ -73,6 +73,8 @@ export interface Server {
         canToggle: boolean;
         lockedOut: boolean;
     };
+    // Hydra: end of the runtime, null = unlimited. The server is suspended once it has passed.
+    expiresAt: Date | null;
     variables: ServerEggVariable[];
     allocations: Allocation[];
     // Hydra: only filled in for users who may open every server.
@@ -141,6 +143,7 @@ export const rawDataToServerObject = ({ attributes: data }: FractalResponseData)
         canToggle: data.lockdown?.can_toggle || false,
         lockedOut: data.lockdown?.locked_out || false,
     },
+    expiresAt: data.expires_at ? new Date(data.expires_at) : null,
     variables: ((data.relationships?.variables as FractalResponseList | undefined)?.data || []).map(
         rawDataToServerEggVariable
     ),

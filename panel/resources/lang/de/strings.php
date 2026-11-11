@@ -92,4 +92,21 @@ return [
     'disable' => 'Deaktivieren',
     'save' => 'Speichern',
     'copyright' => '&copy; :year Hydra',
+    // Hydra: Wissensdatenbank (Addon "knowledgebase").
+    'kb' => [
+        'title' => 'Wissensdatenbank',
+        'no_posts' => 'Noch keine Beiträge',
+        'no_categories' => 'Noch keine Kategorien',
+        'search' => 'Beiträge durchsuchen …',
+        'no_results' => 'Kein Beitrag passt zu deiner Suche.',
+        'back' => 'Zurück zum Panel',
+        'login' => 'Anmelden',
+        'welcome' => 'Willkommen in der Wissensdatenbank',
+        'welcome_text' => 'Wähle links eine Kategorie oder suche nach einem Thema.',
+        'posts' => ':count Beitrag|:count Beiträge',
+        'updated' => 'Aktualisiert am :date',
+        'previous' => 'Vorheriger Beitrag',
+        'next' => 'Nächster Beitrag',
+        'draft' => 'Entwurf',
+    ],
 ];

@@ -11,6 +11,15 @@ return [
         'stopping' => 'Stopping',
     ],
 
+    // Hydra: runtime of the server in the top bar.
+    'expiry' => [
+        'label' => 'Runtime',
+        'remaining' => 'Expires in',
+        'expired' => 'Runtime expired',
+        'day' => 'd',
+        'until' => 'Expires on :date',
+    ],
+
     'conflict' => [
         'installing_title' => 'Running Installer',
         'installing' => 'Your server should be ready soon, please try again in a few minutes.',
@@ -18,6 +27,8 @@ return [
         'suspended' => 'This server is suspended and cannot be accessed.',
         'suspended_limited' => 'This server is suspended. Its console and settings are unavailable, but you can still use the files, databases and backups to fix problems or save your data.',
         'suspended_full' => 'This server is suspended. You can still use it fully because you may use suspended servers.',
+        'suspended_bar_full' => 'This server is suspended – you can still use it.',
+        'suspended_bar_limited' => 'This server is suspended – files, databases and backups remain available.',
         'suspended_sftp' => 'Files can also be downloaded via SFTP:',
         'suspended_open' => 'Open',
         'maintenance_title' => 'Node under Maintenance',

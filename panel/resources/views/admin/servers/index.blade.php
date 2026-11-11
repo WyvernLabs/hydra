@@ -40,6 +40,7 @@
                             <th>{{ __('admin/servers.owner') }}</th>
                             <th>{{ __('admin/servers.node') }}</th>
                             <th>{{ __('admin/servers.connection') }}</th>
+                            <th>{{ __('admin/servers.expiry.column') }}</th>
                             <th></th>
                             <th></th>
                         </tr>
@@ -51,6 +52,16 @@
                                 <td><a href="{{ route('admin.nodes.view', $server->node->id) }}">{{ $server->node->name }}</a></td>
                                 <td>
                                     <code>{{ $server->allocation->alias }}:{{ $server->allocation->port }}</code>
+                                </td>
+                                <td>
+                                    @if($server->hydra_expires_at)
+                                        <span class="hydra-expiry" data-hydra-expires="{{ $server->hydra_expires_at->toAtomString() }}"
+                                              title="{{ __('admin/servers.expiry.until', ['date' => $server->hydra_expires_at->timezone(config('app.timezone'))->format(__('admin/servers.expiry.date_format'))]) }}">
+                                            <i class="fa fa-hourglass-half"></i> <span data-hydra-expires-text>…</span>
+                                        </span>
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
                                 </td>
                                 <td class="text-center">
                                     @if($server->isSuspended())
@@ -81,6 +92,8 @@
 
 @section('footer-scripts')
     @parent
+    <script>window.HydraExpiryLabels = @json(['day' => __('admin/servers.expiry.day'), 'expired' => __('admin/servers.expiry.expired')]);</script>
+    <script src="/hydra/expiry.js?v={{ substr(md5_file(public_path('hydra/expiry.js')), 0, 8) }}"></script>
     <script>
         $('.console-popout').on('click', function (event) {
             event.preventDefault();

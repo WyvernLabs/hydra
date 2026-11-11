@@ -1,6 +1,11 @@
 @extends('layouts.admin')
 @include('partials/admin.design.nav', ['activeTab' => 'general'])
 
+@section('designer-preview', json_encode([
+    ['key' => 'dashboard', 'label' => __('admin/design.designer.page_dashboard'), 'url' => '/?hydra_designer=1'],
+    ['key' => 'login', 'label' => __('admin/design.designer.page_login'), 'url' => '/auth/login?hydra_designer=1'],
+]))
+
 @section('title')
     {{ __('admin/design.general.title') }}
 @endsection
@@ -16,7 +21,7 @@
 
 @section('content')
     @yield('design::nav')
-    <form action="{{ route('admin.design') }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('admin.design') }}" method="POST">
         <div class="row">
             <div class="col-xs-12">
                 <div class="box">
@@ -55,7 +60,7 @@
                     <div class="box-body">
                         <p class="text-muted">{{ __('admin/design.surfaces.help') }}</p>
                         <div class="row">
-                            <div class="col-md-5">
+                            <div class="col-xs-12">
                                 <div class="form-group">
                                     <label class="control-label">{{ __('admin/design.general.presets') }}</label>
                                     <div class="hydra-surface-presets">
@@ -95,93 +100,7 @@
                                     <i class="fa fa-undo"></i> {{ __('admin/design.surfaces.reset') }}
                                 </button>
                             </div>
-                            <div class="col-md-7">
-                                <label class="control-label">{{ __('admin/design.surfaces.preview') }}</label>
-                                <div class="hydra-surface-stage" data-surface-stage>
-                                    <div class="hydra-surface-stage-bg" @if($previewBackground['image']) style="background: url('{{ $previewBackground['image'] }}') center / cover; filter: blur({{ $previewBackground['blur'] }}px);" @endif></div>
-                                    <div class="hydra-surface-stage-dim" style="opacity: {{ $previewBackground['dim'] / 100 }};"></div>
-                                    <div class="hydra-surface-stage-content">
-                                        <div class="pv-sidebar">
-                                            <img src="{{ $branding->logoUrl() }}" alt="" />
-                                            <span class="pv-nav is-active"></span>
-                                            <span class="pv-nav"></span>
-                                            <span class="pv-nav"></span>
-                                            <span class="pv-nav"></span>
-                                        </div>
-                                        <div class="pv-main">
-                                            <div class="pv-box">
-                                                <div class="pv-box-header">{{ __('admin/design.surfaces.preview_box') }}</div>
-                                                <div class="pv-box-body">
-                                                    <div class="pv-row"><span class="pv-dot"></span>{{ __('admin/design.surfaces.preview_row') }}<small>2 / 4 GB</small></div>
-                                                    <div class="pv-row"><span class="pv-dot is-off"></span>{{ __('admin/design.surfaces.preview_row') }} 2<small>0 / 2 GB</small></div>
-                                                    <div class="pv-input">{{ __('admin/design.surfaces.preview_input') }}</div>
-                                                    <span class="pv-button">{{ __('admin/common.actions.save') }}</span>
-                                                </div>
-                                            </div>
-                                            <div class="pv-box pv-box--small">
-                                                <div class="pv-box-header">{{ __('admin/design.surfaces.preview_small') }}</div>
-                                                <div class="pv-box-body"><div class="pv-bar"><span></span></div></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p class="text-muted"><small>{{ __('admin/design.surfaces.preview_help') }}</small></p>
-                            </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="box">
-                    <div class="box-header with-border">
-                        <h3 class="box-title">{{ __('admin/design.general.logo') }}</h3>
-                    </div>
-                    <div class="box-body">
-                        <div class="hydra-branding-preview">
-                            <img src="{{ $branding->logoUrl() }}" alt="Logo" style="max-height: 64px;" />
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label">{{ __('admin/design.general.logo_upload') }}</label>
-                            <input type="file" name="logo" class="form-control" accept=".png,.jpg,.jpeg,.gif,.webp,.svg" />
-                            <p class="text-muted"><small>{{ __('admin/design.general.logo_help') }}</small></p>
-                        </div>
-                        @if($hasCustomLogo)
-                            <div class="checkbox checkbox-primary">
-                                <input id="resetLogo" name="reset_logo" type="checkbox" value="1" />
-                                <label for="resetLogo">{{ __('admin/design.general.logo_reset') }}</label>
-                            </div>
-                        @endif
-                        <input type="hidden" name="protect_images" value="0" />
-                        <div class="checkbox checkbox-primary no-margin-bottom">
-                            <input id="protectImages" name="protect_images" type="checkbox" value="1" @if(old('protect_images', $branding->protectsImages())) checked @endif />
-                            <label for="protectImages">{{ __('admin/design.general.protect_images') }}</label>
-                        </div>
-                        <p class="text-muted no-margin"><small>{{ __('admin/design.general.protect_images_help') }}</small></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="box">
-                    <div class="box-header with-border">
-                        <h3 class="box-title">{{ __('admin/design.general.favicon') }}</h3>
-                    </div>
-                    <div class="box-body">
-                        <div class="hydra-branding-preview">
-                            <img src="{{ $branding->faviconUrl() }}" alt="Favicon" style="width: 48px; height: 48px;" />
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label">{{ __('admin/design.general.favicon_upload') }}</label>
-                            <input type="file" name="favicon" class="form-control" accept=".png,.ico,.svg" />
-                            <p class="text-muted"><small>{{ __('admin/design.general.favicon_help') }}</small></p>
-                        </div>
-                        @if($hasCustomFavicon)
-                            <div class="checkbox checkbox-primary no-margin-bottom">
-                                <input id="resetFavicon" name="reset_favicon" type="checkbox" value="1" />
-                                <label for="resetFavicon">{{ __('admin/design.general.favicon_reset') }}</label>
-                            </div>
-                        @endif
                     </div>
                 </div>
             </div>
@@ -226,7 +145,7 @@
         (function () {
             var root = document.getElementById('hydraSurfaces');
             if (!root) return;
-            var stage = root.querySelector('[data-surface-stage]');
+            var stage = root.querySelector('[data-surface-stage]') || document.createElement('div');
             var valid = /^#[0-9a-fA-F]{6}$/;
             var minFloat = {{ \Pterodactyl\Services\Hydra\SurfaceService::MIN_FLOAT_OPACITY }};
 

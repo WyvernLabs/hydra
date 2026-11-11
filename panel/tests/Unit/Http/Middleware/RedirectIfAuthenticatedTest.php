@@ -29,6 +29,8 @@ class RedirectIfAuthenticatedTest extends MiddlewareTestCase
     {
         $this->authManager->shouldReceive('guard')->with(null)->once()->andReturnSelf();
         $this->authManager->shouldReceive('check')->withNoArgs()->once()->andReturn(true);
+        // Hydra: no live preview of the designer.
+        $this->request->shouldReceive('query')->with('hydra_designer')->once()->andReturnNull();
 
         $response = $this->getMiddleware()->handle($this->request, $this->getClosureAssertions());
         $this->assertInstanceOf(RedirectResponse::class, $response);

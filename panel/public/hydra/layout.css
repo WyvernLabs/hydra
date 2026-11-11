@@ -284,6 +284,94 @@ a { color: rgb(var(--hydra-accent-400)); }
     object-fit: contain;
 }
 
+/*
+ * Styles of the login page (Designer > Login, LoginFormContainer.tsx).
+ * split: one card, form and picture side by side. side: the form on one half
+ * of the screen, the picture fills the other half and fades into the page.
+ * "is-mirrored" swaps the sides. On small screens only the form remains.
+ */
+.hydra-login-subtitle { margin: 0; color: var(--hydra-muted); font-size: 14px; line-height: 1.5; }
+.hydra-login-title { margin: 0 0 6px; font-size: 28px; font-weight: 700; line-height: 1.2; color: var(--hydra-text); }
+.hydra-login-info {
+    padding: 14px 16px;
+    border-radius: var(--hydra-radius-sm);
+    border: 1px solid var(--hydra-border);
+    background: var(--hydra-panel-2);
+    color: var(--hydra-text-2);
+    font-size: 13px;
+    line-height: 1.55;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+.hydra-login-column { width: 100%; max-width: 420px; }
+/* Designer preview: the form is locked (no autofill) but looks as usual. */
+.hydra-login-preview-lock { min-width: 0; margin: 0; padding: 0; border: 0; }
+.hydra-login-preview-lock :disabled { opacity: 1 !important; cursor: default !important; }
+.hydra-login-split .hydra-auth-logo,
+.hydra-login-side .hydra-auth-logo { margin: 0 0 28px; max-width: 220px; max-height: 64px; }
+.hydra-login-split .hydra-footer,
+.hydra-login-side .hydra-footer { margin-top: 28px; }
+
+.hydra-auth-page--split { display: flex; align-items: center; justify-content: center; min-height: var(--hydra-vh); padding: 32px 16px; }
+.hydra-login-split {
+    display: flex;
+    width: 100%;
+    max-width: 920px;
+    min-height: 520px;
+    overflow: hidden;
+    border-radius: var(--hydra-radius);
+    border: 1px solid var(--hydra-border);
+    background: var(--hydra-panel);
+    -webkit-backdrop-filter: var(--hydra-backdrop);
+    backdrop-filter: var(--hydra-backdrop);
+    box-shadow: var(--hydra-shadow);
+}
+.hydra-login-split.is-mirrored { flex-direction: row-reverse; }
+.hydra-login-split-form { flex: 1 1 50%; display: flex; align-items: center; justify-content: center; padding: 40px; }
+.hydra-login-split-image { flex: 1 1 50%; background-size: cover; background-position: center; }
+
+.hydra-auth-page--side { min-height: var(--hydra-vh); }
+.hydra-login-side { display: flex; min-height: var(--hydra-vh); }
+.hydra-login-side.is-mirrored { flex-direction: row-reverse; }
+.hydra-login-side-form {
+    position: relative;
+    z-index: 1;
+    flex: 0 0 min(46%, 640px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 40px;
+    background: rgb(var(--hydra-surface-900) / max(var(--hydra-surface-alpha), 0.75));
+    -webkit-backdrop-filter: var(--hydra-backdrop);
+    backdrop-filter: var(--hydra-backdrop);
+}
+.hydra-login-side-image { position: relative; flex: 1 1 auto; background-size: cover; background-position: center; }
+/* The picture fades into the form side. */
+.hydra-login-side-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgb(var(--hydra-surface-900) / max(var(--hydra-surface-alpha), 0.75)) 0%, transparent 45%),
+        linear-gradient(to top, rgb(0 0 0 / 0.35), transparent 40%);
+}
+.hydra-login-side.is-mirrored .hydra-login-side-image::before {
+    background: linear-gradient(to left, rgb(var(--hydra-surface-900) / max(var(--hydra-surface-alpha), 0.75)) 0%, transparent 45%),
+        linear-gradient(to top, rgb(0 0 0 / 0.35), transparent 40%);
+}
+/* Without a picture: the hexagon pattern in the accent color. */
+.hydra-login-split-image.is-empty,
+.hydra-login-side-image.is-empty {
+    background: radial-gradient(circle at 30% 30%, rgb(var(--hydra-accent-500) / 0.35), transparent 60%), var(--hydra-pattern) center / 520px repeat, var(--hydra-bg);
+}
+
+@media (max-width: 860px) {
+    .hydra-login-split-image,
+    .hydra-login-side-image { display: none; }
+    .hydra-login-split { min-height: 0; max-width: 472px; }
+    .hydra-login-split-form { padding: 28px 24px; }
+    .hydra-login-side-form { flex: 1 1 auto; padding: 32px 20px; }
+}
+
 /* ---------------------------------------------------------------- Mobile */
 
 /* ---------------------------------------------------------------- Dashboard (client area) */
@@ -1350,3 +1438,213 @@ img.hydra-protected {
 
 /* Game library: a game the server lacks CPU or memory for (Design > Eggs). */
 .hydra-game-locked { filter: grayscale(.4) sepia(1) saturate(4) hue-rotate(-35deg) brightness(.55); }
+
+/* ---------------------------------------------------------------- Server runtime (Hydra) */
+/* Countdown in the middle of the server header (ServerExpiryTimer.tsx). */
+
+.hydra-expiry-timer {
+    --expiry-color: rgb(var(--hydra-accent-500));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    justify-self: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--expiry-color) 45%, transparent);
+    background: color-mix(in srgb, var(--expiry-color) 10%, transparent);
+    color: var(--hydra-text);
+    white-space: nowrap;
+}
+.hydra-expiry-timer[data-state="soon"] { --expiry-color: var(--hydra-warning); }
+.hydra-expiry-timer[data-state="urgent"],
+.hydra-expiry-timer[data-state="expired"] { --expiry-color: var(--hydra-danger); }
+.hydra-expiry-timer-icon {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    color: var(--expiry-color);
+    animation: hydra-expiry-turn 6s ease-in-out infinite;
+}
+.hydra-expiry-timer[data-state="urgent"] .hydra-expiry-timer-icon { animation-duration: 2s; }
+.hydra-expiry-timer[data-state="expired"] .hydra-expiry-timer-icon { animation: none; }
+.hydra-expiry-timer-text { display: flex; flex-direction: column; line-height: 1.15; }
+.hydra-expiry-timer-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--hydra-muted); }
+.hydra-expiry-timer-value {
+    font-family: var(--hydra-font-mono);
+    font-size: 15px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--expiry-color);
+}
+.hydra-expiry-timer[data-state="ok"] .hydra-expiry-timer-value { color: var(--hydra-text); }
+@keyframes hydra-expiry-turn {
+    0%, 80% { transform: rotate(0deg); }
+    90%, 100% { transform: rotate(180deg); }
+}
+@media (max-width: 1023px) {
+    .hydra-expiry-timer { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .hydra-expiry-timer-icon { animation: none; }
+}
+
+/* ---------------------------------------------------------------- Suspended server (Hydra) */
+/*
+ * SuspendedNotice.tsx: red bar pinned to the top edge of the window and a red,
+ * slowly breathing frame around it while a suspended server is open. The page
+ * moves down by the height of the bar.
+ */
+
+html.hydra-suspended-mode { --hydra-suspended-bar: 34px; }
+
+.hydra-suspended-bar {
+    position: fixed;
+    /* Below the tab bar of the installed app, if there is one. */
+    top: var(--hydra-tabbar-offset, 0px);
+    left: 0;
+    right: 0;
+    z-index: 45;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: var(--hydra-suspended-bar);
+    padding: 0 16px;
+    background: #b42318;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgb(180 35 24 / 0.45);
+}
+.hydra-suspended-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hydra-suspended-bar-icon { width: 15px; height: 15px; flex: none; }
+
+.hydra-suspended-frame {
+    position: fixed;
+    inset: var(--hydra-tabbar-offset, 0px) 0 0 0;
+    z-index: 44;
+    pointer-events: none;
+    box-shadow: inset 0 0 0 2px rgb(229 72 77 / 0.9), inset 0 0 22px 4px rgb(229 72 77 / 0.45);
+    animation: hydra-suspended-breathe 2.6s ease-in-out infinite;
+}
+@keyframes hydra-suspended-breathe {
+    0%, 100% { opacity: 0.45; }
+    50% { opacity: 1; }
+}
+
+@media (min-width: 1024px) {
+    html.hydra-suspended-mode .hydra-shell { padding-top: calc(var(--hydra-gap) + var(--hydra-suspended-bar)); }
+    html.hydra-suspended-mode .hydra-sidebar {
+        top: calc(var(--hydra-gap) + var(--hydra-suspended-bar));
+        height: calc(var(--hydra-vh) - var(--hydra-gap) * 2 - var(--hydra-suspended-bar));
+    }
+}
+@media (max-width: 1023px) {
+    html.hydra-suspended-mode .hydra-shell { padding-top: var(--hydra-suspended-bar); }
+    html.hydra-suspended-mode .hydra-topbar { top: var(--hydra-suspended-bar); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .hydra-suspended-frame { animation: none; opacity: 0.8; }
+}
+
+/* ---------------------------------------------------------------- Knowledgebase (Hydra) */
+/* Tree of categories > subcategories > posts (partials/hydra/kb-tree), used in the admin area and on the knowledgebase. */
+
+.hydra-kb-tree { display: flex; flex-direction: column; gap: 2px; padding: 0 10px 12px; }
+.hydra-kb-node > summary { list-style: none; }
+.hydra-kb-node > summary::-webkit-details-marker { display: none; }
+.hydra-kb-summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 0 8px;
+    border-radius: var(--hydra-radius-sm);
+    color: var(--hydra-text);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+}
+.hydra-kb-summary:hover { background: var(--hydra-panel-2); }
+.hydra-kb-summary a,
+.hydra-kb-summary span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit; text-decoration: none; }
+.hydra-kb-summary a:hover { color: rgb(var(--hydra-accent-400)); }
+.hydra-kb-summary.active { color: rgb(var(--hydra-accent-400)); }
+.hydra-kb-chevron { width: 15px; height: 15px; flex: none; color: var(--hydra-muted); transition: transform 0.15s ease; }
+.hydra-kb-node[open] > summary .hydra-kb-chevron { transform: rotate(90deg); }
+.hydra-kb-node.is-sub > .hydra-kb-summary { font-weight: 500; font-size: 13px; color: var(--hydra-text-2); }
+.hydra-kb-children { display: flex; flex-direction: column; gap: 1px; margin: 2px 0 4px 15px; padding-left: 8px; border-left: 1px solid var(--hydra-border); }
+.hydra-kb-post {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 30px;
+    padding: 0 8px;
+    border-radius: var(--hydra-radius-sm);
+    color: var(--hydra-text-2);
+    font-size: 13px;
+    text-decoration: none;
+}
+.hydra-kb-post svg { width: 14px; height: 14px; flex: none; color: var(--hydra-muted); }
+.hydra-kb-post span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hydra-kb-post:hover { background: var(--hydra-panel-2); color: var(--hydra-text); text-decoration: none; }
+.hydra-kb-post.active { background: var(--hydra-accent-soft); color: rgb(var(--hydra-accent-400)); font-weight: 600; }
+.hydra-kb-post.active svg { color: rgb(var(--hydra-accent-500)); }
+.hydra-kb-post.is-draft span { font-style: italic; opacity: 0.7; }
+.hydra-kb-post[hidden], .hydra-kb-node[hidden] { display: none; }
+.hydra-kb-empty { display: block; padding: 4px 8px; color: var(--hydra-muted); font-size: 12px; font-style: italic; }
+.hydra-kb-empty[hidden] { display: none; }
+.hydra-kb-sidebar-tree { flex: 1; min-height: 0; overflow-y: auto; }
+
+/* Knowledgebase for users (templates/knowledgebase). */
+.hydra-kb-sidebar-head { display: flex; flex-direction: column; gap: 10px; padding: 14px 12px 10px; }
+.hydra-kb-sidebar-name { display: flex; align-items: center; gap: 8px; padding: 0 4px; color: var(--hydra-text); font-size: 16px; font-weight: 700; text-decoration: none; }
+.hydra-kb-sidebar-name svg { width: 18px; height: 18px; color: rgb(var(--hydra-accent-500)); }
+.hydra-kb-sidebar-name:hover { color: var(--hydra-text); text-decoration: none; }
+.hydra-kb-sidebar-head .hydra-designer-back {
+    display: flex; align-items: center; gap: 8px; padding: 9px 12px;
+    border-radius: var(--hydra-radius-sm); border: 1px solid var(--hydra-border);
+    color: var(--hydra-text-2); font-size: 13px; font-weight: 600; text-decoration: none;
+}
+.hydra-kb-sidebar-head .hydra-designer-back svg { width: 16px; height: 16px; }
+.hydra-kb-sidebar-head .hydra-designer-back:hover { background: var(--hydra-panel-2); color: var(--hydra-text); }
+.hydra-kb-search { position: relative; display: block; margin: 0; }
+.hydra-kb-search svg { position: absolute; left: 10px; top: 50%; width: 15px; height: 15px; transform: translateY(-50%); color: var(--hydra-muted); pointer-events: none; }
+.hydra-kb-search input {
+    width: 100%; height: 36px; padding: 0 10px 0 32px;
+    border-radius: var(--hydra-radius-sm); border: 1px solid var(--hydra-border);
+    background: var(--hydra-panel-2); color: var(--hydra-text); font: inherit; font-size: 13px; outline: none;
+}
+.hydra-kb-search input:focus { border-color: rgb(var(--hydra-accent-500)); }
+.hydra-kb-main { max-width: 1100px; }
+.hydra-kb-article .hydra-box-body,
+.hydra-kb-hero .hydra-box-body { padding: 28px 32px; }
+.hydra-kb-crumbs { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; color: var(--hydra-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.hydra-kb-crumbs svg { width: 13px; height: 13px; }
+.hydra-kb-title { margin: 0 0 6px; color: var(--hydra-text); font-size: 28px; font-weight: 700; line-height: 1.25; }
+.hydra-kb-meta { margin: 0; color: var(--hydra-muted); font-size: 13px; }
+.hydra-kb-content { margin-top: 22px; }
+.hydra-kb-content img,
+.hydra-kb-video { display: block; max-width: 100%; height: auto; margin: 12px 0; border-radius: var(--hydra-radius-sm); border: 1px solid var(--hydra-border); }
+.hydra-kb-video { width: 100%; background: #000; }
+.hydra-kb-embed { position: relative; margin: 12px 0; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--hydra-radius-sm); border: 1px solid var(--hydra-border); background: #000; }
+.hydra-kb-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.hydra-kb-pager { display: grid; grid-template-columns: 1fr 1fr; gap: var(--hydra-gap); margin-top: var(--hydra-gap); }
+.hydra-kb-pager a { display: flex; flex-direction: column; gap: 2px; padding: 14px 18px; color: var(--hydra-text); text-decoration: none; }
+.hydra-kb-pager a:hover { border-color: rgb(var(--hydra-accent-500) / 0.6); text-decoration: none; }
+.hydra-kb-pager a.is-next { text-align: right; }
+.hydra-kb-pager small { color: var(--hydra-muted); font-size: 12px; }
+.hydra-kb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--hydra-gap); margin-top: var(--hydra-gap); }
+.hydra-kb-card h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; color: var(--hydra-text); font-size: 17px; font-weight: 700; }
+.hydra-kb-card h2 svg { width: 18px; height: 18px; color: rgb(var(--hydra-accent-500)); }
+.hydra-kb-card ul { margin: 12px 0 0; padding: 0; list-style: none; }
+.hydra-kb-card li { padding: 3px 0; font-size: 13px; }
+.hydra-kb-card li a { color: var(--hydra-text-2); text-decoration: none; }
+.hydra-kb-card li a:hover { color: rgb(var(--hydra-accent-400)); }
+.hydra-kb-card li.is-sub { margin-top: 8px; color: var(--hydra-muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+@media (max-width: 640px) {
+    .hydra-kb-article .hydra-box-body, .hydra-kb-hero .hydra-box-body { padding: 20px; }
+    .hydra-kb-pager { grid-template-columns: 1fr; }
+}

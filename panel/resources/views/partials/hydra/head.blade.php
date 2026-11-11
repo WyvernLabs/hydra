@@ -31,4 +31,21 @@
 <link rel="stylesheet" href="/hydra/tokens.css?v={{ substr(md5_file(public_path('hydra/tokens.css')), 0, 8) }}">
 <link rel="stylesheet" href="/hydra/layout.css?v={{ substr(md5_file(public_path('hydra/layout.css')), 0, 8) }}">
 <style id="hydra-branding">{!! $branding->cssVariables() !!}{!! app(\Pterodactyl\Services\Hydra\SurfaceService::class)->cssVariables() !!}</style>
+{{-- Hydra: live preview of the designer (public/hydra/designer.js). Only inside its frame and only from the same origin. --}}
+<script>
+    (function () {
+        if (window.self === window.top || !/[?&]hydra_designer=1(&|$)/.test(window.location.search)) return;
+        document.documentElement.classList.add('hydra-designer-frame');
+        window.addEventListener('message', function (event) {
+            if (event.origin !== window.location.origin || !event.data || event.data.type !== 'hydra-designer') return;
+            var root = document.documentElement;
+            (window.hydraDesignerVars || []).forEach(function (name) { root.style.removeProperty(name); });
+            window.hydraDesignerVars = Object.keys(event.data.vars || {});
+            window.hydraDesignerVars.forEach(function (name) { root.style.setProperty(name, event.data.vars[name]); });
+            window.hydraDesigner = event.data.state || {};
+            window.dispatchEvent(new CustomEvent('hydra-designer', { detail: window.hydraDesigner }));
+        });
+        window.parent.postMessage({ type: 'hydra-designer-ready' }, window.location.origin);
+    })();
+</script>
 @include('partials.hydra.effects')

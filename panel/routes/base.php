@@ -70,5 +70,19 @@ Route::get('/databases/export/{token}', Base\DatabaseExportController::class)
     ->where('token', '[A-Za-z0-9]{48}')
     ->name('databases.export');
 
+// Hydra: pictures and videos of the knowledgebase (addon "knowledgebase").
+Route::get('/knowledgebase-media/{uuid}.{extension}', Base\KnowledgebaseMediaController::class)
+    ->withoutMiddleware(['auth', RequireTwoFactorAuthentication::class])
+    ->where(['uuid' => '[0-9a-f-]{36}', 'extension' => '[a-z0-9]{2,4}'])
+    ->middleware('addon:knowledgebase')
+    ->name('knowledgebase.media');
+
+// Hydra: the knowledgebase under the address set in the addon (default /knowledgebase).
+Route::get('/{knowledgebase}/{post?}', Base\KnowledgebaseController::class)
+    ->withoutMiddleware(['auth', RequireTwoFactorAuthentication::class])
+    ->where(['knowledgebase' => preg_quote(app(\Pterodactyl\Services\Hydra\Addons\KnowledgebaseAddon::class)->path(), '/'), 'post' => '[a-z0-9-]{1,120}'])
+    ->middleware('addon:knowledgebase')
+    ->name('knowledgebase');
+
 Route::get('/{react}', [Base\IndexController::class, 'index'])
     ->where('react', '^(?!(\/)?(api|auth|admin|daemon)).+');

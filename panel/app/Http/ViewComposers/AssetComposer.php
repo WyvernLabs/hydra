@@ -107,6 +107,13 @@ class AssetComposer
                 $this->navigation->icons(),
                 array_column($links, 'icon'),
             )),
+            // Hydra: knowledgebase addon, linked in the sidebar.
+            'knowledgebase' => [
+                'enabled' => app(\Pterodactyl\Services\Hydra\Addons\KnowledgebaseAddon::class)->enabled(),
+                'url' => app(\Pterodactyl\Services\Hydra\Addons\KnowledgebaseAddon::class)->url(),
+            ],
+            // Hydra: style and texts of the login page (Designer > Login).
+            'login' => app(\Pterodactyl\Services\Hydra\LoginDesignService::class)->toFrontend(app()->getLocale()),
             // Hydra: backgrounds of the login page and the dashboard.
             'backgrounds' => [
                 'login' => $this->backgrounds->forSlot('login'),

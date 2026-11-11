@@ -11,6 +11,15 @@ return [
         'stopping' => 'Stoppt',
     ],
 
+    // Hydra: Laufzeit des Servers in der oberen Leiste.
+    'expiry' => [
+        'label' => 'Laufzeit',
+        'remaining' => 'Läuft ab in',
+        'expired' => 'Laufzeit abgelaufen',
+        'day' => 'T',
+        'until' => 'Läuft ab am :date',
+    ],
+
     'conflict' => [
         'installing_title' => 'Installation läuft',
         'installing' => 'Dein Server ist gleich bereit. Versuche es in ein paar Minuten erneut.',
@@ -18,6 +27,8 @@ return [
         'suspended' => 'Dieser Server ist gesperrt und kann nicht aufgerufen werden.',
         'suspended_limited' => 'Dieser Server ist gesperrt. Konsole und Einstellungen sind nicht verfügbar, Dateien, Datenbanken und Backups kannst du aber weiter nutzen, um Probleme zu beheben oder deine Daten zu sichern.',
         'suspended_full' => 'Dieser Server ist gesperrt. Du kannst ihn trotzdem voll nutzen, da du gesperrte Server verwenden darfst.',
+        'suspended_bar_full' => 'Dieser Server ist gesperrt – du kannst ihn trotzdem weiter nutzen.',
+        'suspended_bar_limited' => 'Dieser Server ist gesperrt – Dateien, Datenbanken und Backups bleiben verfügbar.',
         'suspended_sftp' => 'Dateien lassen sich auch per SFTP herunterladen:',
         'suspended_open' => 'Öffnen',
         'maintenance_title' => 'Node in Wartung',

@@ -7,21 +7,67 @@ return [
     'title' => 'Design',
     'subtitle' => 'Aussehen und Inhalte des Panels.',
     'tabs' => [
-        'general' => 'Farben & Logo',
+        'general' => 'Farben',
+        'login' => 'Login',
         'metadata' => 'Metadaten',
-        'backgrounds' => 'Hintergründe',
+        'backgrounds' => 'Bilder',
         'eggs' => 'Eggs',
         'console' => 'Konsole',
         'links' => 'Links & Seiten',
         'navigation' => 'Navigation',
         'announcements' => 'Ankündigungen',
         'effects' => 'Effekte',
+        'maintenance' => 'Wartungsseite',
         'addons' => 'Addons',
     ],
 
+    // Hydra: der Designer (eigener Bereich für alle Design-Einstellungen mit Live-Vorschau).
+    'designer' => [
+        'title' => 'Designer',
+        'back' => 'Zurück zum Adminbereich',
+        'sections' => 'Einstellungen',
+        'preview' => 'Live-Vorschau',
+        'device' => 'Gerät',
+        'desktop' => 'Desktop',
+        'tablet' => 'Tablet',
+        'mobile' => 'Mobil',
+        'reload' => 'Vorschau neu laden',
+        'open' => 'In neuem Tab öffnen',
+        'hint' => 'Die Vorschau zeigt Änderungen sofort, gespeichert wird erst mit „Speichern“.',
+        'page_dashboard' => 'Dashboard',
+        'page_login' => 'Login',
+    ],
+
+    // Hydra: Aussehen der Login-Seite (Designer > Login).
+    'login' => [
+        'title' => 'Login',
+        'subtitle_page' => 'Stil, Bild und Texte der Login-Seite.',
+        'style' => 'Stil',
+        'styles' => [
+            'classic' => 'Klassisch',
+            'classic_help' => 'Formular als Karte in der Mitte des Login-Hintergrunds.',
+            'split' => 'Geteilt',
+            'split_help' => 'Eine Karte: Formular auf der einen, Bild auf der anderen Seite.',
+            'side' => 'Seitlich',
+            'side_help' => 'Formular auf einer Bildschirmhälfte, das Bild füllt die andere und läuft weich aus.',
+        ],
+        'mirror' => 'Gespiegelt (Formular rechts, Bild links)',
+        'mirror_help' => 'Nur für „Geteilt“ und „Seitlich“. Auf dem Handy wird immer nur das Formular angezeigt.',
+        'image' => 'Bild',
+        'image_help' => 'Für „Geteilt“ und „Seitlich“. Ohne eigenes Bild wird der <a href=":url">Login-Hintergrund</a> verwendet, ohne diesen das Wabenmuster in der Akzentfarbe. PNG, JPG, GIF oder WEBP.',
+        'image_reset' => 'Eigenes Bild entfernen',
+        'texts' => 'Texte',
+        'heading' => 'Überschrift',
+        'subtitle' => 'Untertitel',
+        'info' => 'Infobox unter dem Formular',
+        'info_placeholder' => 'Optional, z. B. Hinweis auf einen Demo-Zugang oder Wartungen',
+        'texts_help' => 'Leere Felder zeigen den Standardtext (grau). Beim Stil „Klassisch“ erscheint der Untertitel nur, wenn du einen einträgst. Die Infobox bleibt leer, wenn nichts eingetragen ist.',
+        'saved' => 'Die Login-Seite wurde gespeichert.',
+    ],
+
     'general' => [
-        'title' => 'Erscheinungsbild',
-        'subtitle' => 'Akzentfarbe, Logo und Favicon des Panels.',
+        'title' => 'Farben',
+        'subtitle' => 'Akzentfarbe und Boxen des Panels.',
         'accent' => 'Akzentfarbe',
         'color' => 'Farbe',
         'accent_help' => 'Für Schaltflächen, Links, den aktiven Menüpunkt und Hervorhebungen im Kunden- und Adminbereich. Standard: <code>:default</code>.',
@@ -65,10 +111,10 @@ return [
         'saved' => 'Die Metadaten wurden gespeichert.',
     ],
 
-    // Hydra: Farben und Transparenz der Boxen (Design > Farben & Logo).
+    // Hydra: Farben und Transparenz der Boxen (Designer > Farben).
     'surfaces' => [
         'title' => 'Boxen & Flächen',
-        'help' => 'Farben und Transparenz aller Boxen, Karten, der Seitenleiste und der inneren Felder im Kunden- und Adminbereich. Mit weniger Deckkraft und etwas Weichzeichnung werden die Boxen zu Milchglas vor dem Hintergrund (Design > Hintergründe).',
+        'help' => 'Farben und Transparenz aller Boxen, Karten, der Seitenleiste und der inneren Felder im Kunden- und Adminbereich. Mit weniger Deckkraft und etwas Weichzeichnung werden die Boxen zu Milchglas vor dem Hintergrund (Designer > Bilder).',
         'box' => 'Boxfarbe',
         'inner' => 'Innere Felder',
         'border' => 'Rahmenfarbe',
@@ -106,12 +152,14 @@ return [
     ],
 
     'backgrounds' => [
+        'subtitle' => 'Logo, Favicon und Hintergründe des Panels.',
+        'login_hint' => 'Den Hintergrund der Login-Seite stellst du unter <a href=":url">Login</a> ein.',
         'login' => 'Hintergrund Login',
         'login_help' => 'Hintergrund der Login-Seite und der anderen Seiten für nicht angemeldete Besucher.',
         'dashboard' => 'Hintergrund Dashboard',
         'dashboard_help' => 'Hintergrund des Kundenbereichs. Server, deren Egg keinen eigenen Hintergrund hat, verwenden ihn ebenfalls.',
         'admin' => 'Hintergrund Adminbereich',
-        'admin_help' => 'Hintergrund aller Seiten im Adminbereich. Mit dem Glas-Design unter Farben & Logo scheint er durch die Boxen durch.',
+        'admin_help' => 'Hintergrund aller Seiten im Adminbereich. Mit dem Glas-Design unter Farben scheint er durch die Boxen durch.',
         'egg' => 'Server-Hintergrund',
         'egg_help' => 'Hintergrund der Serverseiten (Konsole, Dateien, …) aller Server mit diesem Egg. Ohne eigenen Hintergrund wird der des Dashboards verwendet.',
         'image' => 'Bild',
@@ -125,6 +173,24 @@ return [
         'saved' => 'Der Hintergrund wurde gespeichert.',
         'eggs_hint' => 'Die Hintergründe der Serverseiten einzelner Eggs legst du unter <a href=":url">Design > Eggs</a> fest.',
         'egg_inherits' => 'Dashboard-Hintergrund',
+    ],
+
+    // Hydra: Seite "503 – Dienst nicht verfügbar", die während eines Updates erscheint (Design > Wartungsseite).
+    'maintenance' => [
+        'title' => 'Wartungsseite',
+        'subtitle' => 'Was Besucher sehen, während das Panel aktualisiert wird.',
+        'texts' => 'Texte',
+        'heading' => 'Titel',
+        'description' => 'Beschreibung',
+        'texts_help' => 'Leere Felder zeigen den Standardtext (grau). Die Seite wählt die Sprache passend zum Browser des Besuchers.',
+        'logo' => 'Logo in der Box anzeigen',
+        'logo_help' => 'Das Logo unter Bilder. Bilder über 256 KB werden durch das Hydra-Logo ersetzt, da die Seite ohne PHP ausgeliefert wird.',
+        'background' => 'Hintergrund',
+        'background_help' => 'Ohne eigenes Bild erscheint das Wabenmuster. Die Box übernimmt Farbe, Transparenz und Unschärfe aus „Boxen & Flächen“ unter Farben.',
+        'preview' => 'Vorschau',
+        'preview_help' => 'So sieht die Seite aus (gespeicherter Stand). Sie erscheint während Updates und bei jedem anderen Fehler 503 und lädt sich automatisch neu, sobald das Panel wieder erreichbar ist.',
+        'open_preview' => 'In neuem Tab öffnen',
+        'saved' => 'Die Wartungsseite wurde gespeichert.',
     ],
 
     'effects' => [

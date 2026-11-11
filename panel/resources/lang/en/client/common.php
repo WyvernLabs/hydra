@@ -50,6 +50,7 @@ return [
         'search' => 'Search',
         'dashboard' => 'Servers',
         'administration' => 'Administration',
+        'knowledgebase' => 'Knowledgebase',
         'account' => 'Account',
         'links' => 'Links',
         'server' => 'Server',

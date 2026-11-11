@@ -9,6 +9,7 @@ import { HydraBackground } from '@/state/settings';
 import { useTranslation } from 'react-i18next';
 import WarningNotices from '@/components/hydra/WarningNotices';
 import { protectedClass } from '@/lib/protectedImage';
+import { useDesignerBackground } from '@/lib/designer';
 
 interface Props {
     sections: SidebarSection[];
@@ -26,7 +27,8 @@ export default ({ sections, children, background }: Props) => {
     const [open, setOpen] = useState(false);
     const branding = useStoreState((state) => state.settings.data!.branding);
     const name = useStoreState((state) => state.settings.data!.name);
-    const dashboardBackground = useStoreState((state) => state.settings.data!.backgrounds?.dashboard);
+    const savedDashboardBackground = useStoreState((state) => state.settings.data!.backgrounds?.dashboard);
+    const dashboardBackground = useDesignerBackground('dashboard', savedDashboardBackground);
     const { t } = useTranslation();
 
     useEffect(() => setOpen(false), [location.pathname]);

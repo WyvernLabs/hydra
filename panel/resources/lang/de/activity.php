@@ -152,6 +152,11 @@ return [
         'export' => [
             'start' => 'Export von :source zu :host (:target) gestartet',
         ],
+        'expiry' => [
+            'update' => 'Laufzeit bis :until gesetzt',
+            'clear' => 'Laufzeit entfernt',
+            'expired' => 'Laufzeit abgelaufen, Server gesperrt',
+        ],
         'support' => [
             'open' => 'Server im Gamesupport des Teams geöffnet',
             'suspend' => 'Server im Gamesupport gesperrt',

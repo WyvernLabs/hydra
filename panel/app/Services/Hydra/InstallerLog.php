@@ -20,9 +20,14 @@ final class InstallerLog
         $progress = null;
         $stage = null;
         if (preg_match_all(self::MARKER, $log, $matches, PREG_SET_ORDER)) {
+            // The highest value counts: when an update brings a newer installer, that one
+            // starts again at 0 % although the work before it is already done.
             foreach ($matches as $match) {
-                $progress = min(100, (int) $match[1]);
-                $stage = trim($match[2] ?? '') ?: $stage;
+                $value = min(100, (int) $match[1]);
+                if ($progress === null || $value >= $progress) {
+                    $progress = $value;
+                    $stage = trim($match[2] ?? '') ?: $stage;
+                }
             }
         }
 

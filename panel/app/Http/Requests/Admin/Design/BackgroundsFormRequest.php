@@ -14,6 +14,13 @@ class BackgroundsFormRequest extends AdminFormRequest
             $rules += BackgroundService::rules("bg_$slot");
         }
 
-        return $rules;
+        // Hydra: logo and favicon live on the same page (Designer > Images).
+        return $rules + [
+            'logo' => 'nullable|file|max:2048|mimes:png,jpg,jpeg,gif,webp,svg',
+            'favicon' => 'nullable|file|max:1024|mimes:png,ico,svg',
+            'reset_logo' => 'nullable|boolean',
+            'reset_favicon' => 'nullable|boolean',
+            'protect_images' => 'nullable|boolean',
+        ];
     }
 }

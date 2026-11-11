@@ -5,6 +5,7 @@ import { ServerContext } from '@/state/server';
 import Can from '@/components/elements/Can';
 import PowerButtons from '@/components/server/console/PowerButtons';
 import ContentContainer from '@/components/elements/ContentContainer';
+import ServerExpiryTimer from '@/components/server/ServerExpiryTimer';
 
 // Hydra: name, state and power buttons of the server above every page of it,
 // so it can be controlled from every tab.
@@ -23,14 +24,17 @@ export default () => {
     const status = ServerContext.useStoreState((state) => state.status.value);
     // Users who only keep the files of a suspended server cannot start it.
     const limited = ServerContext.useStoreState((state) => state.server.suspendedAccess === 'limited');
+    const expiresAt = ServerContext.useStoreState((state) => state.server.data!.expiresAt);
 
     return (
         // Same width as the pages below it.
         <ContentContainer>
             <div
-                className={
-                    'hydra-server-header mb-4 flex flex-wrap items-center gap-4 rounded-lg border border-gray-700 bg-gray-800/80 px-4 py-3 backdrop-blur'
-                }
+                className={classNames(
+                    'hydra-server-header mb-4 flex flex-wrap items-center gap-4 rounded-lg border border-gray-700 bg-gray-800/80 px-4 py-3 backdrop-blur',
+                    // Hydra: with a runtime, three columns so the timer sits exactly in the middle.
+                    expiresAt && 'lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
+                )}
             >
                 <div className={'min-w-0 flex-1'}>
                     <h1 className={'flex items-center gap-2 font-header text-xl font-medium text-gray-50'}>
@@ -45,9 +49,10 @@ export default () => {
                     </h1>
                     {description && <p className={'mt-0.5 line-clamp-1 text-sm text-gray-300'}>{description}</p>}
                 </div>
+                {expiresAt && <ServerExpiryTimer expiresAt={expiresAt} />}
                 {!limited && (
                     <Can action={['control.start', 'control.stop', 'control.restart']} matchAny>
-                        <PowerButtons className={'flex w-full space-x-2 sm:w-auto'} />
+                        <PowerButtons className={'flex w-full space-x-2 sm:w-auto lg:justify-self-end'} />
                     </Can>
                 )}
             </div>

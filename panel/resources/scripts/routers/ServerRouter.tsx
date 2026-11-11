@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import SuspendedNotice, { SuspendedBanner } from '@/components/server/SuspendedNotice';
 import LockdownNotice, { LockdownBanner } from '@/components/server/lockdown/Lockdown';
 import ServerHeader from '@/components/server/ServerHeader';
+import ContentContainer from '@/components/elements/ContentContainer';
 import FileTransfers from '@/components/server/files/FileTransfers';
 
 export default () => {
@@ -140,7 +141,9 @@ export default () => {
                         <ErrorBoundary>
                             <ServerHeader />
                             <SuspendedBanner />
-                            <LockdownBanner />
+                            <ContentContainer>
+                                <LockdownBanner />
+                            </ContentContainer>
                             <TransitionRouter>
                                 <Switch location={location}>
                                     {suspendedAccess === 'limited' ? (

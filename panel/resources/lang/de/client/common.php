@@ -49,6 +49,7 @@ return [
         'search' => 'Suche',
         'dashboard' => 'Server',
         'administration' => 'Administration',
+        'knowledgebase' => 'Wissensdatenbank',
         'account' => 'Konto',
         'links' => 'Links',
         'server' => 'Server',

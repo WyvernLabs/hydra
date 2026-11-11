@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { Lock } from 'lucide-react';
 import { Link, useRouteMatch } from 'react-router-dom';
 import tw from 'twin.macro';
 import isEqual from 'react-fast-compare';
 import { useTranslation } from 'react-i18next';
 import { useStoreState } from 'easy-peasy';
 import { ServerContext } from '@/state/server';
-import { Alert } from '@/components/elements/alert';
 import ServerContentBlock from '@/components/elements/ServerContentBlock';
 import TitledGreyBox from '@/components/elements/TitledGreyBox';
 import CopyOnClick from '@/components/elements/CopyOnClick';
@@ -16,18 +17,39 @@ import { useServerNavigation } from '@/components/hydra/serverNavigation';
 import { ip } from '@/lib/formatters';
 
 /**
- * Banner above every page of a suspended server.
+ * Marks a suspended server across the whole window: a red, slowly breathing
+ * frame around the page and a red bar pinned to the top edge. The page moves
+ * down by the height of the bar (--hydra-offset-top, see layout.css).
  */
 export const SuspendedBanner = () => {
     const { t } = useTranslation('client/server');
     const access = ServerContext.useStoreState((state) => state.server.suspendedAccess);
+    const active = access !== 'none';
 
-    if (access === 'none') return null;
+    useEffect(() => {
+        if (!active) return;
+        document.documentElement.classList.add('hydra-suspended-mode');
 
-    return (
-        <Alert type={access === 'full' ? 'warning' : 'danger'} className={'mb-4'}>
-            {access === 'full' ? t('conflict.suspended_full') : t('conflict.suspended_limited')}
-        </Alert>
+        return () => document.documentElement.classList.remove('hydra-suspended-mode');
+    }, [active]);
+
+    if (!active) return null;
+
+    return createPortal(
+        <>
+            <div className={'hydra-suspended-frame'} aria-hidden />
+            <div
+                className={'hydra-suspended-bar'}
+                role={'status'}
+                title={access === 'full' ? t('conflict.suspended_full') : t('conflict.suspended_limited')}
+            >
+                <Lock className={'hydra-suspended-bar-icon'} aria-hidden />
+                <span>
+                    {access === 'full' ? t('conflict.suspended_bar_full') : t('conflict.suspended_bar_limited')}
+                </span>
+            </div>
+        </>,
+        document.body
     );
 };
 

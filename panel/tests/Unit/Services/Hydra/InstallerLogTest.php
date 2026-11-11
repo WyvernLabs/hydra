@@ -34,6 +34,28 @@ class InstallerLogTest extends TestCase
         $this->assertSame('', $parsed['log']);
     }
 
+    public function testANewerInstallerStartingAgainDoesNotSetTheProgressBack(): void
+    {
+        $parsed = InstallerLog::parse(implode("
+", [
+            '##hydra-progress 3 Pakete installieren',
+            '##hydra-progress 40 Hydra Panel bereitstellen',
+            '    Neuere Installer-Version gefunden – starte sie',
+            '##hydra-progress 0 System prüfen',
+            '##hydra-progress 3 Pakete installieren',
+        ]));
+
+        $this->assertSame(40, $parsed['progress']);
+        $this->assertSame('Hydra Panel bereitstellen', $parsed['stage']);
+
+        $parsed = InstallerLog::parse("##hydra-progress 40 Bereitstellen
+##hydra-progress 0 Neu
+##hydra-progress 43
+");
+        $this->assertSame(43, $parsed['progress']);
+        $this->assertSame('Bereitstellen', $parsed['stage']);
+    }
+
     public function testLogWithoutProgress(): void
     {
         $parsed = InstallerLog::parse("==> System prüfen\n    Debian 13 ok");

@@ -1,6 +1,62 @@
 {
     "releases": [
         {
+            "version": "1.7.0",
+            "build": 60,
+            "date": "2026-11-11",
+            "title": {
+                "de": "Designer, Wissensdatenbank, Login-Stile und Laufzeit für Server",
+                "en": "Designer, knowledgebase, login styles and server runtimes"
+            },
+            "changes": [
+                {
+                    "type": "new",
+                    "de": "Addon Wissensdatenbank: Kategorien, Unterkategorien und Beiträge mit Discord-Formatierung, Bildern, Videos und eingebetteten YouTube-Links, jeder Beitrag in allen Sprachen (Standardsprache Pflicht). Verwaltung unter Service-Verwaltung > Wissensdatenbank mit ausklappbarem Baum in der Seitenleiste, für Benutzer unter einer frei wählbaren Adresse mit Suche, auf Wunsch auch ohne Anmeldung.",
+                    "en": "Knowledgebase addon: categories, subcategories and posts with Discord formatting, pictures, videos and embedded YouTube links, every post in all languages (default language required). Managed under Service Management > Knowledgebase with a foldable tree in the sidebar, shown to users at an address of your choice with a search, optionally without logging in."
+                },
+                {
+                    "type": "new",
+                    "de": "Designer: Der Bereich Design ist jetzt ein eigener Designer mit eigener Seitenleiste statt Reitern und einer Live-Vorschau (Desktop, Tablet, Mobil), die Farben, Boxen, Hintergründe und die Login-Seite sofort zeigt, noch bevor gespeichert wird.",
+                    "en": "Designer: the design area is now a designer of its own with its own sidebar instead of tabs and a live preview (desktop, tablet, mobile) that shows colors, boxes, backgrounds and the login page right away, before saving."
+                },
+                {
+                    "type": "new",
+                    "de": "Designer > Login: drei Stile für die Login-Seite (Klassisch, Geteilt, Seitlich, die letzten beiden auch gespiegelt), eigenes Bild sowie Überschrift, Untertitel und Infobox pro Sprache.",
+                    "en": "Designer > Login: three styles for the login page (classic, split, side, the last two also mirrored), a picture of its own and heading, subtitle and info box per language."
+                },
+                {
+                    "type": "improved",
+                    "de": "Gesperrte Server zeigen statt des Banners eine feste rote Zeile am oberen Rand und einen pulsierenden roten Rahmen um das Fenster.",
+                    "en": "Suspended servers show a red bar pinned to the top edge and a pulsing red frame around the window instead of the banner."
+                },
+                {
+                    "type": "new",
+                    "de": "Zeitlich begrenzte Server: optionales Ablaufdatum beim Erstellen und unter Server > Verwalten (eigenes Recht „Laufzeit“). Nach Ablauf wird der Server automatisch gesperrt, ein neues Datum entsperrt ihn wieder.",
+                    "en": "Servers with a limited runtime: optional expiry date when creating a server and under Servers > Manage (own permission \"Runtime\"). When it runs out the server is suspended automatically, a new date unsuspends it again."
+                },
+                {
+                    "type": "new",
+                    "de": "Die verbleibende Laufzeit läuft als Countdown mittig in der oberen Leiste jedes Servers und in einer neuen Spalte der Serverliste im Adminbereich.",
+                    "en": "The remaining runtime counts down in the middle of the top bar of every server and in a new column of the server list in the admin area."
+                },
+                {
+                    "type": "new",
+                    "de": "Einstellungen > Updates zeigt beim Panel-Update einen animierten, geschätzten Fortschrittsbalken mit dem aktuellen Schritt, der Laufzeit und allen Schritten des Updates.",
+                    "en": "Settings > Updates shows an animated, estimated progress bar during a panel update, with the current step, the elapsed time and all steps of the update."
+                },
+                {
+                    "type": "new",
+                    "de": "Design > Wartungsseite: eigene Seite „503 – Dienst nicht verfügbar“ mit anpassbarem Titel, Beschreibung (pro Sprache) und Hintergrund. Die Box schwebt leicht und übernimmt die Farben aus „Boxen & Flächen“.",
+                    "en": "Design > Maintenance page: custom \"503 Service Unavailable\" page with customizable title, description (per language) and background. The box floats gently and uses the colors from \"Boxes & surfaces\"."
+                },
+                {
+                    "type": "improved",
+                    "de": "Die Wartungsseite lädt sich von selbst neu, sobald das Panel wieder erreichbar ist, und der Adminbereich verfolgt das Update auch während des Wartungsmodus weiter.",
+                    "en": "The maintenance page reloads by itself as soon as the panel is reachable again, and the admin area keeps following the update during maintenance mode."
+                }
+            ]
+        },
+        {
             "version": "1.6.0",
             "build": 59,
             "date": "2026-11-10",

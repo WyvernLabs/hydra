@@ -499,14 +499,17 @@ fi
 
 if (( INSTALLED )) && [[ -f "$INSTALL_DIR/artisan" ]]; then
   info "Wartungsmodus an"
-  (cd "$INSTALL_DIR" && runuser -u "$WEB_USER" -- "$PHP_BIN" artisan down >/dev/null 2>&1 || true)
+  # Die Wartungsseite (Design > Wartungsseite) wird vorgerendert: Besucher bekommen sie, ohne dass
+  # das Framework startet – auch während composer die Abhängigkeiten austauscht.
+  (cd "$INSTALL_DIR" && runuser -u "$WEB_USER" -- "$PHP_BIN" artisan down --render="errors::503" --retry=30 >/dev/null 2>&1 \
+    || runuser -u "$WEB_USER" -- "$PHP_BIN" artisan down >/dev/null 2>&1 || true)
 fi
 
 # Programmdateien abgleichen. Nutzerdaten (.env, storage/, hochgeladene Dateien) bleiben unberührt.
 install -d -m 755 "$INSTALL_DIR"
 rsync -a --delete \
   --exclude '.env' --exclude '/storage/' --exclude '/vendor/' --exclude '/node_modules/' \
-  --exclude '/public/assets/' --exclude '/bootstrap/cache/*.php' \
+  --exclude '/public/assets/' --exclude '/public/hydra-maintenance/' --exclude '/bootstrap/cache/*.php' \
   "$PANEL_SRC/" "$INSTALL_DIR/"
 # storage/ beim ersten Mal komplett anlegen, später nur fehlende Ordner ergänzen.
 rsync -a --ignore-existing "$PANEL_SRC/storage/" "$INSTALL_DIR/storage/"
@@ -529,6 +532,14 @@ cd "$INSTALL_DIR"
 progress 43
 run "PHP-Abhängigkeiten installieren (composer)" env COMPOSER_ALLOW_SUPERUSER=1 "$PHP_BIN" /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 progress 52
+# Die neue Version ist installiert: Wartungsseite in ihrem Design neu rendern. Dabei kommt auch die
+# Statusabfrage der Updates in die Ausnahmen, damit der Adminbereich den Fortschritt weiter sieht.
+if (( INSTALLED )); then
+  "$PHP_BIN" artisan view:clear >/dev/null 2>&1 || true
+  "$PHP_BIN" artisan hydra:maintenance:render >/dev/null 2>&1 || true
+  # Damit das Panel (z. B. die Statusabfrage) bis zum Ende des Updates Views und Caches schreiben kann.
+  chown -R "$WEB_USER:$WEB_USER" "$INSTALL_DIR/storage" "$INSTALL_DIR/bootstrap/cache" 2>/dev/null || true
+fi
 
 # webpack braucht beim Bauen gut 1,5 GB Speicher – auf kleinen Servern hilft vorübergehend Swap.
 TEMP_SWAP=""

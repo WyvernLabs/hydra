@@ -76,6 +76,21 @@ export interface SiteSettings {
         login: HydraBackground;
         dashboard: HydraBackground;
     };
+    // Hydra: look of the login page (Designer > Login); texts null = default.
+    login?: HydraLoginDesign;
+    // Hydra: knowledgebase addon, linked in the sidebar.
+    knowledgebase?: { enabled: boolean; url: string };
+}
+
+export type HydraLoginStyle = 'classic' | 'split' | 'side';
+
+export interface HydraLoginDesign {
+    style: HydraLoginStyle;
+    mirror: boolean;
+    image: string | null;
+    title: string | null;
+    subtitle: string | null;
+    info: string | null;
 }
 
 export type TurnstileForm = 'login' | 'password' | 'register';

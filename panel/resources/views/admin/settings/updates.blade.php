@@ -20,6 +20,31 @@
     @unless($panel['available'])
         <div class="alert alert-warning">{!! __('admin/settings.updates.not_available') !!}</div>
     @endunless
+    <div class="row" id="updateProgressRow" hidden>
+        <div class="col-xs-12">
+            <div class="box hydra-update-progress" id="updateProgress" data-state="waiting">
+                <div class="box-body">
+                    <div class="hydra-update-progress-head">
+                        <span class="hydra-update-progress-icon" aria-hidden="true"><i class="fa fa-check"></i><i class="fa fa-times"></i></span>
+                        <div class="hydra-update-progress-text">
+                            <strong id="updateProgressPhase"></strong>
+                            <small id="updateProgressMeta"></small>
+                        </div>
+                        <span class="hydra-update-progress-percent" id="updateProgressPercent">0 %</span>
+                    </div>
+                    <div class="progress hydra-update-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="updateProgressTrack">
+                        <div class="progress-bar progress-bar-striped active" id="updateProgressBar" style="width: 0%;"></div>
+                    </div>
+                    <ol class="hydra-update-steps" id="updateProgressSteps">
+                        @foreach(array_keys(\Pterodactyl\Services\Hydra\UpdateService::PHASES) as $phase)
+                            <li data-phase="{{ $phase }}"><i class="fa" aria-hidden="true"></i>{{ __("admin/settings.updates.phases.$phase") }}</li>
+                        @endforeach
+                    </ol>
+                    <p class="hydra-update-progress-note" id="updateProgressNote" hidden></p>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col-md-6">
             <div class="box box-primary">
@@ -123,6 +148,7 @@
     <script>
         (function () {
             var lang = @json(__('admin/settings.updates.js'));
+            lang.phases = @json(__('admin/settings.updates.phases'));
             var urls = {
                 status: '{{ route('admin.settings.updates.status') }}',
                 check: '{{ route('admin.settings.updates.check') }}',
@@ -132,6 +158,9 @@
             var token = '{{ csrf_token() }}';
             var latest = null;
             var panelUpdating = false;
+            var phases = {!! json_encode(collect(\Pterodactyl\Services\Hydra\UpdateService::PHASES)->map(fn ($phase, $key) => ['key' => $key, 'start' => $phase[0], 'seconds' => $phase[1]])->values()) !!};
+            var maintenanceFrom = {{ \Pterodactyl\Services\Hydra\UpdateService::MAINTENANCE_FROM }};
+            var maintenanceLink = @json(Auth::user()->hasAdminPermission('design.view') ? route('admin.design.maintenance') : null);
 
             function esc(value) {
                 var div = document.createElement('div');
@@ -155,6 +184,116 @@
                 if (!info || !info.commit) return '<span class="text-muted">' + esc(lang.unknown) + '</span>';
                 return '<code>' + esc(short(info.commit)) + '</code> ' + esc(info.subject || '') +
                     (info.date ? '<br><small class="text-muted">' + esc(when(info.date)) + '</small>' : '');
+            }
+
+            // ---------------------------------------------------------------- Progress
+            //
+            // The installer reports a percentage at the start of each phase. In between the
+            // bar moves on by itself, based on how long a phase usually takes, and never goes
+            // back, so it is visible at any time that the update is still working.
+
+            var progress = { active: false, state: 'waiting', reported: null, phase: -1, phaseSince: 0, shown: 0, startedAt: null, reachable: true, timer: null };
+
+            function phaseIndex(value) {
+                var index = 0;
+                for (var i = 0; i < phases.length; i++) {
+                    if (value >= phases[i].start) index = i;
+                }
+                return index;
+            }
+
+            function duration(seconds) {
+                seconds = Math.max(0, Math.floor(seconds));
+                return Math.floor(seconds / 60) + ':' + ('0' + (seconds % 60)).slice(-2);
+            }
+
+            function estimate() {
+                if (progress.state === 'success') return 100;
+                if (progress.reported === null || progress.state === 'waiting') return Math.max(progress.shown, 1);
+                var index = phaseIndex(progress.reported);
+                var next = phases[index + 1];
+                if (!next) return 100;
+                var base = Math.max(progress.reported, phases[index].start);
+                var elapsed = (Date.now() - progress.phaseSince) / 1000;
+                var share = 1 - Math.exp(-elapsed / Math.max(1, phases[index].seconds));
+                return base + (next.start - base) * share * 0.95;
+            }
+
+            function drawProgress() {
+                var box = $('#updateProgress');
+                progress.shown = Math.min(100, Math.max(progress.shown, estimate()));
+                var percent = Math.floor(progress.shown);
+                var index = progress.reported === null ? -1 : phaseIndex(progress.reported);
+                if (progress.state === 'success') index = phases.length - 1;
+
+                box.attr('data-state', progress.state);
+                $('#updateProgressBar').css('width', progress.shown.toFixed(1) + '%')
+                    .toggleClass('active', progress.state === 'running' || progress.state === 'waiting');
+                $('#updateProgressTrack').attr('aria-valuenow', percent);
+                $('#updateProgressPercent').text(percent + ' %');
+
+                var title;
+                if (progress.state === 'success') title = lang.progress_finished;
+                else if (progress.state === 'failed') title = lang.progress_failed;
+                else if (progress.state === 'waiting' || index < 0) title = lang.progress_waiting;
+                else title = lang.phases[phases[index].key] + ' …';
+                $('#updateProgressPhase').text(title);
+
+                var meta = [];
+                if (progress.startedAt) meta.push(lang.progress_elapsed.replace(':time', duration((Date.now() - progress.startedAt) / 1000)));
+                if (progress.state === 'running') meta.push(lang.progress_estimated);
+                $('#updateProgressMeta').text(meta.join(' · '));
+
+                $('#updateProgressSteps li').each(function (i) {
+                    var step = $(this);
+                    var state = i < index || (i === index && progress.state === 'success') ? 'done'
+                        : (i === index ? (progress.state === 'failed' ? 'failed' : 'current') : 'pending');
+                    step.attr('data-step', state);
+                    step.find('i').attr('class', 'fa ' + ({
+                        done: 'fa-check-circle', current: 'fa-circle-o-notch fa-spin', failed: 'fa-times-circle', pending: 'fa-circle-thin',
+                    })[state]);
+                });
+
+                var note = '';
+                if (progress.state === 'failed') {
+                    note = esc(lang.progress_failed_note);
+                } else if (progress.state === 'running' && !progress.reachable) {
+                    note = esc(lang.progress_unreachable);
+                } else if (progress.state === 'running' && progress.reported !== null && progress.reported >= maintenanceFrom) {
+                    note = esc(lang.progress_maintenance) + (maintenanceLink
+                        ? ' <a href="' + esc(maintenanceLink) + '">' + esc(lang.progress_maintenance_link) + '</a>' : '');
+                }
+                $('#updateProgressNote').html(note).prop('hidden', note === '');
+            }
+
+            function showProgress(state, data) {
+                if (!progress.active) {
+                    progress.active = true;
+                    progress.shown = 0;
+                    $('#updateProgressRow').prop('hidden', false);
+                }
+                if (!progress.timer && (state === 'running' || state === 'waiting')) {
+                    progress.timer = setInterval(drawProgress, 500);
+                }
+                progress.state = state;
+                progress.reachable = true;
+                if (data) {
+                    var reported = typeof data.progress === 'number' && state !== 'waiting' ? data.progress : null;
+                    var index = reported === null ? -1 : phaseIndex(reported);
+                    if (index !== progress.phase) {
+                        progress.phase = index;
+                        progress.phaseSince = Date.now();
+                    }
+                    progress.reported = reported;
+                    var started = data.status && data.status.started_at ? Date.parse(data.status.started_at) : NaN;
+                    if (state === 'running' && !isNaN(started)) progress.startedAt = started;
+                }
+                if (state === 'waiting' && !progress.startedAt) progress.startedAt = Date.now();
+                if ((state === 'success' || state === 'failed') && progress.timer) {
+                    clearInterval(progress.timer);
+                    progress.timer = null;
+                }
+                drawProgress();
             }
 
             // ---------------------------------------------------------------- Panel
@@ -190,10 +329,17 @@
                 $('#checkButton, #updatePanelButton').prop('disabled', !data.available || data.busy);
                 if (data.log) $('#panelLog').text(data.log);
 
-                // Finished updates are shown with the new version, so reload once.
-                if (panelUpdating && !data.busy && state !== 'running') {
+                if (data.busy) {
+                    panelUpdating = true;
+                    showProgress(state === 'running' ? 'running' : 'waiting', data);
+                } else if (panelUpdating && state === 'failed') {
                     panelUpdating = false;
-                    window.location.reload();
+                    showProgress('failed', data);
+                } else if (panelUpdating) {
+                    // Finished updates are shown with the new version, so reload once.
+                    panelUpdating = false;
+                    showProgress('success', data);
+                    setTimeout(function () { window.location.reload(); }, 1500);
                 }
                 refreshNodeButtons();
             }
@@ -202,13 +348,17 @@
                 $.ajax({ url: urls.status, dataType: 'json' })
                     .done(renderPanel)
                     .fail(function (xhr) {
-                        // While the panel updates itself it is in maintenance mode (503).
-                        if (xhr.status === 503) {
+                        // While the panel installs the new version it may not answer for a moment
+                        // (maintenance mode of an older version, PHP restarting, …).
+                        if (xhr.status === 503 || panelUpdating) {
                             panelUpdating = true;
                             $('#panelState').html(badge('warning', lang.running));
+                            showProgress('running');
+                            progress.reachable = false;
+                            drawProgress();
                         }
                     })
-                    .always(function () { setTimeout(pollPanel, panelUpdating ? 3000 : 5000); });
+                    .always(function () { setTimeout(pollPanel, panelUpdating ? 2000 : 5000); });
             }
 
             function post(url) {
@@ -235,6 +385,8 @@
                         panelUpdating = true;
                         $('#panelState').html(badge('warning', lang.waiting));
                         $('#panelLog').text('');
+                        progress.startedAt = null;
+                        showProgress('waiting', null);
                     });
                 });
             });

@@ -11,6 +11,7 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Pterodactyl\Services\Telemetry\TelemetryCollectionService;
 use Pterodactyl\Console\Commands\Schedule\ProcessRunnableCommand;
 use Pterodactyl\Console\Commands\Hydra\AutoDeleteCommand;
+use Pterodactyl\Console\Commands\Hydra\ExpireServersCommand;
 use Pterodactyl\Console\Commands\Hydra\CleanTicketImagesCommand;
 use Pterodactyl\Console\Commands\Hydra\SamplePlayersCommand;
 use Pterodactyl\Console\Commands\Hydra\StatusCheckCommand;
@@ -44,6 +45,10 @@ class Kernel extends ConsoleKernel
         $schedule->command(AutoDeleteCommand::class, ['--bans-only'])->everyFiveMinutes()->withoutOverlapping();
         $schedule->command(AutoDeleteCommand::class)->hourly()->withoutOverlapping();
         $schedule->command(CleanTicketImagesCommand::class)->hourly()->withoutOverlapping();
+        // Hydra: pictures and videos of the knowledgebase no post uses any more.
+        $schedule->call(fn () => app(\Pterodactyl\Services\Hydra\KnowledgebaseService::class)->cleanup())->name('hydra:knowledgebase:cleanup')->daily()->withoutOverlapping();
+        // Hydra: servers whose runtime is over are suspended.
+        $schedule->command(ExpireServersCommand::class)->everyMinute()->withoutOverlapping();
         // Hydra: players of the Minecraft servers for their statistics.
         $schedule->command(SamplePlayersCommand::class)->everyFiveMinutes()->withoutOverlapping()->runInBackground();
         // Hydra: availability of the nodes and applications for the status page.

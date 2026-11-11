@@ -97,6 +97,49 @@
         @endif
         @endif
 
+        @if(Auth::user()->hasAdminPermission('servers.expiry'))
+            <div class="col-sm-4">
+                <div class="box box-primary">
+                    <div class="box-header with-border">
+                        <h3 class="box-title"><i class="fa fa-hourglass-half"></i> {{ __('admin/servers.expiry.title') }}</h3>
+                    </div>
+                    <form action="{{ route('admin.servers.view.manage.expiry', $server->id) }}" method="POST" id="hydraExpiryForm">
+                        <div class="box-body">
+                            @if($server->hydra_expires_at)
+                                <p class="hydra-expiry hydra-expiry-large" data-hydra-expires="{{ $server->hydra_expires_at->toAtomString() }}">
+                                    <i class="fa fa-hourglass-half"></i> <span data-hydra-expires-text>…</span>
+                                </p>
+                                <p class="text-muted small">{{ __('admin/servers.expiry.until', ['date' => $server->hydra_expires_at->timezone(config('app.timezone'))->format(__('admin/servers.expiry.date_format'))]) }}</p>
+                                @if(app(\Pterodactyl\Services\Hydra\ServerExpiryService::class)->suspendedByExpiry($server))
+                                    <div class="alert alert-warning small">{{ __('admin/servers.expiry.suspended_hint') }}</div>
+                                @endif
+                            @else
+                                <p class="text-muted">{{ __('admin/servers.expiry.unlimited') }}</p>
+                            @endif
+                            <div class="form-group">
+                                <label class="control-label" for="hydraExpiresAt">{{ __('admin/servers.expiry.field') }}</label>
+                                <input type="datetime-local" id="hydraExpiresAt" name="hydra_expires_at" class="form-control"
+                                       value="{{ old('hydra_expires_at', \Pterodactyl\Services\Hydra\ServerExpiryService::inputValue($server->hydra_expires_at)) }}">
+                                <p class="text-muted small">{{ __('admin/servers.expiry.help', ['zone' => config('app.timezone')]) }}</p>
+                            </div>
+                            <div class="btn-group btn-group-xs" data-expiry-add>
+                                <button type="button" class="btn btn-default" data-days="1">{{ __('admin/servers.expiry.add_days', ['days' => 1]) }}</button>
+                                <button type="button" class="btn btn-default" data-days="7">{{ __('admin/servers.expiry.add_days', ['days' => 7]) }}</button>
+                                <button type="button" class="btn btn-default" data-days="30">{{ __('admin/servers.expiry.add_days', ['days' => 30]) }}</button>
+                            </div>
+                        </div>
+                        <div class="box-footer">
+                            {!! csrf_field() !!}
+                            <button type="submit" class="btn btn-sm btn-primary">{{ __('admin/common.actions.save') }}</button>
+                            @if($server->hydra_expires_at)
+                                <button type="submit" name="clear" value="1" class="btn btn-sm btn-default pull-right">{{ __('admin/servers.expiry.clear') }}</button>
+                            @endif
+                        </div>
+                    </form>
+                </div>
+            </div>
+        @endif
+
         @if(Auth::user()->hasAdminPermission('servers.lockdown') && config('hydra.addons.lockdown.enabled'))
             <div class="col-sm-4">
                 <div class="box {{ $server->isLockedDown() ? 'box-success' : 'box-danger' }}">
@@ -230,6 +273,9 @@
 @section('footer-scripts')
     @parent
     {!! Theme::js('vendor/lodash/lodash.js') !!}
+    <script>window.HydraExpiryLabels = @json(['day' => __('admin/servers.expiry.day'), 'expired' => __('admin/servers.expiry.expired')]);</script>
+    <script src="/hydra/expiry.js?v={{ substr(md5_file(public_path('hydra/expiry.js')), 0, 8) }}"></script>
+    @include('partials.admin.hydra.expiry-buttons')
 
     @if($canTransfer)
         {!! Theme::js('js/admin/server/transfer.js') !!}

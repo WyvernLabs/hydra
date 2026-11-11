@@ -1,7 +1,9 @@
 /*
- * Hydra: Markdown editor of tickets in the admin area. Formatting buttons,
- * images by button, paste or drag and drop (uploaded right away and inserted
- * as Markdown), and a preview rendered by the panel.
+ * Hydra: Markdown editor of tickets and of the knowledgebase in the admin
+ * area. Formatting buttons, images (and for the knowledgebase videos) by
+ * button, paste or drag and drop (uploaded right away and inserted as
+ * Markdown), and a preview rendered by the panel. data-accept lists the
+ * allowed file types, images only by default.
  */
 (function () {
     'use strict';
@@ -11,6 +13,7 @@
         var preview = editor.querySelector('[data-preview]');
         var fileInput = editor.querySelector('[data-file]');
         var limit = parseInt(editor.dataset.limit, 10) * 1024 * 1024;
+        var accept = (editor.dataset.accept || 'image/png,image/jpeg,image/gif,image/webp').split(',');
 
         // Wraps the selection (or a placeholder) or prefixes its lines.
         function wrap(before, after, placeholder) {
@@ -74,7 +77,7 @@
 
         function uploadAll(files) {
             Array.prototype.forEach.call(files, function (file) {
-                if (/^image\/(png|jpeg|gif|webp)$/.test(file.type)) upload(file);
+                if (accept.indexOf(file.type) >= 0) upload(file);
             });
         }
 
@@ -83,6 +86,16 @@
                 switch (button.dataset.md) {
                     case 'bold':
                         return wrap('**', '**', 'text');
+                    case 'underline':
+                        return wrap('__', '__', 'text');
+                    case 'strike':
+                        return wrap('~~', '~~', 'text');
+                    case 'spoiler':
+                        return wrap('||', '||', 'text');
+                    case 'heading':
+                        return prefixLines('## ');
+                    case 'subtext':
+                        return prefixLines('-# ');
                     case 'italic':
                         return wrap('*', '*', 'text');
                     case 'code':
@@ -160,7 +173,7 @@
         });
     }
 
-    document.querySelectorAll('[data-ticket-editor]').forEach(setup);
+    document.querySelectorAll('[data-ticket-editor], [data-markdown-editor]').forEach(setup);
     document.querySelectorAll('.hydra-ticket-message .hydra-markdown').forEach(function (body) {
         body.addEventListener('click', function (event) {
             if (event.target.classList.contains('md-spoiler')) event.target.classList.add('is-revealed');

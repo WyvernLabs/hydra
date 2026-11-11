@@ -44,6 +44,19 @@
                             <p class="text-muted small">{{ __('admin/servers.fields.description_help') }}</p>
                         </div>
 
+                        @if(Auth::user()->hasAdminPermission('servers.expiry'))
+                            <div class="form-group">
+                                <label for="hydraExpiresAt">{{ __('admin/servers.expiry.field') }} <span class="text-muted small">({{ __('admin/servers.expiry.optional') }})</span></label>
+                                <input type="datetime-local" id="hydraExpiresAt" name="hydra_expires_at" class="form-control" value="{{ old('hydra_expires_at') }}">
+                                <div class="btn-group btn-group-xs" style="margin-top: 6px;" data-expiry-add>
+                                    <button type="button" class="btn btn-default" data-days="7">{{ __('admin/servers.expiry.add_days', ['days' => 7]) }}</button>
+                                    <button type="button" class="btn btn-default" data-days="30">{{ __('admin/servers.expiry.add_days', ['days' => 30]) }}</button>
+                                    <button type="button" class="btn btn-default" data-days="0">{{ __('admin/servers.expiry.clear') }}</button>
+                                </div>
+                                <p class="small text-muted no-margin">{{ __('admin/servers.expiry.create_help') }}</p>
+                            </div>
+                        @endif
+
                         <div class="form-group">
                             <div class="checkbox checkbox-primary no-margin-bottom">
                                 <input id="pStartOnCreation" name="start_on_completion" type="checkbox" {{ \Pterodactyl\Helpers\Utilities::checked('start_on_completion', 1) }} />
@@ -318,6 +331,7 @@
 @section('footer-scripts')
     @parent
     {!! Theme::js('vendor/lodash/lodash.js') !!}
+    @include('partials.admin.hydra.expiry-buttons')
 
     <script type="application/javascript">
         // Persist 'Service Variables'

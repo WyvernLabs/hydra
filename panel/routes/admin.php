@@ -62,6 +62,29 @@ Route::group(['prefix' => 'locations'], function () {
 
 /*
 |--------------------------------------------------------------------------
+| Knowledgebase Routes (Hydra, addon "knowledgebase")
+|--------------------------------------------------------------------------
+|
+| Endpoint: /admin/knowledgebase
+|
+*/
+Route::group(['prefix' => 'knowledgebase', 'middleware' => 'addon:knowledgebase'], function () {
+    Route::get('/', [Admin\Service\KnowledgebaseController::class, 'index'])->name('admin.knowledgebase')->middleware('admin.can:knowledgebase.view');
+    Route::post('/categories', [Admin\Service\KnowledgebaseController::class, 'storeCategory'])->name('admin.knowledgebase.categories')->middleware('admin.can:knowledgebase.update');
+    Route::get('/categories/{category:id}', [Admin\Service\KnowledgebaseController::class, 'category'])->name('admin.knowledgebase.category')->middleware('admin.can:knowledgebase.view');
+    Route::patch('/categories/{category:id}', [Admin\Service\KnowledgebaseController::class, 'updateCategory'])->middleware('admin.can:knowledgebase.update');
+    Route::delete('/categories/{category:id}', [Admin\Service\KnowledgebaseController::class, 'deleteCategory'])->middleware('admin.can:knowledgebase.delete');
+    Route::get('/posts/new', [Admin\Service\KnowledgebaseController::class, 'createPost'])->name('admin.knowledgebase.posts.new')->middleware('admin.can:knowledgebase.update');
+    Route::post('/posts', [Admin\Service\KnowledgebaseController::class, 'storePost'])->name('admin.knowledgebase.posts')->middleware('admin.can:knowledgebase.update');
+    Route::get('/posts/{post:id}', [Admin\Service\KnowledgebaseController::class, 'editPost'])->name('admin.knowledgebase.post')->middleware('admin.can:knowledgebase.view');
+    Route::patch('/posts/{post:id}', [Admin\Service\KnowledgebaseController::class, 'updatePost'])->middleware('admin.can:knowledgebase.update');
+    Route::delete('/posts/{post:id}', [Admin\Service\KnowledgebaseController::class, 'deletePost'])->middleware('admin.can:knowledgebase.delete');
+    Route::post('/upload', [Admin\Service\KnowledgebaseController::class, 'upload'])->name('admin.knowledgebase.upload')->middleware(['admin.can:knowledgebase.update', 'throttle:30,1']);
+    Route::post('/preview', [Admin\Service\KnowledgebaseController::class, 'preview'])->name('admin.knowledgebase.preview')->middleware('admin.can:knowledgebase.view');
+});
+
+/*
+|--------------------------------------------------------------------------
 | Database Controller Routes
 |--------------------------------------------------------------------------
 |
@@ -140,6 +163,12 @@ Route::group(['prefix' => 'design'], function () {
     Route::patch('/metadata', [Admin\Design\MetadataController::class, 'update'])->middleware('admin.can:design.update');
 
     // Hydra: seasonal effects of the panel.
+    Route::get('/login', [Admin\Design\LoginDesignController::class, 'index'])->name('admin.design.login')->middleware('admin.can:design.view');
+    Route::patch('/login', [Admin\Design\LoginDesignController::class, 'update'])->middleware('admin.can:design.update');
+    Route::get('/maintenance', [Admin\Design\MaintenancePageController::class, 'index'])->name('admin.design.maintenance')->middleware('admin.can:design.view');
+    Route::get('/maintenance/preview', [Admin\Design\MaintenancePageController::class, 'preview'])->name('admin.design.maintenance.preview')->middleware('admin.can:design.view');
+    Route::patch('/maintenance', [Admin\Design\MaintenancePageController::class, 'update'])->middleware('admin.can:design.update');
+
     Route::get('/effects', [Admin\Design\EffectsController::class, 'index'])->name('admin.design.effects')->middleware('admin.can:design.view');
     Route::patch('/effects', [Admin\Design\EffectsController::class, 'update'])->middleware('admin.can:design.update');
     // Hydra: tests the bot of the addon "discord".
@@ -283,7 +312,7 @@ Route::group(['prefix' => 'servers'], function () {
         Route::get('/view/{server:id}/database', [Admin\Servers\ServerViewController::class, 'database'])->name('admin.servers.view.database')->middleware('admin.can:servers.databases');
     });
 
-    Route::get('/view/{server:id}/manage', [Admin\Servers\ServerViewController::class, 'manage'])->name('admin.servers.view.manage')->middleware('admin.can:servers.manage|servers.transfer|servers.lockdown');
+    Route::get('/view/{server:id}/manage', [Admin\Servers\ServerViewController::class, 'manage'])->name('admin.servers.view.manage')->middleware('admin.can:servers.manage|servers.transfer|servers.lockdown|servers.expiry');
     Route::get('/view/{server:id}/delete', [Admin\Servers\ServerViewController::class, 'delete'])->name('admin.servers.view.delete')->middleware('admin.can:servers.delete');
 
     Route::post('/new', [Admin\Servers\CreateServerController::class, 'store'])->middleware('admin.can:servers.create');
@@ -292,6 +321,7 @@ Route::group(['prefix' => 'servers'], function () {
     Route::post('/view/{server:id}/database', [Admin\ServersController::class, 'newDatabase'])->middleware('admin.can:servers.databases');
     Route::post('/view/{server:id}/manage/toggle', [Admin\ServersController::class, 'toggleInstall'])->name('admin.servers.view.manage.toggle')->middleware('admin.can:servers.manage');
     Route::post('/view/{server:id}/manage/suspension', [Admin\ServersController::class, 'manageSuspension'])->name('admin.servers.view.manage.suspension')->middleware('admin.can:servers.manage');
+    Route::post('/view/{server:id}/manage/expiry', Admin\Servers\ServerExpiryController::class)->name('admin.servers.view.manage.expiry')->middleware('admin.can:servers.expiry');
     Route::post('/view/{server:id}/manage/lockdown', Admin\Servers\ServerLockdownController::class)->name('admin.servers.view.manage.lockdown')->middleware('admin.can:servers.lockdown');
     Route::post('/view/{server:id}/manage/reinstall', [Admin\ServersController::class, 'reinstallServer'])->name('admin.servers.view.manage.reinstall')->middleware('admin.can:servers.manage');
     Route::post('/view/{server:id}/manage/transfer', [Admin\Servers\ServerTransferController::class, 'transfer'])->name('admin.servers.view.manage.transfer')->middleware('admin.can:servers.transfer');

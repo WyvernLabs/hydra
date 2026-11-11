@@ -1,25 +1,7 @@
-{{-- Hydra: tabs of the "Design" area. Expects $activeTab. --}}
-@section('design::nav')
-    <div class="row">
-        <div class="col-xs-12">
-            <div class="nav-tabs-custom nav-tabs-floating">
-                <ul class="nav nav-tabs">
-                    <li @if($activeTab === 'general')class="active"@endif><a href="{{ route('admin.design') }}">{{ __('admin/design.tabs.general') }}</a></li>
-                    <li @if($activeTab === 'metadata')class="active"@endif><a href="{{ route('admin.design.metadata') }}">{{ __('admin/design.tabs.metadata') }}</a></li>
-                    <li @if($activeTab === 'backgrounds')class="active"@endif><a href="{{ route('admin.design.backgrounds') }}">{{ __('admin/design.tabs.backgrounds') }}</a></li>
-                    <li @if($activeTab === 'eggs')class="active"@endif><a href="{{ route('admin.design.eggs') }}">{{ __('admin/design.tabs.eggs') }}</a></li>
-                    <li @if($activeTab === 'console')class="active"@endif><a href="{{ route('admin.design.console') }}">{{ __('admin/design.tabs.console') }}</a></li>
-                    <li @if($activeTab === 'links')class="active"@endif><a href="{{ route('admin.design.links') }}">{{ __('admin/design.tabs.links') }}</a></li>
-                    <li @if($activeTab === 'navigation')class="active"@endif><a href="{{ route('admin.design.navigation') }}">{{ __('admin/design.tabs.navigation') }}</a></li>
-                    <li @if($activeTab === 'effects')class="active"@endif><a href="{{ route('admin.design.effects') }}">{{ __('admin/design.tabs.effects') }}</a></li>
-                    @if(Auth::user()->hasAdminPermission('announcements.view'))
-                        <li @if($activeTab === 'announcements')class="active"@endif><a href="{{ route('admin.design.announcements') }}">{{ __('admin/design.tabs.announcements') }}</a></li>
-                    @endif
-                    @if(Auth::user()->hasAdminPermission('addons.view'))
-                        <li @if($activeTab === 'addons')class="active"@endif><a href="{{ route('admin.design.addons') }}">{{ __('admin/design.tabs.addons') }}</a></li>
-                    @endif
-                </ul>
-            </div>
-        </div>
-    </div>
-@endsection
+{{--
+    Hydra: marks a page as part of the designer. Instead of tabs it gets the
+    designer sidebar (see layouts/admin and designer-sidebar). Expects $activeTab.
+    "design::nav" stays defined (empty) for the pages that still yield it.
+--}}
+@section('hydra-designer', $activeTab)
+@section('design::nav', '')

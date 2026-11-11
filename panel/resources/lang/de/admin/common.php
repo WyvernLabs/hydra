@@ -17,6 +17,7 @@ return [
         'settings' => 'Einstellungen',
         'design' => 'Design',
         'api' => 'Application-API',
+        'knowledgebase' => 'Wissensdatenbank',
         'databases' => 'Datenbanken',
         'locations' => 'Standorte',
         'nodes' => 'Nodes',

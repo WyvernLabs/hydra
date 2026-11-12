@@ -29,6 +29,9 @@ set -Eeuo pipefail
 export LC_ALL=C.UTF-8 LANG=C.UTF-8
 # Ohne Login-Shell (z. B. gestartet vom Panel über systemd-run) fehlt HOME.
 export HOME="${HOME:-/root}"
+# Nach "su" ohne "-" (statt "su -") fehlen /usr/sbin und /sbin im PATH; dann findet der Installer
+# ufw, iptables, useradd & Co. nicht. Die Systempfade werden daher immer ergänzt.
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin${PATH:+:$PATH}"
 
 BIN=/usr/local/bin/hydra-wings
 CONF_DIR=/etc/hydra

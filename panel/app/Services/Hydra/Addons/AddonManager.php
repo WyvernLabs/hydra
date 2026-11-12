@@ -47,6 +47,8 @@ class AddonManager
         StatusAddon::class,
         DiscordAddon::class,
         KnowledgebaseAddon::class,
+        BoardAddon::class,
+        ConfigSyncAddon::class,
     ];
 
     public function __construct(private SettingsRepositoryInterface $settings, private Encrypter $encrypter)

@@ -34,6 +34,7 @@ const PropertiesContainer = lazy(() => import('@/components/server/properties/Pr
 const GamesContainer = lazy(() => import('@/components/server/games/GamesContainer'));
 const VersionsContainer = lazy(() => import('@/components/server/versions/VersionsContainer'));
 const EnvContainer = lazy(() => import('@/components/server/env/EnvContainer'));
+const BoardContainer = lazy(() => import('@/components/server/board/BoardContainer'));
 const TicketsContainer = lazy(() => import('@/components/dashboard/tickets/TicketsContainer'));
 const NewTicketContainer = lazy(() => import('@/components/dashboard/tickets/NewTicketContainer'));
 const TicketContainer = lazy(() => import('@/components/dashboard/tickets/TicketContainer'));
@@ -231,6 +232,14 @@ export default {
             permission: 'file.read-content',
             name: 'routes.env',
             component: EnvContainer,
+        },
+        {
+            // Hydra: only reachable while the addon "Board" is on.
+            path: '/board',
+            navKey: 'board',
+            permission: 'board.read',
+            name: 'routes.board',
+            component: BoardContainer,
         },
         {
             path: '/settings',

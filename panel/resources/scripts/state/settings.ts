@@ -37,6 +37,10 @@ export interface SiteSettings {
     env: { enabled: boolean; path: string };
     // Hydra: Minecraft version changer (addon).
     versions: boolean;
+    // Hydra: storage and sync of YAML configs in the file editor (addon), configs up to maxSize KiB.
+    configSync?: { enabled: boolean; maxSize: number };
+    // Hydra: Kanban board per server (addon).
+    board?: boolean;
     // Hydra: trash of the file manager (addon), files are kept for "days".
     trash: { enabled: boolean; days: number };
     // Hydra: game library (addon).

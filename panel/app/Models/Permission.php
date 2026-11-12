@@ -65,6 +65,8 @@ class Permission extends Model
     public const ACTION_FILE_DELETE_PERMANENT = 'file.delete-permanent';
     public const ACTION_FILE_ARCHIVE = 'file.archive';
     public const ACTION_FILE_SFTP = 'file.sftp';
+    // Hydra: storage of configs and "Sync" in the file editor (addon "config_sync").
+    public const ACTION_FILE_CONFIG_SYNC = 'file.config-sync';
 
     public const ACTION_STARTUP_READ = 'startup.read';
     public const ACTION_STARTUP_UPDATE = 'startup.update';
@@ -81,6 +83,15 @@ class Permission extends Model
     public const ACTION_SETTINGS_EXPORT = 'settings.export';
 
     public const ACTION_ACTIVITY_READ = 'activity.read';
+
+    // Hydra: Kanban board of the server (addon "board").
+    public const ACTION_BOARD_READ = 'board.read';
+    public const ACTION_BOARD_CREATE = 'board.create';
+    public const ACTION_BOARD_UPDATE = 'board.update';
+    public const ACTION_BOARD_DELETE = 'board.delete';
+    public const ACTION_BOARD_CLAIM = 'board.claim';
+    public const ACTION_BOARD_COLUMNS = 'board.columns';
+    public const ACTION_BOARD_TAGS = 'board.tags';
 
     /**
      * Should timestamps be used on this model.
@@ -154,6 +165,7 @@ class Permission extends Model
                 'delete-permanent' => 'Allows a user to delete files from the trash for good, or to empty it.',
                 'archive' => 'Allows a user to archive the contents of a directory as well as decompress existing archives on the system.',
                 'sftp' => 'Allows a user to connect to SFTP and manage server files using the other assigned file permissions.',
+                'config-sync' => 'Allows a user to keep configs in the storage of the server and to sync their values into other configs. Saving the result also needs the permission to edit files.',
             ],
         ],
 
@@ -232,6 +244,20 @@ class Permission extends Model
             'description' => 'Permissions that control a user\'s access to the server activity logs.',
             'keys' => [
                 'read' => 'Allows a user to view the activity logs for the server.',
+            ],
+        ],
+
+        // Hydra: Kanban board of the server (addon "board").
+        'board' => [
+            'description' => 'Permissions that control access to the board of this server.',
+            'keys' => [
+                'read' => 'Allows a user to view the board with its columns, blocks, checklists and tags.',
+                'create' => 'Allows a user to create new blocks.',
+                'update' => 'Allows a user to edit blocks, move them, tick their checklist and assign tags.',
+                'delete' => 'Allows a user to delete blocks.',
+                'claim' => 'Allows a user to claim blocks to show they work on them, and to release their own claims.',
+                'columns' => 'Allows a user to create, rename, color, sort and delete columns. Deleting a column deletes its blocks.',
+                'tags' => 'Allows a user to create, edit and delete the tags of the board.',
             ],
         ],
     ];

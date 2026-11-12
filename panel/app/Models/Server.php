@@ -449,6 +449,30 @@ class Server extends Model implements Identifiable
     }
 
     /**
+     * Hydra: columns of the Kanban board of the server (addon "board").
+     */
+    public function boardColumns(): HasMany
+    {
+        return $this->hasMany(HydraBoardColumn::class)->orderBy('sort')->orderBy('id');
+    }
+
+    /**
+     * Hydra: tags of the Kanban board of the server (addon "board").
+     */
+    public function boardTags(): HasMany
+    {
+        return $this->hasMany(HydraBoardTag::class)->orderBy('name');
+    }
+
+    /**
+     * Hydra: cards of the Kanban board of the server (addon "board").
+     */
+    public function boardCards(): HasMany
+    {
+        return $this->hasMany(HydraBoardCard::class);
+    }
+
+    /**
      * Hydra: subdomains of the server (addon "subdomains").
      */
     public function subdomains(): HasMany

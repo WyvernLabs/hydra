@@ -106,6 +106,12 @@ return [
     | properties:   server page with the .properties file at "path" as a form.
     | env:          server page with the .env file at "path" as a form.
     | versions:     Minecraft version changer with the software of mcjars.app.
+    | config_sync:  storage for YAML configs in the file editor and "Sync",
+    |               which writes the stored values into a new config; at most
+    |               max_entries configs of max_size KiB per server.
+    | board:        Kanban board per server (page "Board") with at most
+    |               max_columns columns, max_cards cards, max_tags tags and
+    |               max_items checklist entries per card.
     | motd:         MOTD with a picture for Minecraft servers of the "eggs" that
     |               are offline, starting, stopping or suspended ("states", JSON).
     | importer:     users copy the files of another server over SFTP onto
@@ -203,6 +209,18 @@ return [
         ],
         'versions' => [
             'enabled' => false,
+        ],
+        'config_sync' => [
+            'enabled' => false,
+            'max_entries' => 25,
+            'max_size' => 512,
+        ],
+        'board' => [
+            'enabled' => false,
+            'max_columns' => 20,
+            'max_cards' => 500,
+            'max_tags' => 30,
+            'max_items' => 50,
         ],
         'motd' => [
             'enabled' => false,

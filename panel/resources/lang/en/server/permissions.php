@@ -25,6 +25,7 @@ return [
             'delete-permanent' => 'Delete Permanently',
             'archive' => 'Archives',
             'sftp' => 'SFTP',
+            'config-sync' => 'Config Storage & Sync',
         ],
     ],
     'backup' => [
@@ -52,4 +53,16 @@ return [
         'labels' => ['rename' => 'Rename', 'reinstall' => 'Reinstall', 'game' => 'Switch Game', 'version' => 'Change Minecraft Version', 'import' => 'Import Server', 'export' => 'Export Server'],
     ],
     'activity' => ['title' => 'Activity', 'labels' => ['read' => 'View']],
+    'board' => [
+        'title' => 'Board',
+        'labels' => [
+            'read' => 'View',
+            'create' => 'Create Blocks',
+            'update' => 'Edit Blocks',
+            'delete' => 'Delete Blocks',
+            'claim' => 'Claim Blocks',
+            'columns' => 'Manage Columns',
+            'tags' => 'Manage Tags',
+        ],
+    ],
 ];

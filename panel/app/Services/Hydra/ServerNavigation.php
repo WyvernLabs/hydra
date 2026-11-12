@@ -46,6 +46,8 @@ class ServerNavigation
         // Hydra: addons "Minecraft versions" and ".env editor".
         'versions' => 'package',
         'env' => 'file-key',
+        // Hydra: addon "Board".
+        'board' => 'square-kanban',
         'settings' => 'settings',
         'activity' => 'rotate-ccw-clock',
     ];

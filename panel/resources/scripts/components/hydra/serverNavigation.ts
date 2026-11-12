@@ -50,6 +50,7 @@ export const useServerNavigation = () => {
     const games = useStoreState((state) => state.settings.data!.games || false);
     const versions = useStoreState((state) => state.settings.data!.versions || false);
     const env = useStoreState((state) => state.settings.data!.env?.enabled || false);
+    const board = useStoreState((state) => state.settings.data!.board || false);
 
     const buttons = navigation.flatMap((category) => category.items);
 
@@ -61,6 +62,7 @@ export const useServerNavigation = () => {
         if (navKey === 'games' && !games) return false;
         if (navKey === 'versions' && !versions) return false;
         if (navKey === 'env' && !env) return false;
+        if (navKey === 'board' && !board) return false;
         const button = buttons.find((item) => item.key === navKey);
 
         return !button || !button.eggs || eggId === undefined || button.eggs.indexOf(eggId) >= 0;

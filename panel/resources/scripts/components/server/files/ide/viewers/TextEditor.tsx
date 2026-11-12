@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Braces, Loader2, RotateCcw, Save, Search, WrapText } from 'lucide-react';
+import { Braces, GitMerge, Loader2, RotateCcw, Save, Search, WrapText } from 'lucide-react';
 import classNames from 'classnames';
 import CodeMirror from '@/lib/codemirror';
 import modes from '@/modes';
@@ -11,6 +11,10 @@ import { useIde } from '@/components/server/files/ide/context';
 import { modeForFile } from '@/components/server/files/ide/fileTypes';
 import { basename } from '@/components/server/files/ide/paths';
 import SearchPanel from '@/components/server/files/ide/viewers/SearchPanel';
+import { ConfigStashDialog, SyncReport } from '@/components/server/files/ide/viewers/ConfigSync';
+import { isYamlFile, SyncResult } from '@/lib/configSync';
+import { useStoreState } from '@/state/hooks';
+import { usePermissions } from '@/plugins/usePermissions';
 import {
     buildQuery,
     comparePos,
@@ -66,12 +70,22 @@ export default ({ tab, active }: ViewerProps) => {
     const [docVersion, setDocVersion] = useState(0);
     const currentMark = useRef<CodeMirror.TextMarker | null>(null);
 
+    // Config sync (addon "config_sync").
+    const configSync = useStoreState((state) => state.settings.data!.configSync?.enabled || false);
+    const [canStash] = usePermissions(['file.config-sync']);
+    const [stashOpen, setStashOpen] = useState(false);
+    const [syncReport, setSyncReport] = useState<{ result: SyncResult; source: string } | null>(null);
+    const syncLines = useRef<CodeMirror.LineHandle[]>([]);
+
     const readOnly = !ide.can.update || !ide.canWriteIn(tab.path);
     const re = useMemo(() => buildQuery(query, options), [query, options]);
 
     const load = useCallback(() => {
         setError(null);
         setContent(null);
+        // A new editor is created, the marks of a sync belong to the old one.
+        syncLines.current = [];
+        setSyncReport(null);
         getFileContents(ide.uuid, tab.path)
             .then((text) => setContent(text))
             .catch((error) => setError(httpErrorToHuman(error)));
@@ -336,6 +350,51 @@ export default ({ tab, active }: ViewerProps) => {
 
     useSaveShortcut(active, save);
 
+    const clearSyncMarks = () => {
+        if (editor) syncLines.current.forEach((line) => editor.removeLineClass(line, 'background', 'hydra-sync-line'));
+        syncLines.current = [];
+    };
+
+    const closeSyncReport = () => {
+        clearSyncMarks();
+        setSyncReport(null);
+    };
+
+    const jumpToLine = (line: number) => {
+        if (!editor) return;
+        editor.getDoc().setCursor({ line, ch: 0 });
+        editor.scrollIntoView({ line, ch: 0 }, 120);
+        editor.focus();
+    };
+
+    const applySync = (result: SyncResult, source: string) => {
+        if (!editor) return;
+        setStashOpen(false);
+        clearSyncMarks();
+        const doc = editor.getDoc();
+        if (result.text !== doc.getValue()) {
+            // One undoable change that keeps the scroll position.
+            const scroll = editor.getScrollInfo();
+            doc.replaceRange(
+                result.text,
+                { line: 0, ch: 0 },
+                { line: doc.lastLine(), ch: doc.getLine(doc.lastLine()).length },
+                '+sync'
+            );
+            editor.scrollTo(scroll.left, scroll.top);
+        }
+        editor.operation(() => {
+            result.lines.forEach(([from, to]) => {
+                for (let line = from; line <= to && line <= doc.lastLine(); line++) {
+                    const handle = editor.addLineClass(line, 'background', 'hydra-sync-line');
+                    if (handle) syncLines.current.push(handle);
+                }
+            });
+        });
+        setSyncReport({ result, source });
+        if (result.lines[0]) jumpToLine(result.lines[0][0]);
+    };
+
     const formatJson = () => {
         if (!editor) return;
         try {
@@ -353,6 +412,14 @@ export default ({ tab, active }: ViewerProps) => {
 
     return (
         <div className={'flex h-full flex-col'} onKeyDown={onKeyDown}>
+            {syncReport && (
+                <SyncReport
+                    result={syncReport.result}
+                    source={syncReport.source}
+                    onJump={jumpToLine}
+                    onClose={closeSyncReport}
+                />
+            )}
             <div className={'hydra-ide-editor relative min-h-0 flex-1'}>
                 {content === null && (
                     <div className={'absolute inset-0 flex items-center justify-center'}>
@@ -423,6 +490,11 @@ export default ({ tab, active }: ViewerProps) => {
                 <StatusButton title={t('editor.wrap')} active={wrap} onClick={() => setWrap((v) => !v)}>
                     <WrapText className={'h-3.5 w-3.5'} />
                 </StatusButton>
+                {configSync && canStash && (isYamlFile(tab.path) || mode?.name === 'YAML') && (
+                    <StatusButton title={t('sync.button')} active={stashOpen} onClick={() => setStashOpen(true)}>
+                        <GitMerge className={'h-3.5 w-3.5'} />
+                    </StatusButton>
+                )}
                 {mode?.name === 'JSON' && !readOnly && (
                     <StatusButton title={t('editor.format_json')} onClick={formatJson}>
                         <Braces className={'h-3.5 w-3.5'} />
@@ -459,6 +531,17 @@ export default ({ tab, active }: ViewerProps) => {
                     </button>
                 )}
             </div>
+            {configSync && canStash && (
+                <ConfigStashDialog
+                    open={stashOpen}
+                    uuid={ide.uuid}
+                    path={tab.path}
+                    canSync={!readOnly && !!editor}
+                    content={() => editor?.getValue() ?? ''}
+                    onClose={() => setStashOpen(false)}
+                    onSynced={(result, entry) => applySync(result, entry.name)}
+                />
+            )}
         </div>
     );
 };

@@ -274,6 +274,39 @@ Route::group([
             ->where(['type' => '[A-Z0-9_]+', 'version' => '[A-Za-z0-9._+-]+']);
     });
 
+    // Hydra: storage of configs for the config sync (addon "config_sync").
+    Route::prefix('/config-stash')->middleware('addon:config_sync')->group(function () {
+        Route::get('/', [Client\Servers\ConfigStashController::class, 'index']);
+        Route::post('/', [Client\Servers\ConfigStashController::class, 'store'])->middleware('throttle:30,1');
+        Route::get('/{stash}', [Client\Servers\ConfigStashController::class, 'show'])->whereNumber('stash');
+        Route::delete('/{stash}', [Client\Servers\ConfigStashController::class, 'delete'])->whereNumber('stash');
+    });
+
+    // Hydra: Kanban board (addon "board").
+    Route::prefix('/board')->middleware(['addon:board', 'throttle:120,1'])->group(function () {
+        Route::get('/', [Client\Servers\BoardController::class, 'index']);
+
+        Route::post('/columns', [Client\Servers\BoardController::class, 'storeColumn']);
+        Route::put('/columns/order', [Client\Servers\BoardController::class, 'orderColumns']);
+        Route::patch('/columns/{column}', [Client\Servers\BoardController::class, 'updateColumn'])->whereNumber('column');
+        Route::delete('/columns/{column}', [Client\Servers\BoardController::class, 'deleteColumn'])->whereNumber('column');
+
+        Route::post('/cards', [Client\Servers\BoardController::class, 'storeCard']);
+        Route::patch('/cards/{card}', [Client\Servers\BoardController::class, 'updateCard'])->whereNumber('card');
+        Route::put('/cards/{card}/move', [Client\Servers\BoardController::class, 'moveCard'])->whereNumber('card');
+        Route::delete('/cards/{card}', [Client\Servers\BoardController::class, 'deleteCard'])->whereNumber('card');
+        Route::post('/cards/{card}/claim', [Client\Servers\BoardController::class, 'claim'])->whereNumber('card');
+        Route::delete('/cards/{card}/claim', [Client\Servers\BoardController::class, 'release'])->whereNumber('card');
+
+        Route::post('/cards/{card}/checklist', [Client\Servers\BoardController::class, 'storeItem'])->whereNumber('card');
+        Route::patch('/cards/{card}/checklist/{item}', [Client\Servers\BoardController::class, 'updateItem'])->whereNumber(['card', 'item']);
+        Route::delete('/cards/{card}/checklist/{item}', [Client\Servers\BoardController::class, 'deleteItem'])->whereNumber(['card', 'item']);
+
+        Route::post('/tags', [Client\Servers\BoardController::class, 'storeTag']);
+        Route::patch('/tags/{tag}', [Client\Servers\BoardController::class, 'updateTag'])->whereNumber('tag');
+        Route::delete('/tags/{tag}', [Client\Servers\BoardController::class, 'deleteTag'])->whereNumber('tag');
+    });
+
     Route::group(['prefix' => '/startup'], function () {
         Route::get('/', [Client\Servers\StartupController::class, 'index']);
         Route::put('/variable', [Client\Servers\StartupController::class, 'update']);

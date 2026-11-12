@@ -24,6 +24,11 @@ class TrimStrings extends BaseTrimmer
             return $value;
         }
 
+        // Hydra: configs put into the storage of the config sync are kept byte for byte.
+        if ($key === 'content' && str_ends_with(request()->getPathInfo(), '/config-stash')) {
+            return $value;
+        }
+
         return parent::transform($key, $value);
     }
 }

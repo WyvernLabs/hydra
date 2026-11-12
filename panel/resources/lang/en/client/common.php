@@ -77,6 +77,7 @@ return [
         'games' => 'Games',
         'versions' => 'Versions',
         'env' => '.env',
+        'board' => 'Board',
         'dashboard' => 'Dashboard',
         'console' => 'Console',
         'files' => 'Files',

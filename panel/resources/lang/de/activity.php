@@ -164,6 +164,20 @@ return [
             'reinstall' => 'Neuinstallation im Gamesupport gestartet',
             'transfer' => 'Übertragung von :from nach :to im Gamesupport gestartet',
         ],
+        'config-sync' => [
+            'store' => 'Config :path als :name in die Ablage gelegt',
+            'delete' => 'Config :name (:path) aus der Ablage gelöscht',
+        ],
+        'board' => [
+            'column' => [
+                'create' => 'Board-Spalte :name angelegt',
+                'delete' => 'Board-Spalte :name mit :cards Blöcken gelöscht',
+            ],
+            'card' => [
+                'create' => 'Block :name in :column angelegt',
+                'delete' => 'Block :name gelöscht',
+            ],
+        ],
         'game' => [
             'switch' => 'Spiel von :from zu :to gewechselt (Dateien behalten: :kept)',
             'load' => 'Spielprofil :name geladen (Dateien behalten: :kept)',

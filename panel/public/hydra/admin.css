@@ -1616,7 +1616,8 @@
     font-weight: 600;
     text-align: center;
 }
-.hydra-news-type.is-new { background: var(--hydra-accent-soft); color: rgb(var(--hydra-accent-300)); }
+/* Hydra: "New" is always green, whatever the accent color is (a red accent would read as a warning). */
+.hydra-news-type.is-new { background: rgb(63 185 80 / .16); color: var(--hydra-success); }
 .hydra-news-type.is-improved { background: rgb(88 166 255 / .14); color: var(--hydra-info); }
 .hydra-news-type.is-fixed { background: var(--hydra-warning-soft); color: var(--hydra-warning); }
 .hydra-news-type.is-security { background: var(--hydra-danger-soft); color: var(--hydra-danger); }

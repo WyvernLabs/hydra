@@ -318,6 +318,32 @@ return [
         'summary_eggs' => 'Für :count Eggs',
     ],
 
+    'config_sync' => [
+        'name' => 'Config-Sync',
+        'description' => 'Im Editor von YAML-Dateien legen Benutzer eine Config in die Ablage des Servers. Nach einem Plugin-Update öffnen sie die neu erzeugte Config und drücken "Sync": Alle Werte der abgelegten Config werden in die neue übernommen, deren Aufbau und Kommentare bleiben erhalten. Keys, die es nicht mehr gibt, werden aufgelistet, übernommene Keys farbig hervorgehoben. Subuser brauchen das Recht "Config-Ablage & Sync".',
+        'max_entries' => 'Configs pro Server',
+        'max_entries_help' => 'Zwischen 1 und 200.',
+        'max_size' => 'Größte Config (KiB)',
+        'max_size_help' => 'Zwischen 16 und 4096 KiB. Plugin-Configs sind selten größer als ein paar KiB.',
+        'notice' => 'Die Ablage liegt in der Datenbank des Panels, nicht auf der Node, und zählt daher nicht zum Speicherplatz des Servers. Der Sync läuft im Browser und ändert nur den Editor; die Datei wird erst beim Speichern geschrieben.',
+        'summary' => 'Bis zu :count Configs mit :size KiB',
+    ],
+
+    'board' => [
+        'name' => 'Board',
+        'description' => 'Jeder Server bekommt auf der Seite "Board" ein Kanban-Board: farbige Spalten mit Blöcken, die eine Beschreibung, eine Checkliste mit Fortschrittsbalken und Tags haben und per Drag & Drop verschoben werden. Benutzer claimen Blöcke, um zu zeigen, woran sie arbeiten. Was Subuser dürfen, legen die Rechte der Gruppe "Board" fest.',
+        'max_columns' => 'Spalten pro Server',
+        'max_columns_help' => 'Zwischen 1 und 100.',
+        'max_cards' => 'Blöcke pro Server',
+        'max_cards_help' => 'Über alle Spalten, zwischen 1 und 5000.',
+        'max_tags' => 'Tags pro Server',
+        'max_tags_help' => 'Zwischen 0 und 200; 0 schaltet Tags ab.',
+        'max_items' => 'Checklisten-Einträge pro Block',
+        'max_items_help' => 'Zwischen 0 und 500; 0 schaltet Checklisten ab.',
+        'notice' => 'Das Board gehört zum Server und wird mit ihm gelöscht. Solange das Addon aus ist, ist die Seite ausgeblendet und die Boards bleiben erhalten.',
+        'summary' => 'Bis zu :columns Spalten und :cards Blöcke',
+    ],
+
     'motd' => [
         'name' => 'Minecraft-MOTD',
         'description' => 'Minecraft-Java-Server, die offline sind, starten, stoppen oder gesperrt sind, zeigen in der Serverliste der Spieler deine eigene MOTD mit Bild, zum Beispiel als Werbung. Wer beitreten will, sieht dieselben Texte.',

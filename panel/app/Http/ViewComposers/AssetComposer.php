@@ -76,6 +76,10 @@ class AssetComposer
             // Hydra: .env editor and Minecraft version changer (Design > Addons).
             'env' => app(\Pterodactyl\Services\Hydra\Addons\EnvAddon::class)->toArray(),
             'versions' => app(\Pterodactyl\Services\Hydra\Addons\VersionsAddon::class)->enabled(),
+            // Hydra: storage and sync of configs in the file editor (Design > Addons).
+            'configSync' => app(\Pterodactyl\Services\Hydra\Addons\ConfigSyncAddon::class)->toArray(),
+            // Hydra: Kanban board per server (Design > Addons).
+            'board' => app(\Pterodactyl\Services\Hydra\Addons\BoardAddon::class)->enabled(),
             // Hydra: trash of the file manager (Design > Addons).
             'trash' => app(\Pterodactyl\Services\Hydra\Addons\TrashAddon::class)->toArray(),
             // Hydra: game library (Design > Addons).

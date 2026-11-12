@@ -318,6 +318,32 @@ return [
         'summary_eggs' => 'For :count eggs',
     ],
 
+    'config_sync' => [
+        'name' => 'Config Sync',
+        'description' => 'In the editor of YAML files users put a config into the storage of the server. After a plugin update they open the newly created config and press "Sync": every value of the stored config is written into the new one, its layout and comments stay. Keys that no longer exist are listed, taken over keys are highlighted. Subusers need the permission "Config Storage & Sync".',
+        'max_entries' => 'Configs per server',
+        'max_entries_help' => 'Between 1 and 200.',
+        'max_size' => 'Largest config (KiB)',
+        'max_size_help' => 'Between 16 and 4096 KiB. Plugin configs are rarely larger than a few KiB.',
+        'notice' => 'The storage is kept in the panel database, not on the node, so it does not count against the disk of the server. The sync runs in the browser and only changes the editor; the file is written when the user saves.',
+        'summary' => 'Up to :count configs of :size KiB',
+    ],
+
+    'board' => [
+        'name' => 'Board',
+        'description' => 'Every server gets a Kanban board on the page "Board": colored columns with blocks that have a description, a checklist with progress bar and tags, moved by drag and drop. Users claim blocks to show what they work on. What subusers may do is set by the permissions of the group "Board".',
+        'max_columns' => 'Columns per server',
+        'max_columns_help' => 'Between 1 and 100.',
+        'max_cards' => 'Blocks per server',
+        'max_cards_help' => 'Over all columns, between 1 and 5000.',
+        'max_tags' => 'Tags per server',
+        'max_tags_help' => 'Between 0 and 200; 0 turns tags off.',
+        'max_items' => 'Checklist entries per block',
+        'max_items_help' => 'Between 0 and 500; 0 turns checklists off.',
+        'notice' => 'The board belongs to the server and is deleted with it. While the addon is off, the page is hidden and the boards are kept.',
+        'summary' => 'Up to :columns columns and :cards blocks',
+    ],
+
     'motd' => [
         'name' => 'Minecraft MOTD',
         'description' => 'Minecraft Java servers that are offline, starting, stopping or suspended show your own MOTD with a picture in the server list of the players, for example as an advertisement. Players who try to join see the same texts.',

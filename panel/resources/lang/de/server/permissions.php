@@ -62,6 +62,7 @@ return [
             'delete-permanent' => 'Erlaubt das endgültige Löschen aus dem Papierkorb und das Leeren des Papierkorbs.',
             'archive' => 'Erlaubt das Packen von Ordnern und das Entpacken vorhandener Archive.',
             'sftp' => 'Erlaubt die Verbindung per SFTP und die Dateiverwaltung im Rahmen der übrigen Dateirechte.',
+            'config-sync' => 'Erlaubt das Ablegen von Configs in der Ablage des Servers und das Übertragen ihrer Werte in andere Configs. Zum Speichern des Ergebnisses ist zusätzlich das Recht zum Bearbeiten von Dateien nötig.',
         ],
         'labels' => [
             'create' => 'Anlegen',
@@ -72,6 +73,7 @@ return [
             'delete-permanent' => 'Endgültig löschen',
             'archive' => 'Archive',
             'sftp' => 'SFTP',
+            'config-sync' => 'Config-Ablage & Sync',
         ],
     ],
 
@@ -203,6 +205,29 @@ return [
         ],
         'labels' => [
             'read' => 'Ansehen',
+        ],
+    ],
+
+    'board' => [
+        'title' => 'Board',
+        'description' => 'Rechte für das Board dieses Servers.',
+        'keys' => [
+            'read' => 'Erlaubt das Ansehen des Boards mit Spalten, Blöcken, Checklisten und Tags.',
+            'create' => 'Erlaubt das Anlegen neuer Blöcke.',
+            'update' => 'Erlaubt das Bearbeiten und Verschieben von Blöcken, das Abhaken der Checkliste und das Zuweisen von Tags.',
+            'delete' => 'Erlaubt das Löschen von Blöcken.',
+            'claim' => 'Erlaubt das Claimen von Blöcken, um zu zeigen, woran man arbeitet, und das Freigeben der eigenen Claims.',
+            'columns' => 'Erlaubt das Anlegen, Umbenennen, Einfärben, Sortieren und Löschen von Spalten. Beim Löschen einer Spalte werden ihre Blöcke mitgelöscht.',
+            'tags' => 'Erlaubt das Anlegen, Bearbeiten und Löschen der Tags des Boards.',
+        ],
+        'labels' => [
+            'read' => 'Ansehen',
+            'create' => 'Blöcke anlegen',
+            'update' => 'Blöcke bearbeiten',
+            'delete' => 'Blöcke löschen',
+            'claim' => 'Blöcke claimen',
+            'columns' => 'Spalten verwalten',
+            'tags' => 'Tags verwalten',
         ],
     ],
 ];

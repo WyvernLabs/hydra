@@ -166,6 +166,20 @@ return [
             'reinstall' => 'Started a reinstall in game support',
             'transfer' => 'Started a transfer from :from to :to in game support',
         ],
+        'config-sync' => [
+            'store' => 'Put the config :path into the storage as :name',
+            'delete' => 'Deleted the config :name (:path) from the storage',
+        ],
+        'board' => [
+            'column' => [
+                'create' => 'Created the board column :name',
+                'delete' => 'Deleted the board column :name with :cards blocks',
+            ],
+            'card' => [
+                'create' => 'Created the block :name in :column',
+                'delete' => 'Deleted the block :name',
+            ],
+        ],
         'game' => [
             'switch' => 'Switched the game from :from to :to (files kept: :kept)',
             'load' => 'Loaded the game profile :name (files kept: :kept)',

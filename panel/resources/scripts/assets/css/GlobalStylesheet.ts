@@ -22,6 +22,25 @@ export default createGlobalStyle`
         ${tw`outline-none`};
     }
 
+    /* Hydra: the panel is dark only. Without this, the browser draws the open
+       dropdown list in its light system style and the options inherit the light
+       text colour of the select, which leaves white text on light grey.
+       The surface colours are translucent with glass designs, and the browser
+       draws the open list on a white base, so the options need opaque colours. */
+    select {
+        color-scheme: dark;
+    }
+
+    select option, select optgroup {
+        background-color: rgb(var(--hydra-surface-800, 31 31 31));
+        color: rgb(var(--hydra-gray-100, 245 245 245));
+    }
+
+    select option:checked {
+        background-color: rgb(var(--hydra-accent-600, 37 99 235));
+        color: #fff;
+    }
+
     input[type=number]::-webkit-outer-spin-button,
     input[type=number]::-webkit-inner-spin-button {
         -webkit-appearance: none !important;

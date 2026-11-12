@@ -1,6 +1,42 @@
 {
     "releases": [
         {
+            "version": "1.8.0",
+            "build": 61,
+            "date": "2026-11-12",
+            "title": {
+                "de": "Board, Config-Sync und Feinschliff im Dateimanager",
+                "en": "Board, config sync and file manager polish"
+            },
+            "changes": [
+                {
+                    "type": "new",
+                    "de": "Addon Board: Kanban-Board pro Server im neuen Reiter „Board“. Farbige Spalten und Blöcke mit Beschreibung, Checkliste mit Fortschrittsbalken und eigenen Tags (z. B. Prioritäten), alles per Drag & Drop verschiebbar. Blöcke lassen sich claimen, um zu zeigen, woran man gerade arbeitet. Eigene Rechte-Gruppe „Board“ für Subuser, Grenzen pro Server im Adminbereich.",
+                    "en": "Board addon: Kanban board per server in the new \"Board\" tab. Colored columns and blocks with a description, a checklist with progress bar and custom tags (e.g. priorities), all moved by drag and drop. Blocks can be claimed to show what you are working on. Own permission group \"Board\" for subusers, limits per server in the admin area."
+                },
+                {
+                    "type": "new",
+                    "de": "Addon Config-Sync: YAML-Configs im Datei-Editor in eine Ablage legen und nach einem Plugin-Update per „Sync“ alle Werte in die neu erzeugte Config übernehmen. Aufbau und Kommentare der neuen Config bleiben erhalten, übernommene Keys werden markiert, nicht mehr vorhandene Keys aufgelistet. Neues Recht „Config-Ablage & Sync“.",
+                    "en": "Config sync addon: put YAML configs from the file editor into a storage and, after a plugin update, take over all values into the newly created config with \"Sync\". Layout and comments of the new config stay, taken over keys are highlighted and keys that no longer exist are listed. New permission \"Config Storage & Sync\"."
+                },
+                {
+                    "type": "improved",
+                    "de": "Dateimanager: Die Spalte mit der Änderungszeit lässt sich über das Uhr-Symbol neben dem Filter ausblenden, damit lange Dateinamen mehr Platz haben.",
+                    "en": "File manager: the column with the modification time can be hidden with the clock icon next to the filter, so long file names get more room."
+                },
+                {
+                    "type": "fixed",
+                    "de": "Aufgeklappte Auswahllisten (z. B. die Dateiart im Editor) sind jetzt dunkel und lesbar, auch mit Glas-Designs.",
+                    "en": "Opened select lists (e.g. the file type in the editor) are now dark and readable, also with glass designs."
+                },
+                {
+                    "type": "fixed",
+                    "de": "Neuigkeiten im Adminbereich: Das Etikett „Neu“ ist immer grün, unabhängig von der Akzentfarbe.",
+                    "en": "News in the admin area: the \"New\" label is always green, whatever the accent color is."
+                }
+            ]
+        },
+        {
             "version": "1.7.0",
             "build": 60,
             "date": "2026-11-11",

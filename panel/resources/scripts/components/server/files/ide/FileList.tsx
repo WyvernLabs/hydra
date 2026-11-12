@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import classNames from 'classnames';
 import {
+    Clock,
     Database,
     File,
     FileArchive,
@@ -23,6 +24,18 @@ import { FileKind, fileKind } from '@/components/server/files/ide/fileTypes';
 import { basename, joinPath } from '@/components/server/files/ide/paths';
 
 // Hydra: middle column of the file manager, the files of the selected folder.
+
+// Whether the "modified" column is shown; hiding it leaves more room for long
+// file names. Remembered per browser, like the editor's word wrap.
+const TIME_KEY = 'hydra:files:show_time';
+
+const readShowTime = (): boolean => {
+    try {
+        return localStorage.getItem(TIME_KEY) !== '0';
+    } catch {
+        return true;
+    }
+};
 
 const icons: Record<FileKind, React.ComponentType<{ className?: string }>> = {
     text: FileText,
@@ -46,6 +59,7 @@ export default () => {
     const ide = useIde();
     const [filter, setFilter] = useState('');
     const [dropping, setDropping] = useState(false);
+    const [showTime, setShowTime] = useState(readShowTime);
     const anchor = useRef<string | null>(null);
     const listing = ide.listings[ide.directory];
     const error = ide.failed[ide.directory];
@@ -60,6 +74,16 @@ export default () => {
     );
     const paths = files.map((file) => joinPath(ide.directory, file.name));
     const writable = ide.canWriteIn(ide.directory);
+
+    const toggleTime = () => {
+        const next = !showTime;
+        setShowTime(next);
+        try {
+            localStorage.setItem(TIME_KEY, next ? '1' : '0');
+        } catch {
+            // Storage unavailable (private mode): keep the choice for this session only.
+        }
+    };
 
     const onRowClick = (event: React.MouseEvent, file: FileObject, path: string) => {
         if (event.ctrlKey || event.metaKey) {
@@ -140,17 +164,34 @@ export default () => {
                 <p className={'mb-1.5 truncate px-1 font-mono text-xs text-gray-400'} title={ide.directory}>
                     {ide.directory}
                 </p>
-                <div className={'relative'}>
-                    <Search className={'absolute left-2 top-2 h-3.5 w-3.5 text-gray-400'} />
-                    <input
-                        type={'search'}
-                        value={filter}
-                        onChange={(event) => setFilter(event.currentTarget.value)}
-                        placeholder={t('list.filter')}
-                        className={
-                            'w-full rounded border border-gray-600 bg-gray-700 py-1 pl-7 pr-2 text-xs text-gray-100 outline-none focus:border-primary-400'
-                        }
-                    />
+                <div className={'flex items-center gap-1.5'}>
+                    <div className={'relative min-w-0 flex-1'}>
+                        <Search className={'absolute left-2 top-2 h-3.5 w-3.5 text-gray-400'} />
+                        <input
+                            type={'search'}
+                            value={filter}
+                            onChange={(event) => setFilter(event.currentTarget.value)}
+                            placeholder={t('list.filter')}
+                            className={
+                                'w-full rounded border border-gray-600 bg-gray-700 py-1 pl-7 pr-2 text-xs text-gray-100 outline-none focus:border-primary-400'
+                            }
+                        />
+                    </div>
+                    <button
+                        type={'button'}
+                        onClick={toggleTime}
+                        aria-pressed={showTime}
+                        title={showTime ? t('list.hide_time') : t('list.show_time')}
+                        aria-label={showTime ? t('list.hide_time') : t('list.show_time')}
+                        className={classNames(
+                            'hidden shrink-0 rounded border p-1 xl:block',
+                            showTime
+                                ? 'border-primary-400/60 bg-primary-500/20 text-primary-200'
+                                : 'border-gray-600 bg-gray-700 text-gray-400 hover:text-gray-200'
+                        )}
+                    >
+                        <Clock className={'h-3.5 w-3.5'} />
+                    </button>
                 </div>
             </div>
             <div
@@ -218,9 +259,11 @@ export default () => {
                                 <span className={classNames('min-w-0 flex-1 truncate', open && 'font-medium')}>
                                     {basename(path)}
                                 </span>
-                                <span className={'hidden shrink-0 text-2xs text-gray-500 xl:inline'}>
-                                    {formatDistanceToNow(file.modifiedAt)}
-                                </span>
+                                {showTime && (
+                                    <span className={'hidden shrink-0 text-2xs text-gray-500 xl:inline'}>
+                                        {formatDistanceToNow(file.modifiedAt)}
+                                    </span>
+                                )}
                                 <span className={'w-14 shrink-0 text-right text-2xs text-gray-500'}>
                                     {bytesToString(file.size, 1)}
                                 </span>

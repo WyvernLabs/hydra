@@ -143,6 +143,15 @@
         }
     }
 
+    // Size of the sidebar logo (Designer > Images), see BrandingService::cssVariables.
+    function logoVars(vars) {
+        if (!field('logo_width') && !field('logo_height')) return;
+        var width = parseInt(value('logo_width'), 10), height = parseInt(value('logo_height'), 10);
+        vars['--hydra-logo-width'] = width > 0 ? Math.min(600, width) + 'px' : 'auto';
+        vars['--hydra-logo-height'] = height > 0 ? Math.min(300, height) + 'px' : 'auto';
+        vars['--hydra-logo-max-height'] = width > 0 || height > 0 ? 'none' : '56px';
+    }
+
     // ------------------------------------------------------------------ pictures
 
     var blobs = {};
@@ -202,6 +211,7 @@
         if (!frame.contentWindow) return;
         var vars = {};
         colorVars(vars);
+        logoVars(vars);
         var message = { type: 'hydra-designer', vars: vars, state: { backgrounds: backgrounds(), login: login() } };
         try {
             frame.contentWindow.postMessage(message, location.origin);

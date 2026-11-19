@@ -111,7 +111,9 @@ export default ({ ...props }: Props) => {
                                 >
                                     <div css={tw`flex-1 mr-4`}>
                                         <p css={tw`text-sm`}>{server.name}</p>
-                                        <p css={tw`mt-1 text-xs text-neutral-400`}>{serverAddress(server)}</p>
+                                        <p css={tw`mt-1 text-xs text-neutral-400`} className={'hydra-private-ip'}>
+                                            {serverAddress(server)}
+                                        </p>
                                     </div>
                                     <div css={tw`flex-none text-right`}>
                                         <span css={tw`text-xs py-1 px-2 bg-cyan-800 text-cyan-100 rounded`}>

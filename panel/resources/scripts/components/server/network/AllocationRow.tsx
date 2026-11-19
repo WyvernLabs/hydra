@@ -70,13 +70,15 @@ const AllocationRow = ({ allocation }: Props) => {
                 <div className={'mr-4 flex-1 md:w-40'}>
                     {allocation.alias ? (
                         <CopyOnClick text={allocation.alias}>
-                            <Code dark className={'w-40 truncate'}>
+                            <Code dark className={'w-40 truncate hydra-private-ip'}>
                                 {allocation.alias}
                             </Code>
                         </CopyOnClick>
                     ) : (
                         <CopyOnClick text={ip(allocation.ip)}>
-                            <Code dark>{ip(allocation.ip)}</Code>
+                            <Code dark className={'hydra-private-ip'}>
+                                {ip(allocation.ip)}
+                            </Code>
                         </CopyOnClick>
                     )}
                     <Label>{allocation.alias ? t('network.hostname') : t('network.ip_address')}</Label>

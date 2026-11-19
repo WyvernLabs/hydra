@@ -112,7 +112,7 @@ const ServerDetailsBlock = ({ className }: { className?: string }) => {
             </div>
             <div className={'grid grid-cols-2 gap-2 md:gap-4 lg:grid-cols-1'}>
                 <StatBlock icon={faWifi} title={t('details.address')} copyOnClick={allocation || undefined}>
-                    {allocation || t('details.not_available')}
+                    {allocation ? <span className={'hydra-private-ip'}>{allocation}</span> : t('details.not_available')}
                 </StatBlock>
                 <StatBlock
                     icon={faClock}

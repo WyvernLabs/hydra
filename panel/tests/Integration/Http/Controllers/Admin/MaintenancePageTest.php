@@ -49,7 +49,7 @@ class MaintenancePageTest extends HttpTestCase
         $this->assertStringContainsString('Under maintenance', $html);
         $this->assertStringContainsString('--hydra-surface-800', $html);
         $this->assertStringContainsString('hydra-503-float', $html);
-        $this->assertStringContainsString('Hydra by WyvernLabs', $html);
+        $this->assertStringNotContainsString('Hydra by WyvernLabs', $html);
         $this->assertStringContainsString('/hydra/logo.svg', $html);
         // Nothing that needs PHP while the panel is down.
         $this->assertStringNotContainsString('/branding/', $html);

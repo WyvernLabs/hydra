@@ -72,6 +72,12 @@ class BackgroundController extends Controller
                 $this->branding->reset($type);
             }
         }
+        if ($request->has('logo_width') || $request->has('logo_height')) {
+            $this->branding->setLogoSize(
+                $request->filled('logo_width') ? (int) $request->input('logo_width') : null,
+                $request->filled('logo_height') ? (int) $request->input('logo_height') : null,
+            );
+        }
         if ($request->has('protect_images')) {
             $this->branding->setProtectImages($request->boolean('protect_images'));
         }

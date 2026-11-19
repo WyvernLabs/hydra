@@ -67,6 +67,21 @@
             <div class="col-md-5">
                 <div class="box">
                     <div class="box-header with-border">
+                        <h3 class="box-title">{{ __('admin/design.metadata.footer') }}</h3>
+                    </div>
+                    <div class="box-body">
+                        @foreach($languages as $code => $language)
+                            <div class="form-group">
+                                <label class="control-label" for="footer_{{ $code }}">{{ $language }}</label>
+                                <input type="text" id="footer_{{ $code }}" name="footer[{{ $code }}]" class="form-control" maxlength="{{ \Pterodactyl\Services\Hydra\FooterService::MAX_LENGTH }}"
+                                       value="{{ old("footer.$code", $footerTexts[$code] ?? '') }}" placeholder="{{ config('app.name', 'Hydra') }} © {year}">
+                            </div>
+                        @endforeach
+                        <p class="text-muted no-margin"><small>{!! __('admin/design.metadata.footer_help', ['credit' => '<strong>' . e(\Pterodactyl\Services\Hydra\BrandingService::CREDIT) . '</strong>']) !!}</small></p>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="box-header with-border">
                         <h3 class="box-title">{{ __('admin/design.metadata.image') }}</h3>
                     </div>
                     <div class="box-body">

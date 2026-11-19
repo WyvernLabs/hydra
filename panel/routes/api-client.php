@@ -274,6 +274,21 @@ Route::group([
             ->where(['type' => '[A-Z0-9_]+', 'version' => '[A-Za-z0-9._+-]+']);
     });
 
+    // Hydra: plugin manager (addon "plugins").
+    Route::prefix('/plugins')->middleware('addon:plugins')->group(function () {
+        Route::get('/', [Client\Servers\PluginController::class, 'index']);
+        Route::get('/available', [Client\Servers\PluginController::class, 'available']);
+        Route::get('/search', [Client\Servers\PluginController::class, 'search'])->middleware('throttle:60,1');
+        Route::get('/installed', [Client\Servers\PluginController::class, 'installed']);
+        Route::get('/updates', [Client\Servers\PluginController::class, 'updates'])->middleware('throttle:10,1');
+        Route::get('/icon', [Client\Servers\PluginController::class, 'icon']);
+        Route::get('/projects/{source}/{project}/versions', [Client\Servers\PluginController::class, 'versions'])
+            ->where(['source' => 'modrinth|hangar|spigot', 'project' => '[A-Za-z0-9_.-]+'])->middleware('throttle:60,1');
+        Route::post('/install', [Client\Servers\PluginController::class, 'install'])->middleware('throttle:20,1');
+        Route::post('/toggle', [Client\Servers\PluginController::class, 'toggle'])->middleware('throttle:60,1');
+        Route::post('/delete', [Client\Servers\PluginController::class, 'delete'])->middleware('throttle:60,1');
+    });
+
     // Hydra: storage of configs for the config sync (addon "config_sync").
     Route::prefix('/config-stash')->middleware('addon:config_sync')->group(function () {
         Route::get('/', [Client\Servers\ConfigStashController::class, 'index']);

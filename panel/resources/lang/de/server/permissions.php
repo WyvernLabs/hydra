@@ -230,4 +230,13 @@ return [
             'tags' => 'Tags verwalten',
         ],
     ],
+    'plugins' => [
+        'title' => 'Plugins',
+        'description' => 'Rechte für den Pluginmanager dieses Servers.',
+        'keys' => [
+            'read' => 'Erlaubt das Ansehen der installierten Plugins und die Suche auf Modrinth, Hangar und SpigotMC.',
+            'manage' => 'Erlaubt das Installieren, Aktualisieren, Abschalten und Löschen von Plugins. Achtung: Plugins führen Code auf dem Server aus.',
+        ],
+        'labels' => ['read' => 'Ansehen', 'manage' => 'Installieren & verwalten'],
+    ],
 ];

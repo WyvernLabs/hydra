@@ -76,6 +76,8 @@ class AssetComposer
             // Hydra: .env editor and Minecraft version changer (Design > Addons).
             'env' => app(\Pterodactyl\Services\Hydra\Addons\EnvAddon::class)->toArray(),
             'versions' => app(\Pterodactyl\Services\Hydra\Addons\VersionsAddon::class)->enabled(),
+            // Hydra: plugin manager (Design > Addons).
+            'plugins' => app(\Pterodactyl\Services\Hydra\Addons\PluginsAddon::class)->enabled(),
             // Hydra: storage and sync of configs in the file editor (Design > Addons).
             'configSync' => app(\Pterodactyl\Services\Hydra\Addons\ConfigSyncAddon::class)->toArray(),
             // Hydra: Kanban board per server (Design > Addons).
@@ -99,6 +101,10 @@ class AssetComposer
                 'mclogs' => app(McLogsAddon::class)->enabled() ? app(McLogsAddon::class)->path() : null,
             ],
             'branding' => $this->branding->toArray(),
+            // Hydra: own copyright text in the footer (Designer > Metadata), null = default.
+            'footer' => app(\Pterodactyl\Services\Hydra\FooterService::class)->text(app()->getLocale()),
+            // Hydra: loading animation (Designer > Loading animation).
+            'loader' => app(\Pterodactyl\Services\Hydra\LoaderDesignService::class)->toFrontend(),
             // Hydra: largest profile picture or banner in megabytes.
             'profileUploadLimit' => ProfileMediaService::uploadLimit(),
             // Hydra: links and pages for the sidebar and the login page.

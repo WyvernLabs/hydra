@@ -5,7 +5,6 @@ export interface ProfileValues {
     username: string;
     nameFirst: string;
     nameLast: string;
-    bio: string;
     profileAccent: string;
     bannerStyle: 'gradient' | 'image';
     bannerColor1: string;
@@ -32,7 +31,6 @@ export default async (values: ProfileValues): Promise<ProfileResponse> => {
     form.append('username', values.username);
     form.append('name_first', values.nameFirst);
     form.append('name_last', values.nameLast);
-    form.append('bio', values.bio);
     form.append('profile_accent', values.profileAccent);
     form.append('banner_style', values.bannerStyle);
     form.append('banner_color_1', values.bannerColor1);

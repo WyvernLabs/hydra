@@ -93,6 +93,10 @@ class Permission extends Model
     public const ACTION_BOARD_COLUMNS = 'board.columns';
     public const ACTION_BOARD_TAGS = 'board.tags';
 
+    // Hydra: plugin manager of Minecraft servers (addon "plugins").
+    public const ACTION_PLUGINS_READ = 'plugins.read';
+    public const ACTION_PLUGINS_MANAGE = 'plugins.manage';
+
     /**
      * Should timestamps be used on this model.
      */
@@ -258,6 +262,15 @@ class Permission extends Model
                 'claim' => 'Allows a user to claim blocks to show they work on them, and to release their own claims.',
                 'columns' => 'Allows a user to create, rename, color, sort and delete columns. Deleting a column deletes its blocks.',
                 'tags' => 'Allows a user to create, edit and delete the tags of the board.',
+            ],
+        ],
+
+        // Hydra: plugin manager of Minecraft servers (addon "plugins").
+        'plugins' => [
+            'description' => 'Permissions that control access to the plugin manager of this server.',
+            'keys' => [
+                'read' => 'Allows a user to see the installed plugins and to search Modrinth, Hangar and SpigotMC.',
+                'manage' => 'Allows a user to install, update, switch off and delete plugins. Danger: plugins run code on the server.',
             ],
         ],
     ];

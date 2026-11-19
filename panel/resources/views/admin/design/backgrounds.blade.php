@@ -48,6 +48,26 @@
                                 <label for="resetLogo">{{ __('admin/design.general.logo_reset') }}</label>
                             </div>
                         @endif
+                        @php($logoSize = $branding->logoSize())
+                        <div class="row">
+                            <div class="form-group col-xs-6">
+                                <label class="control-label" for="logoWidth">{{ __('admin/design.general.logo_width') }}</label>
+                                <div class="input-group">
+                                    <input id="logoWidth" type="number" name="logo_width" class="form-control" min="{{ $branding::LOGO_WIDTH[0] }}" max="{{ $branding::LOGO_WIDTH[1] }}" placeholder="{{ __('admin/design.general.logo_auto') }}" value="{{ old('logo_width', $logoSize['width']) }}" />
+                                    <span class="input-group-addon">px</span>
+                                </div>
+                            </div>
+                            <div class="form-group col-xs-6">
+                                <label class="control-label" for="logoHeight">{{ __('admin/design.general.logo_height') }}</label>
+                                <div class="input-group">
+                                    <input id="logoHeight" type="number" name="logo_height" class="form-control" min="{{ $branding::LOGO_HEIGHT[0] }}" max="{{ $branding::LOGO_HEIGHT[1] }}" placeholder="{{ __('admin/design.general.logo_auto') }}" value="{{ old('logo_height', $logoSize['height']) }}" />
+                                    <span class="input-group-addon">px</span>
+                                </div>
+                            </div>
+                            <div class="col-xs-12">
+                                <p class="text-muted" style="margin-top: -8px;"><small>{{ __('admin/design.general.logo_size_help') }}</small></p>
+                            </div>
+                        </div>
                         <input type="hidden" name="protect_images" value="0" />
                         <div class="checkbox checkbox-primary no-margin-bottom">
                             <input id="protectImages" name="protect_images" type="checkbox" value="1" @if(old('protect_images', $branding->protectsImages())) checked @endif />

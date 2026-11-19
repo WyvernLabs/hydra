@@ -16,6 +16,7 @@ return [
         'links' => 'Links & Pages',
         'navigation' => 'Navigation',
         'announcements' => 'Announcements',
+        'loader' => 'Loading animation',
         'effects' => 'Effects',
         'maintenance' => 'Maintenance page',
         'addons' => 'Addons',
@@ -76,6 +77,10 @@ return [
         'logo_upload' => 'Upload new logo',
         'logo_help' => 'Shown at the top of the sidebar and on the login page. PNG, JPG, GIF, WEBP or SVG, max. 2 MB. A transparent image of about 400×120 px works best.',
         'logo_reset' => 'Restore the default logo',
+        'logo_width' => 'Width',
+        'logo_height' => 'Height',
+        'logo_auto' => 'automatic',
+        'logo_size_help' => 'Size of the logo in the sidebar. Leave a field empty to size it automatically; with only one value the other side follows the aspect ratio. The logo is never distorted and never wider than the sidebar.',
         'protect_images' => 'Protect logo and egg pictures against saving',
         'protect_images_help' => 'Right click, dragging and long press on phones no longer reach the picture, so "Save image" is gone. Browsers allow no complete protection: anyone opening the developer tools can still get every file that is shown.',
         'favicon' => 'Favicon',
@@ -86,7 +91,34 @@ return [
     ],
 
     // Hydra: description and link preview of the panel (Design > Metadata).
+    // Hydra: Designer > Loading animation.
+    'loader' => [
+        'subtitle' => 'How the panel shows that something is loading.',
+        'style' => 'Animation',
+        'styles' => [
+            'ring' => 'Ring',
+            'hourglass' => 'Hourglass',
+            'dots' => 'Jumping dots',
+            'shockwave' => 'Shockwaves',
+            'pulse' => 'Pulse',
+            'bars' => 'Equalizer',
+            'gif' => 'Own GIF',
+        ],
+        'speed' => 'Speed',
+        'speed_help' => '100 % is the normal speed. Has no effect on an own GIF.',
+        'sizes' => 'Sizes',
+        'sizes_help' => 'The panel uses the animation in three sizes: in buttons, in boxes and for whole pages.',
+        'button_sample' => 'Saving',
+        'gif' => 'Own GIF',
+        'gif_help' => 'GIF, animated WebP, PNG or SVG, max. 2 MB. A square picture with a transparent background works best; it is shown at 16, 32 and 64 px.',
+        'gif_remove' => 'Remove the uploaded GIF',
+        'gif_missing' => 'Upload a GIF first to use "Own GIF".',
+        'saved' => 'The loading animation has been saved.',
+    ],
+
     'metadata' => [
+        'footer' => 'Footer',
+        'footer_help' => 'Copyright text in the footer of the client area, the login, the public pages and the maintenance page. Placeholders: {year} and {name}. Empty: "Name © year". The admin area keeps its footer with :credit.',
         'title' => 'Metadata',
         'subtitle' => 'Description and preview when a link to the panel is shared.',
         'texts' => 'Description',

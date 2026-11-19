@@ -16,10 +16,10 @@ use Pterodactyl\Contracts\Repository\SettingsRepositoryInterface;
 class BrandingService
 {
     /**
-     * Credit in the footer of every page and email. WyvernLabs is a registered
+     * Credit in the footer of the admin area. WyvernLabs is a registered
      * trademark; unlike the rest of the branding this text is not configurable
-     * and must not be removed. The React frontend has the same text in
-     * resources/scripts/components/hydra/Footer.tsx.
+     * and must not be removed there. Pages for users and emails do not show
+     * it (their footer text is set under Designer > Metadata).
      */
     public const CREDIT = 'Hydra by WyvernLabs®';
 
@@ -28,6 +28,13 @@ class BrandingService
     public const DEFAULT_LOGO = '/hydra/logo.svg';
 
     public const DEFAULT_FAVICON = '/hydra/favicon.svg';
+
+    /**
+     * Allowed size of the logo in the sidebar in pixels (Designer > Images).
+     */
+    public const LOGO_WIDTH = [16, 600];
+
+    public const LOGO_HEIGHT = [16, 300];
 
     /**
      * Mixing ratios used to derive the 50–900 scale from the accent color.
@@ -152,6 +159,33 @@ class BrandingService
         return $this->protectsImages() ? 'hydra-protected' : '';
     }
 
+    /**
+     * Fixed width and height of the logo in the sidebar in pixels; null means
+     * automatic (fits into the sidebar like before).
+     *
+     * @return array{width: ?int, height: ?int}
+     */
+    public function logoSize(): array
+    {
+        $size = fn (string $key, array $range) => is_numeric($value = config("hydra.branding.$key"))
+            ? max($range[0], min($range[1], (int) $value))
+            : null;
+
+        return ['width' => $size('logo_width', self::LOGO_WIDTH), 'height' => $size('logo_height', self::LOGO_HEIGHT)];
+    }
+
+    public function setLogoSize(?int $width, ?int $height): void
+    {
+        foreach (['logo_width' => $width, 'logo_height' => $height] as $key => $value) {
+            if (is_null($value)) {
+                $this->settings->forget("settings::hydra:branding:$key");
+            } else {
+                $this->settings->set("settings::hydra:branding:$key", (string) $value);
+            }
+            config()->set("hydra.branding.$key", $value);
+        }
+    }
+
     public function setAccent(string $color): void
     {
         $color = strtolower($color);
@@ -189,6 +223,18 @@ class BrandingService
         // color an admin might pick, so decide on dark or light ink.
         $luminance = (0.2126 * $r + 0.7152 * $g + 0.0722 * $b) / 255;
         $lines[] = '--hydra-accent-ink: ' . ($luminance > 0.55 ? '15 26 6' : '255 255 255') . ';';
+
+        // Logo in the sidebar, only when the admin set a fixed size.
+        $logo = $this->logoSize();
+        if ($logo['width']) {
+            $lines[] = "--hydra-logo-width: {$logo['width']}px;";
+        }
+        if ($logo['height']) {
+            $lines[] = "--hydra-logo-height: {$logo['height']}px;";
+        }
+        if ($logo['width'] || $logo['height']) {
+            $lines[] = '--hydra-logo-max-height: none;';
+        }
 
         return ':root{' . implode('', $lines) . '}';
     }

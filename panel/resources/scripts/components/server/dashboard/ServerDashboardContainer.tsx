@@ -406,7 +406,9 @@ export default () => {
                     <Card title={t('dashboard.sftp')} icon={KeyRound}>
                         <Row
                             label={t('settings.sftp_address')}
-                            value={`${sftpHost}:${server.sftpDetails.port}`}
+                            value={
+                                <span className={'hydra-private-ip'}>{`${sftpHost}:${server.sftpDetails.port}`}</span>
+                            }
                             copy={`${sftpHost}:${server.sftpDetails.port}`}
                         />
                         <Row label={t('settings.sftp_username')} value={sftpUser} copy={sftpUser} />
@@ -439,7 +441,9 @@ export default () => {
                     />
                     <Row
                         label={t('details.address')}
-                        value={address || t('details.not_available')}
+                        value={
+                            address ? <span className={'hydra-private-ip'}>{address}</span> : t('details.not_available')
+                        }
                         copy={address || undefined}
                     />
                     <Row

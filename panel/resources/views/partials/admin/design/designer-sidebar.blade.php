@@ -13,6 +13,7 @@
         ['navigation', 'admin.design.navigation', 'list-tree', 'design.view'],
         ['console', 'admin.design.console', 'terminal', 'design.view'],
         ['eggs', 'admin.design.eggs', 'egg', 'design.view'],
+        ['loader', 'admin.design.loader', 'loader', 'design.view'],
         ['effects', 'admin.design.effects', 'sparkles', 'design.view'],
         ['announcements', 'admin.design.announcements', 'megaphone', 'announcements.view'],
         ['links', 'admin.design.links', 'link', 'design.view'],

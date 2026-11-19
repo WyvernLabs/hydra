@@ -65,4 +65,8 @@ return [
             'tags' => 'Manage Tags',
         ],
     ],
+    'plugins' => [
+        'title' => 'Plugins',
+        'labels' => ['read' => 'View', 'manage' => 'Install & Manage'],
+    ],
 ];

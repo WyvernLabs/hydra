@@ -16,6 +16,7 @@ return [
         'links' => 'Links & Seiten',
         'navigation' => 'Navigation',
         'announcements' => 'Ankündigungen',
+        'loader' => 'Ladeanimation',
         'effects' => 'Effekte',
         'maintenance' => 'Wartungsseite',
         'addons' => 'Addons',
@@ -76,6 +77,10 @@ return [
         'logo_upload' => 'Neues Logo hochladen',
         'logo_help' => 'Wird oben in der Seitenleiste und auf der Anmeldeseite angezeigt. PNG, JPG, GIF, WEBP oder SVG, max. 2 MB. Am besten eignet sich ein transparentes Bild mit etwa 400×120 px.',
         'logo_reset' => 'Standardlogo wiederherstellen',
+        'logo_width' => 'Breite',
+        'logo_height' => 'Höhe',
+        'logo_auto' => 'automatisch',
+        'logo_size_help' => 'Größe des Logos in der Seitenleiste. Ein leeres Feld wird automatisch berechnet; mit nur einem Wert folgt die andere Seite dem Seitenverhältnis. Das Logo wird nie verzerrt und nie breiter als die Seitenleiste.',
         'protect_images' => 'Logo und Egg-Bilder vor dem Speichern schützen',
         'protect_images_help' => 'Rechtsklick, Ziehen und langes Drücken auf dem Handy erreichen das Bild nicht mehr, „Bild speichern“ fehlt damit. Einen vollständigen Schutz gibt es im Browser nicht: Wer die Entwicklertools öffnet, kommt weiterhin an jede angezeigte Datei.',
         'favicon' => 'Favicon',
@@ -86,7 +91,34 @@ return [
     ],
 
     // Hydra: Beschreibung und Linkvorschau des Panels (Design > Metadaten).
+    // Hydra: Designer > Ladeanimation.
+    'loader' => [
+        'subtitle' => 'Wie das Panel zeigt, dass etwas lädt.',
+        'style' => 'Animation',
+        'styles' => [
+            'ring' => 'Ring',
+            'hourglass' => 'Sanduhr',
+            'dots' => 'Springende Punkte',
+            'shockwave' => 'Schockwellen',
+            'pulse' => 'Puls',
+            'bars' => 'Equalizer',
+            'gif' => 'Eigenes GIF',
+        ],
+        'speed' => 'Geschwindigkeit',
+        'speed_help' => '100 % ist die normale Geschwindigkeit. Wirkt nicht auf ein eigenes GIF.',
+        'sizes' => 'Größen',
+        'sizes_help' => 'Das Panel zeigt die Animation in drei Größen: in Buttons, in Boxen und für ganze Seiten.',
+        'button_sample' => 'Speichern',
+        'gif' => 'Eigenes GIF',
+        'gif_help' => 'GIF, animiertes WebP, PNG oder SVG, max. 2 MB. Am besten ein quadratisches Bild mit transparentem Hintergrund; es wird mit 16, 32 und 64 px angezeigt.',
+        'gif_remove' => 'Hochgeladenes GIF entfernen',
+        'gif_missing' => 'Lade zuerst ein GIF hoch, um „Eigenes GIF“ zu nutzen.',
+        'saved' => 'Die Ladeanimation wurde gespeichert.',
+    ],
+
     'metadata' => [
+        'footer' => 'Footer',
+        'footer_help' => 'Copyright-Text im Footer des Kundenbereichs, der Anmeldung, der öffentlichen Seiten und der Wartungsseite. Platzhalter: {year} und {name}. Leer: „Name © Jahr“. Der Adminbereich behält seinen Footer mit :credit.',
         'title' => 'Metadaten',
         'subtitle' => 'Beschreibung und Vorschau, wenn ein Link zum Panel geteilt wird.',
         'texts' => 'Beschreibung',

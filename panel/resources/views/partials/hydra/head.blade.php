@@ -48,4 +48,13 @@
         window.parent.postMessage({ type: 'hydra-designer-ready' }, window.location.origin);
     })();
 </script>
+@php($privacy = app(\Pterodactyl\Services\Hydra\Addons\PrivacyBlurAddon::class)->forPage(request()->is('admin', 'admin/*')))
+@if($privacy)
+    {{-- Hydra: addon "privacy_blur". The classes go on <html> right away, so nothing flashes up readable. --}}
+    <script>
+        window.HydraPrivacy = @json($privacy);
+        document.documentElement.classList.add('hydra-privacy');
+    </script>
+    <script src="/hydra/privacy.js?v={{ substr(md5_file(public_path('hydra/privacy.js')), 0, 8) }}" defer></script>
+@endif
 @include('partials.hydra.effects')

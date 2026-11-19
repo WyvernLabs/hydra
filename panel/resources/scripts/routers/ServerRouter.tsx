@@ -45,12 +45,12 @@ export default () => {
     const suspendedAccess = ServerContext.useStoreState((state) => state.server.suspendedAccess);
     // Hydra: users locked out by a lockdown get neither pages nor navigation.
     const lockedOut = ServerContext.useStoreState((state) => state.server.data?.lockdown.lockedOut || false);
-    const { categories: allCategories, isVisible } = useServerNavigation();
+    const { categories: allCategories, isVisible, isRoutable } = useServerNavigation();
     const categories = lockedOut ? [] : allCategories;
     // Hydra: on a suspended server, users without full access only see files, databases and backups.
     // Pages whose button is hidden for the egg of this server are not reachable either.
     const serverRoutes = routes.server.filter(
-        (route) => isVisible(route.navKey) && (suspendedAccess !== 'limited' || isSuspendedPath(route.path))
+        (route) => isRoutable(route.navKey) && (suspendedAccess !== 'limited' || isSuspendedPath(route.path))
     );
     const firstPage = categories[0]?.items[0]?.path;
     const serverId = ServerContext.useStoreState((state) => state.server.data?.internalId);

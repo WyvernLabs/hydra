@@ -82,14 +82,17 @@ a { color: rgb(var(--hydra-accent-400)); }
     align-items: center;
     justify-content: center;
     flex: none;
-    height: 84px;
+    min-height: 84px;
     padding: 12px 20px;
     border-bottom: 1px solid var(--hydra-border);
 }
 
+/* Fixed size from Designer > Images (BrandingService::cssVariables). */
 .hydra-sidebar-logo img {
+    width: var(--hydra-logo-width, auto);
+    height: var(--hydra-logo-height, auto);
     max-width: 100%;
-    max-height: 56px;
+    max-height: var(--hydra-logo-max-height, 56px);
     object-fit: contain;
 }
 
@@ -633,6 +636,227 @@ a { color: rgb(var(--hydra-accent-400)); }
     gap: 16px;
 }
 
+/* ---------------------------------------------------------------- Loading animation */
+
+/*
+ * Designer > Loading animation (LoaderDesignService). Same markup in
+ * partials/hydra/loader.blade.php and components/elements/Spinner.tsx.
+ * --hydra-loader-speed: 1 = normal, 2 = twice as fast.
+ */
+.hydra-loader {
+    --hydra-loader-size: 32px;
+    --hydra-loader-color: currentColor;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: var(--hydra-loader-size);
+    height: var(--hydra-loader-size);
+    color: rgb(255 255 255);
+    vertical-align: middle;
+}
+
+.hydra-loader--accent { color: rgb(var(--hydra-accent-500)); }
+.hydra-loader--small { --hydra-loader-size: 16px; }
+.hydra-loader--base { --hydra-loader-size: 32px; }
+.hydra-loader--large { --hydra-loader-size: 64px; }
+.btn .hydra-loader, button .hydra-loader { color: inherit; }
+
+.hydra-loader i { display: block; }
+
+/* Ring (the classic spinner) */
+.hydra-loader--ring {
+    border: calc(var(--hydra-loader-size) * 0.094 + 0.5px) solid rgb(255 255 255 / 0.2);
+    border-top-color: var(--hydra-loader-color);
+    border-radius: 50%;
+    animation: hydra-loader-spin calc(1s / var(--hydra-loader-speed, 1)) cubic-bezier(0.55, 0.25, 0.25, 0.7) infinite;
+}
+.hydra-loader--ring.hydra-loader--accent { border-color: rgb(var(--hydra-accent-500) / 0.2); border-top-color: rgb(var(--hydra-accent-500)); }
+
+@keyframes hydra-loader-spin { to { transform: rotate(360deg); } }
+
+/* Hourglass that turns over */
+.hydra-loader--hourglass svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: var(--hydra-loader-color);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    animation: hydra-loader-hourglass calc(2s / var(--hydra-loader-speed, 1)) cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes hydra-loader-hourglass {
+    0%, 35% { transform: rotate(0deg); }
+    50%, 85% { transform: rotate(180deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Dots that jump one after another, left to right and back */
+.hydra-loader--dots { gap: calc(var(--hydra-loader-size) * 0.1); }
+.hydra-loader--dots i {
+    width: calc(var(--hydra-loader-size) * 0.22);
+    height: calc(var(--hydra-loader-size) * 0.22);
+    background: var(--hydra-loader-color);
+    border-radius: 50%;
+    animation: hydra-loader-dot-1 calc(1.2s / var(--hydra-loader-speed, 1)) ease-in-out infinite;
+}
+.hydra-loader--dots i:nth-child(2) { animation-name: hydra-loader-dot-2; }
+.hydra-loader--dots i:nth-child(3) { animation-name: hydra-loader-dot-3; }
+
+@keyframes hydra-loader-dot-1 {
+    0%, 25%, 100% { transform: translateY(0); }
+    12.5% { transform: translateY(-110%); }
+}
+@keyframes hydra-loader-dot-2 {
+    0%, 25%, 50%, 75%, 100% { transform: translateY(0); }
+    37.5%, 87.5% { transform: translateY(-110%); }
+}
+@keyframes hydra-loader-dot-3 {
+    0%, 50%, 75%, 100% { transform: translateY(0); }
+    62.5% { transform: translateY(-110%); }
+}
+
+/* Shockwaves spreading out from the middle */
+.hydra-loader--shockwave::before {
+    content: '';
+    width: 22%;
+    height: 22%;
+    background: var(--hydra-loader-color);
+    border-radius: 50%;
+}
+.hydra-loader--shockwave i {
+    position: absolute;
+    inset: 0;
+    border: calc(var(--hydra-loader-size) * 0.05 + 0.5px) solid var(--hydra-loader-color);
+    border-radius: 50%;
+    opacity: 0;
+    animation: hydra-loader-wave calc(1.8s / var(--hydra-loader-speed, 1)) cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+}
+.hydra-loader--shockwave i:nth-child(2) { animation-delay: calc(0.6s / var(--hydra-loader-speed, 1)); }
+.hydra-loader--shockwave i:nth-child(3) { animation-delay: calc(1.2s / var(--hydra-loader-speed, 1)); }
+
+@keyframes hydra-loader-wave {
+    0% { transform: scale(0.15); opacity: 1; }
+    100% { transform: scale(1); opacity: 0; }
+}
+
+/* Pulse */
+.hydra-loader--pulse i {
+    width: 70%;
+    height: 70%;
+    background: var(--hydra-loader-color);
+    border-radius: 50%;
+    animation: hydra-loader-pulse calc(1.2s / var(--hydra-loader-speed, 1)) ease-in-out infinite;
+}
+
+@keyframes hydra-loader-pulse {
+    0%, 100% { transform: scale(0.45); opacity: 0.35; }
+    50% { transform: scale(1); opacity: 1; }
+}
+
+/* Equalizer bars */
+.hydra-loader--bars { gap: calc(var(--hydra-loader-size) * 0.08); }
+.hydra-loader--bars i {
+    width: calc(var(--hydra-loader-size) * 0.14);
+    height: 80%;
+    background: var(--hydra-loader-color);
+    border-radius: calc(var(--hydra-loader-size) * 0.07);
+    animation: hydra-loader-bar calc(1s / var(--hydra-loader-speed, 1)) ease-in-out infinite;
+}
+.hydra-loader--bars i:nth-child(2) { animation-delay: calc(-0.75s / var(--hydra-loader-speed, 1)); }
+.hydra-loader--bars i:nth-child(3) { animation-delay: calc(-0.5s / var(--hydra-loader-speed, 1)); }
+.hydra-loader--bars i:nth-child(4) { animation-delay: calc(-0.25s / var(--hydra-loader-speed, 1)); }
+
+@keyframes hydra-loader-bar {
+    0%, 100% { transform: scaleY(0.3); }
+    50% { transform: scaleY(1); }
+}
+
+/* Own GIF */
+.hydra-loader--gif img { width: 100%; height: 100%; object-fit: contain; }
+
+@media (prefers-reduced-motion: reduce) {
+    .hydra-loader, .hydra-loader * { animation-duration: 3s !important; }
+}
+
+/* Picker in the designer */
+.hydra-loader-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+.hydra-loader-option { margin: 0; font-weight: 400; cursor: pointer; }
+.hydra-loader-option > input { position: absolute; opacity: 0; pointer-events: none; }
+.hydra-loader-option-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 10px 12px;
+    background: var(--hydra-panel-2);
+    border: 1px solid var(--hydra-border);
+    border-radius: var(--hydra-radius);
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.hydra-loader-option:hover .hydra-loader-option-card { border-color: var(--hydra-border-strong); }
+.hydra-loader-option > input:checked + .hydra-loader-option-card {
+    border-color: rgb(var(--hydra-accent-500));
+    box-shadow: 0 0 0 1px rgb(var(--hydra-accent-500));
+}
+.hydra-loader-option > input:focus-visible + .hydra-loader-option-card { outline: 2px solid rgb(var(--hydra-accent-500)); outline-offset: 2px; }
+.hydra-loader-option-stage { display: flex; align-items: center; justify-content: center; height: 72px; }
+.hydra-loader-option-stage .hydra-loader { color: rgb(var(--hydra-accent-500)); }
+.hydra-loader-option-empty { width: 32px; height: 32px; color: var(--hydra-muted); }
+.hydra-loader-option-name { color: var(--hydra-text); font-size: 13px; font-weight: 600; }
+
+.hydra-loader-sizes { display: flex; align-items: center; flex-wrap: wrap; gap: 24px; margin-bottom: 12px; }
+.hydra-loader-sizes > span[data-loader-size] .hydra-loader { color: rgb(var(--hydra-accent-500)); }
+.hydra-loader-sizes-button .btn { display: inline-flex; align-items: center; gap: 8px; pointer-events: none; }
+
+.hydra-range-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.hydra-range-row > input[type="range"] { flex: 1; accent-color: rgb(var(--hydra-accent-500)); }
+.hydra-range-row > output { min-width: 52px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---------------------------------------------------------------- Privacy blur */
+
+/* Addon "privacy_blur": public/hydra/privacy.js and the React code mark the elements. */
+html.hydra-privacy-ip .hydra-private-ip,
+html.hydra-privacy-ip [data-hydra-private="ip"],
+html.hydra-privacy-email .hydra-private-email,
+html.hydra-privacy-email [data-hydra-private="email"] {
+    filter: blur(var(--hydra-privacy-blur, 5px));
+    transition: filter 0.15s ease;
+}
+
+html.hydra-privacy-ip .hydra-private-ip:hover,
+html.hydra-privacy-ip .hydra-private-ip:focus,
+html.hydra-privacy-ip .hydra-private-ip:focus-within,
+html.hydra-privacy-email .hydra-private-email:hover,
+html.hydra-privacy-email .hydra-private-email:focus,
+html.hydra-privacy-email .hydra-private-email:focus-within,
+html.hydra-privacy-ip [data-hydra-private="ip"]:hover,
+html.hydra-privacy-ip [data-hydra-private="ip"]:focus,
+html.hydra-privacy-email [data-hydra-private="email"]:hover,
+html.hydra-privacy-email [data-hydra-private="email"]:focus {
+    filter: none;
+}
+
+/*
+ * The blur reaches a few pixels beyond the text. Boxes right around a blurred
+ * value (up to two levels) stop cutting their overflow, so it fades out softly
+ * on every side, e.g. next to the icon of the address tile. The value itself
+ * may keep "truncate": its own overflow does not cut its blur.
+ */
+html.hydra-privacy :is(.truncate, .overflow-hidden, .overflow-x-hidden):has(
+    > :is(.hydra-private-ip, .hydra-private-email, [data-hydra-private]),
+    > * > :is(.hydra-private-ip, .hydra-private-email, [data-hydra-private])
+) {
+    overflow: visible;
+}
+
 /* ---------------------------------------------------------------- Profile */
 
 .hydra-profile-grid {
@@ -642,18 +866,30 @@ a { color: rgb(var(--hydra-accent-400)); }
     align-items: start;
 }
 
-.hydra-profile-stack { display: grid; gap: var(--hydra-gap); }
+.hydra-profile-stack { display: grid; gap: var(--hydra-gap); align-content: start; }
 
-.hydra-profile-columns {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--hydra-gap);
-    margin-top: var(--hydra-gap);
+/* The preview in the editor is a bit taller than the small profile cards. */
+.hydra-profile-side .hydra-profile-banner { height: 150px; }
+.hydra-profile-side .hydra-profile-avatar { width: 96px; height: 96px; margin-top: -48px; }
+.hydra-profile-side .hydra-profile-body { padding-bottom: 26px; }
+
+.hydra-form-stack { display: grid; gap: 16px; }
+
+.hydra-profile-banner-settings {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--hydra-border);
+}
+
+.hydra-subheading {
+    margin: 0 0 12px;
+    color: var(--hydra-text);
+    font-size: 13px;
+    font-weight: 700;
 }
 
 @media (max-width: 1023px) {
-    .hydra-profile-grid,
-    .hydra-profile-columns { grid-template-columns: 1fr; }
+    .hydra-profile-grid { grid-template-columns: 1fr; }
 }
 
 .hydra-profile-card {
@@ -712,17 +948,6 @@ a { color: rgb(var(--hydra-accent-400)); }
     margin: 2px 0 0;
     color: var(--hydra-muted);
     font-size: 13px;
-}
-
-.hydra-profile-bio {
-    margin: 14px 0 0;
-    padding-left: 12px;
-    border-left: 3px solid rgb(var(--hydra-accent-500));
-    color: var(--hydra-text-2);
-    font-size: 13.5px;
-    line-height: 1.55;
-    white-space: pre-line;
-    word-break: break-word;
 }
 
 .hydra-upload-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }

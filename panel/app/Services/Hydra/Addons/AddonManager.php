@@ -49,6 +49,8 @@ class AddonManager
         KnowledgebaseAddon::class,
         BoardAddon::class,
         ConfigSyncAddon::class,
+        PrivacyBlurAddon::class,
+        PluginsAddon::class,
     ];
 
     public function __construct(private SettingsRepositoryInterface $settings, private Encrypter $encrypter)

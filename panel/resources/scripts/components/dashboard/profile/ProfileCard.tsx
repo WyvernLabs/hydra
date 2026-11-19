@@ -11,12 +11,11 @@ export interface ProfileCardProps {
     bannerColor1: string;
     bannerColor2: string;
     accent: string;
-    bio: string;
     online?: boolean;
 }
 
 /**
- * Hydra: a user's profile card with banner, picture, name and biography.
+ * Hydra: a user's profile card with banner, picture and name.
  * Transparent pictures stay transparent, so the banner shows through.
  */
 export default ({ uuid, username, name, avatar, banner, bannerStyle, ...props }: ProfileCardProps) => {
@@ -35,11 +34,6 @@ export default ({ uuid, username, name, avatar, banner, bannerStyle, ...props }:
             <div className={'hydra-profile-body'}>
                 <p className={'hydra-profile-name'}>{name || username}</p>
                 <p className={'hydra-profile-handle'}>@{username}</p>
-                {props.bio && (
-                    <p className={'hydra-profile-bio'} style={{ borderColor: props.accent }}>
-                        {props.bio}
-                    </p>
-                )}
             </div>
         </div>
     );

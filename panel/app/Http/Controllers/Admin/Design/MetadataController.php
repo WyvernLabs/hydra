@@ -8,17 +8,22 @@ use Illuminate\Http\RedirectResponse;
 use Prologue\Alerts\AlertsMessageBag;
 use Pterodactyl\Http\Controllers\Controller;
 use Pterodactyl\Services\Hydra\BrandingService;
+use Pterodactyl\Services\Hydra\FooterService;
 use Pterodactyl\Services\Hydra\MetadataService;
+use Pterodactyl\Traits\Helpers\AvailableLanguages;
 
 /**
  * Hydra: description and link preview of the panel (Design > Metadata).
  */
 class MetadataController extends Controller
 {
+    use AvailableLanguages;
+
     public function __construct(
         private AlertsMessageBag $alert,
         private MetadataService $metadata,
         private BrandingService $branding,
+        private FooterService $footer,
     ) {
     }
 
@@ -27,6 +32,8 @@ class MetadataController extends Controller
         return view('admin.design.metadata', [
             'meta' => $this->metadata->values(),
             'imageUrl' => $this->metadata->imageUrl(),
+            'languages' => $this->getAvailableLanguages(true),
+            'footerTexts' => $this->footer->texts(),
         ]);
     }
 
@@ -42,6 +49,8 @@ class MetadataController extends Controller
             'indexable' => 'nullable|boolean',
             'image' => 'nullable|file|max:5120|mimes:png,jpg,jpeg,gif,webp',
             'reset_image' => 'nullable|boolean',
+            'footer' => 'nullable|array',
+            'footer.*' => 'nullable|string|max:' . FooterService::MAX_LENGTH,
         ], [], [
             'title' => __('admin/design.metadata.title_field'),
             'description' => __('admin/design.metadata.description'),
@@ -58,6 +67,11 @@ class MetadataController extends Controller
             'large_image' => $request->boolean('large_image'),
             'indexable' => $request->boolean('indexable'),
         ]);
+
+        if ($request->has('footer')) {
+            $languages = array_keys($this->getAvailableLanguages());
+            $this->footer->save(array_intersect_key($data['footer'] ?? [], array_flip($languages)));
+        }
 
         if ($request->hasFile('image')) {
             $this->branding->store('meta', $request->file('image'));

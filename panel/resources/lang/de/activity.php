@@ -118,6 +118,13 @@ return [
             'trash-delete_other' => ':count Dateien endgültig aus dem Papierkorb gelöscht',
             'trash-empty' => 'Papierkorb geleert',
         ],
+        'plugins' => [
+            'install' => 'Plugin :name :version von :source installiert',
+            'update' => 'Plugin :name auf :version von :source aktualisiert',
+            'enable' => 'Plugin :file eingeschaltet',
+            'disable' => 'Plugin :file abgeschaltet',
+            'delete' => 'Plugin :name gelöscht',
+        ],
         'minecraft' => [
             'install' => ':software :version (Build :build) installiert',
         ],

@@ -83,7 +83,7 @@ class StatusPageTest extends HttpTestCase
             ->assertDontSee($private->name)
             ->assertDontSee('secret-node.example.com')
             ->assertDontSee('secret-target.example.com')
-            ->assertSee('Hydra by WyvernLabs', false);
+            ->assertDontSee('Hydra by WyvernLabs', false);
 
         config()->set('hydra.addons.status.private_nodes', true);
         $this->get('/status')->assertOk()->assertSee($private->name);

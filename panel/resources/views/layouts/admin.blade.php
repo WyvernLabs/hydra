@@ -185,7 +185,7 @@
                     @endif
                 </section>
                 <footer class="hydra-footer">
-                    @include('partials.hydra.credit') {{ $appVersion }}
+                    @include('partials.hydra.credit', ['admin' => true]) {{ $appVersion }}
                     &middot; {{ round(microtime(true) - LARAVEL_START, 3) }}s
                 </footer>
             </main>

@@ -120,6 +120,13 @@ return [
             'trash-delete_other' => 'Deleted :count files from the trash for good',
             'trash-empty' => 'Emptied the trash',
         ],
+        'plugins' => [
+            'install' => 'Installed the plugin :name :version from :source',
+            'update' => 'Updated the plugin :name to :version from :source',
+            'enable' => 'Switched on the plugin :file',
+            'disable' => 'Switched off the plugin :file',
+            'delete' => 'Deleted the plugin :name',
+        ],
         'minecraft' => [
             'install' => 'Installed :software :version (build :build)',
         ],

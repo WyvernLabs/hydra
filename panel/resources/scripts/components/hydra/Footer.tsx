@@ -1,29 +1,23 @@
 import React from 'react';
 import { useStoreState } from '@/state/hooks';
 
-// Mandatory credit, same text as BrandingService::CREDIT. WyvernLabs is a registered
-// trademark; unlike the rest of the branding it is not configurable.
-export const HYDRA_CREDIT = 'Hydra by WyvernLabs®';
-
 /**
- * Footer below every page and the login form. Shows the configured panel name and
- * the Hydra credit, which always stays visible – without text that would need translating.
+ * Footer below every page and the login form: the own text from Designer >
+ * Metadata, otherwise "Name © year", followed by the public pages (imprint …).
+ * The fixed Hydra credit is only shown in the admin area.
  */
 export default () => {
     const name = useStoreState((state) => state.settings.data!.name);
+    const custom = useStoreState((state) => state.settings.data!.footer);
     // Hydra: public pages such as the imprint must be reachable from every page.
     const pages = useStoreState((state) => (state.settings.data!.links || []).filter((link) => link.public));
     const year = new Date().getFullYear();
 
     return (
         <p className={'hydra-footer'}>
-            {name.trim().toLowerCase() === 'hydra' ? (
+            {custom || (
                 <>
-                    {HYDRA_CREDIT} &copy; {year}
-                </>
-            ) : (
-                <>
-                    {name} &copy; {year} &middot; {HYDRA_CREDIT}
+                    {name} &copy; {year}
                 </>
             )}
             {pages.map((page) => (

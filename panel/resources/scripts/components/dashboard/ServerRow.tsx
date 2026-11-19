@@ -172,7 +172,7 @@ export default ({
                     {address && (
                         <p className={'mt-3 flex items-center gap-1.5 text-sm text-gray-200'}>
                             <Network className={'h-3.5 w-3.5 shrink-0'} />
-                            <span className={'truncate'}>{address}</span>
+                            <span className={'truncate hydra-private-ip'}>{address}</span>
                         </p>
                     )}
                     <p className={'mt-1 flex items-center gap-1.5 text-xs text-gray-300'}>

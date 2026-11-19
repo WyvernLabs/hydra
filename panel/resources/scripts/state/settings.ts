@@ -70,6 +70,16 @@ export interface SiteSettings {
         // Hydra: logo and egg pictures shielded against saving (Design > Colors & Logo).
         protect: boolean;
     };
+    // Hydra: plugin manager (Design > Addons).
+    plugins?: boolean;
+    // Hydra: own copyright text in the footer (Designer > Metadata), null = default.
+    footer?: string | null;
+    // Hydra: loading animation (Designer > Loading animation).
+    loader?: {
+        style: 'ring' | 'hourglass' | 'dots' | 'shockwave' | 'pulse' | 'bars' | 'gif';
+        gif: string | null;
+        speed: number;
+    };
     profileUploadLimit: number;
     links: PanelLinkItem[];
     // Hydra: navigation of the server pages (Design > Navigation).

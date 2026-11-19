@@ -10,7 +10,7 @@ return [
 
     'profile' => [
         'title' => 'Profil',
-        'appearance' => 'Profilbild & Farbe',
+        'appearance' => 'Profilaussehen',
         'picture' => 'Profilbild',
         'upload_picture' => 'Bild hochladen',
         'replace_picture' => 'Bild ersetzen',
@@ -30,9 +30,6 @@ return [
         'upload_banner' => 'Banner hochladen',
         'replace_banner' => 'Banner ersetzen',
         'banner_help' => 'PNG, JPG, GIF oder WebP bis :limit MB, am besten im Breitformat (z. B. 1200 × 300).',
-        'about' => 'Über dich',
-        'bio' => 'Biografie',
-        'bio_placeholder' => 'Ein paar Worte über dich …',
         'details' => 'Kontodaten',
         'username' => 'Benutzername',
         'username_help' => 'Mit dem Benutzernamen meldest du dich an. Andere fügen dich damit zu ihren Servern hinzu.',

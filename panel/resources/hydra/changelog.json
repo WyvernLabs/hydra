@@ -1,6 +1,47 @@
 {
     "releases": [
         {
+            "version": "1.9.0",
+            "build": 62,
+            "date": "2026-11-19",
+            "title": {
+                "de": "Plugin-Manager, Privatsphäre-Unschärfe, Ladeanimation und neues Profil",
+                "en": "Plugin manager, privacy blur, loading animation and new profile"
+            },
+            "changes": [
+                {
+                    "type": "new",
+                    "de": "Addon Plugins: Plugins für Minecraft-Server direkt im Panel suchen, installieren, aktualisieren, deaktivieren und löschen. Quellen Modrinth, Hangar und SpigotMC, Filter nach Server-Software, Proxy-Software und Minecraft-Version in einer Seitenleiste. Updates installierter Plugins werden erkannt. Der Reiter erscheint nur, wenn der Server einen Ordner „plugins“ hat. Eigene Rechte-Gruppe „Plugins“ für Subuser.",
+                    "en": "Plugins addon: search, install, update, disable and delete plugins for Minecraft servers right in the panel. Sources Modrinth, Hangar and SpigotMC, filters for server software, proxy software and Minecraft version in a sidebar. Updates of installed plugins are detected. The tab only shows when the server has a \"plugins\" folder. Own permission group \"Plugins\" for subusers."
+                },
+                {
+                    "type": "new",
+                    "de": "Addon Privatsphäre-Unschärfe: IP-Adressen und E-Mail-Adressen werden weichgezeichnet und erst beim Drüberfahren sichtbar, praktisch beim Streamen oder für Screenshots. Stärke einstellbar, optional auch im Adminbereich.",
+                    "en": "Privacy blur addon: IP addresses and email addresses are blurred and only show on hover, handy for streaming or screenshots. Adjustable strength, optionally in the admin area too."
+                },
+                {
+                    "type": "new",
+                    "de": "Designer > Ladeanimation: Stil der Ladeanimation wählen (Ring, Sanduhr, Punkte, Schockwelle, Puls, Balken oder ein eigenes GIF) und die Geschwindigkeit einstellen.",
+                    "en": "Designer > Loading animation: choose the style of the loading animation (ring, hourglass, dots, shockwave, pulse, bars or an own GIF) and set the speed."
+                },
+                {
+                    "type": "new",
+                    "de": "Eigener Footer-Text pro Sprache (Designer > Metadaten) mit Platzhaltern für Jahr und Panel-Name. Der Hinweis „Hydra by WyvernLabs®“ steht nur noch im Adminbereich.",
+                    "en": "Own footer text per language (Designer > Metadata) with placeholders for year and panel name. The \"Hydra by WyvernLabs®\" note now only shows in the admin area."
+                },
+                {
+                    "type": "improved",
+                    "de": "Profil überarbeitet: größere Vorschau links, Kontodaten in einer eigenen Box, Banner-Einstellungen unter „Profilaussehen“. Das Feld „Über dich“ entfällt.",
+                    "en": "Profile reworked: larger preview on the left, account details in their own box, banner settings under \"Profile appearance\". The \"About you\" field is gone."
+                },
+                {
+                    "type": "improved",
+                    "de": "Designer > Bilder: Breite und Höhe des Logos in der Seitenleiste einstellbar.",
+                    "en": "Designer > Images: width and height of the logo in the sidebar can be set."
+                }
+            ]
+        },
+        {
             "version": "1.8.0",
             "build": 61,
             "date": "2026-11-12",

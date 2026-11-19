@@ -33,6 +33,7 @@ const ServerDashboardContainer = lazy(() => import('@/components/server/dashboar
 const PropertiesContainer = lazy(() => import('@/components/server/properties/PropertiesContainer'));
 const GamesContainer = lazy(() => import('@/components/server/games/GamesContainer'));
 const VersionsContainer = lazy(() => import('@/components/server/versions/VersionsContainer'));
+const PluginsContainer = lazy(() => import('@/components/server/plugins/PluginsContainer'));
 const EnvContainer = lazy(() => import('@/components/server/env/EnvContainer'));
 const BoardContainer = lazy(() => import('@/components/server/board/BoardContainer'));
 const TicketsContainer = lazy(() => import('@/components/dashboard/tickets/TicketsContainer'));
@@ -224,6 +225,14 @@ export default {
             permission: 'settings.version',
             name: 'routes.versions',
             component: VersionsContainer,
+        },
+        {
+            // Hydra: only reachable while the addon "Plugin manager" is on and the server has a plugins folder.
+            path: '/plugins',
+            navKey: 'plugins',
+            permission: 'plugins.read',
+            name: 'routes.plugins',
+            component: PluginsContainer,
         },
         {
             // Hydra: only reachable while the addon ".env editor" is on.

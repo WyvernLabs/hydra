@@ -8,8 +8,8 @@ use Pterodactyl\Services\Hydra\BrandingService;
 use Pterodactyl\Tests\Integration\Http\HttpTestCase;
 
 /**
- * Hydra: the "Hydra by WyvernLabs®" credit is mandatory and stays in the
- * footer, whatever the panel is called.
+ * Hydra: the "Hydra by WyvernLabs®" credit is fixed in the footer of the admin
+ * area, whatever the panel is called. Pages for users do not show it.
  */
 class FooterCreditTest extends HttpTestCase
 {
@@ -34,11 +34,13 @@ class FooterCreditTest extends HttpTestCase
             ->assertSee(BrandingService::CREDIT);
     }
 
-    public function testPublicPagesShowCredit(): void
+    public function testPublicPagesShowNoCredit(): void
     {
         // Other tests may have hidden the imprint, nothing is rolled back between tests.
         PanelLink::query()->where('slug', 'imprint')->update(['public' => true, 'enabled' => true]);
 
-        $this->get('/pages/imprint')->assertOk()->assertSee(BrandingService::CREDIT);
+        $this->get('/pages/imprint')->assertOk()
+            ->assertSee('Mein Hosting © ' . date('Y'))
+            ->assertDontSee(BrandingService::CREDIT);
     }
 }

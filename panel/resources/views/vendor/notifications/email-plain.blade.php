@@ -21,4 +21,3 @@ if (! empty($outroLines)) {
 
 echo __('mail.regards'), "\n";
 echo config('app.name'), "\n";
-echo "\n", \Pterodactyl\Services\Hydra\BrandingService::CREDIT, "\n";

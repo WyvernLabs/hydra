@@ -169,6 +169,8 @@ Route::group(['prefix' => 'design'], function () {
     Route::get('/maintenance/preview', [Admin\Design\MaintenancePageController::class, 'preview'])->name('admin.design.maintenance.preview')->middleware('admin.can:design.view');
     Route::patch('/maintenance', [Admin\Design\MaintenancePageController::class, 'update'])->middleware('admin.can:design.update');
 
+    Route::get('/loader', [Admin\Design\LoaderDesignController::class, 'index'])->name('admin.design.loader')->middleware('admin.can:design.view');
+    Route::patch('/loader', [Admin\Design\LoaderDesignController::class, 'update'])->middleware('admin.can:design.update');
     Route::get('/effects', [Admin\Design\EffectsController::class, 'index'])->name('admin.design.effects')->middleware('admin.can:design.view');
     Route::patch('/effects', [Admin\Design\EffectsController::class, 'update'])->middleware('admin.can:design.update');
     // Hydra: tests the bot of the addon "discord".

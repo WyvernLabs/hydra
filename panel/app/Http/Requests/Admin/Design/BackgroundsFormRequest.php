@@ -2,6 +2,7 @@
 
 namespace Pterodactyl\Http\Requests\Admin\Design;
 
+use Pterodactyl\Services\Hydra\BrandingService;
 use Pterodactyl\Services\Hydra\BackgroundService;
 use Pterodactyl\Http\Requests\Admin\AdminFormRequest;
 
@@ -21,6 +22,8 @@ class BackgroundsFormRequest extends AdminFormRequest
             'reset_logo' => 'nullable|boolean',
             'reset_favicon' => 'nullable|boolean',
             'protect_images' => 'nullable|boolean',
+            'logo_width' => 'nullable|integer|between:' . implode(',', BrandingService::LOGO_WIDTH),
+            'logo_height' => 'nullable|integer|between:' . implode(',', BrandingService::LOGO_HEIGHT),
         ];
     }
 }

@@ -47,6 +47,22 @@ return [
         'accent' => env('HYDRA_ACCENT', '#74c236'),
         'logo' => null,
         'favicon' => null,
+        // Fixed size of the sidebar logo in px, null = automatic (Designer > Images).
+        'logo_width' => null,
+        'logo_height' => null,
+        // Uploaded GIF of the loading animation.
+        'loader' => null,
+    ],
+
+    // Own copyright text in the footer, JSON language => text (Designer > Metadata).
+    'footer' => [
+        'texts' => null,
+    ],
+
+    // Loading animation (Designer > Loading animation, "settings::hydra:loader:*").
+    'loader' => [
+        'style' => 'ring',
+        'speed' => 100,
     ],
 
     /*
@@ -112,6 +128,11 @@ return [
     | board:        Kanban board per server (page "Board") with at most
     |               max_columns columns, max_cards cards, max_tags tags and
     |               max_items checklist entries per card.
+    | plugins:      plugin manager for Minecraft servers with a plugins folder
+    |               (Modrinth always, "hangar" and "spigot" optional).
+    | privacy_blur: blurs IP addresses ("ips") and email addresses ("emails")
+    |               until hovered, with "strength" px; "admin" also in the
+    |               admin area.
     | motd:         MOTD with a picture for Minecraft servers of the "eggs" that
     |               are offline, starting, stopping or suspended ("states", JSON).
     | importer:     users copy the files of another server over SFTP onto
@@ -221,6 +242,18 @@ return [
             'max_cards' => 500,
             'max_tags' => 30,
             'max_items' => 50,
+        ],
+        'plugins' => [
+            'enabled' => false,
+            'hangar' => true,
+            'spigot' => true,
+        ],
+        'privacy_blur' => [
+            'enabled' => false,
+            'ips' => true,
+            'emails' => true,
+            'admin' => true,
+            'strength' => 5,
         ],
         'motd' => [
             'enabled' => false,

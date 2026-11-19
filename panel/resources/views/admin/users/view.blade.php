@@ -29,9 +29,6 @@
                 <div class="hydra-admin-profile-info">
                     <strong>{{ trim($user->name_first . ' ' . $user->name_last) ?: $user->username }}</strong>
                     <span class="text-muted">&#64;{{ $user->username }} &middot; {{ __('admin/users.last_seen') }}: @include('partials.hydra.last-seen', ['user' => $user])</span>
-                    @if($user->bio)
-                        <p class="hydra-admin-profile-bio" style="border-color: {{ $profileAccent }}">{{ $user->bio }}</p>
-                    @endif
                 </div>
                 @if($canManage && Auth::user()->hasAdminPermission('users.update'))
                     <div class="hydra-admin-profile-actions">

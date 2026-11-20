@@ -239,4 +239,22 @@ return [
         ],
         'labels' => ['read' => 'Ansehen', 'manage' => 'Installieren & verwalten'],
     ],
+    'mods' => [
+        'title' => 'Mods',
+        'description' => 'Rechte für den Modmanager dieses Servers.',
+        'keys' => [
+            'read' => 'Erlaubt das Ansehen der installierten Mods und die Suche auf Modrinth und CurseForge.',
+            'manage' => 'Erlaubt das Installieren, Aktualisieren, Abschalten und Löschen von Mods. Achtung: Mods führen Code auf dem Server aus.',
+        ],
+        'labels' => ['read' => 'Ansehen', 'manage' => 'Installieren & verwalten'],
+    ],
+    'modpacks' => [
+        'title' => 'Modpacks',
+        'description' => 'Rechte für den Modpack-Installer dieses Servers.',
+        'keys' => [
+            'read' => 'Erlaubt das Suchen von Modpacks und das Ansehen des Installationsfortschritts.',
+            'install' => 'Erlaubt das Installieren eines Modpacks. Das ersetzt die Server-Software und kann alle Dateien löschen. Achtung: Modpacks führen Code auf dem Server aus.',
+        ],
+        'labels' => ['read' => 'Ansehen', 'install' => 'Installieren'],
+    ],
 ];

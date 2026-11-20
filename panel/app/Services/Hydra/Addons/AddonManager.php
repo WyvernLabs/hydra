@@ -51,6 +51,8 @@ class AddonManager
         ConfigSyncAddon::class,
         PrivacyBlurAddon::class,
         PluginsAddon::class,
+        ModsAddon::class,
+        ModpacksAddon::class,
     ];
 
     public function __construct(private SettingsRepositoryInterface $settings, private Encrypter $encrypter)

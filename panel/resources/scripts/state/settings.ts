@@ -72,6 +72,12 @@ export interface SiteSettings {
     };
     // Hydra: plugin manager (Design > Addons).
     plugins?: boolean;
+    // Hydra: mod manager (Design > Addons).
+    mods?: boolean;
+    // Hydra: modpack installer (Design > Addons).
+    modpacks?: boolean;
+    // Hydra: whether plugin and mod manager disappear on servers without their folder.
+    folderPages?: { plugins: boolean; mods: boolean };
     // Hydra: own copyright text in the footer (Designer > Metadata), null = default.
     footer?: string | null;
     // Hydra: loading animation (Designer > Loading animation).

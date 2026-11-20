@@ -125,6 +125,17 @@ return [
             'disable' => 'Plugin :file abgeschaltet',
             'delete' => 'Plugin :name gelöscht',
         ],
+        'mods' => [
+            'install' => 'Mod :name :version von :source installiert',
+            'update' => 'Mod :name auf :version von :source aktualisiert',
+            'dependency' => 'Mod :name :version als Abhängigkeit von :for installiert',
+            'enable' => 'Mod :file eingeschaltet',
+            'disable' => 'Mod :file abgeschaltet',
+            'delete' => 'Mod :name gelöscht',
+        ],
+        'modpacks' => [
+            'install' => 'Installation des Modpacks :name :version von :source gestartet (:mode)',
+        ],
         'minecraft' => [
             'install' => ':software :version (Build :build) installiert',
         ],

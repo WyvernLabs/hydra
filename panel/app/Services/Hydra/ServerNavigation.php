@@ -48,6 +48,10 @@ class ServerNavigation
         'env' => 'file-key',
         // Hydra: addon "Plugin manager".
         'plugins' => 'blocks',
+        // Hydra: addon "Mod manager".
+        'mods' => 'puzzle',
+        // Hydra: addon "Modpack installer".
+        'modpacks' => 'package-open',
         // Hydra: addon "Board".
         'board' => 'square-kanban',
         'settings' => 'settings',

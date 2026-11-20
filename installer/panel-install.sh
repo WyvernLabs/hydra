@@ -43,6 +43,8 @@ CONF_FILE=$CONF_DIR/panel.conf
 CADDY_SITE=$CONF_DIR/panel.caddy
 CREDENTIALS_FILE=/root/hydra-panel-credentials.txt
 QUEUE_SERVICE=hydra-queue
+# Second worker for long jobs (e.g. modpack installs), so they do not hold up mails and syncs.
+QUEUE_LONG_SERVICE=hydra-queue-long
 NODE_MAJOR=22
 YARN_VERSION=1.22.22
 WEB_USER=www-data
@@ -249,7 +251,7 @@ fi
 # ------------------------------------------------------------------ Status
 
 if [[ "$MODE" == status ]]; then
-  for unit in caddy mariadb redis-server "$QUEUE_SERVICE" $(systemctl list-unit-files 'php*-fpm.service' --no-legend 2>/dev/null | awk '{print $1}'); do
+  for unit in caddy mariadb redis-server "$QUEUE_SERVICE" "$QUEUE_LONG_SERVICE" $(systemctl list-unit-files 'php*-fpm.service' --no-legend 2>/dev/null | awk '{print $1}'); do
     printf '  %-28s %s\n' "$unit" "$(systemctl is-active "$unit" 2>/dev/null || true)"
   done
   [[ -f "$INSTALL_DIR/config/app.php" ]] && printf '  %-28s %s\n' "Version" "$(cd "$INSTALL_DIR" && php artisan --version 2>/dev/null | head -n1)"
@@ -692,10 +694,27 @@ RestartSec=5s
 [Install]
 WantedBy=multi-user.target
 EOF
+cat > "/etc/systemd/system/$QUEUE_LONG_SERVICE.service" <<EOF
+[Unit]
+Description=Hydra Panel Queue Worker (lange Aufgaben wie Modpack-Installationen)
+After=redis-server.service mariadb.service
+
+[Service]
+User=$WEB_USER
+Group=$WEB_USER
+Restart=always
+ExecStart=$PHP_BIN $INSTALL_DIR/artisan queue:work redis_long --queue=long --sleep=3 --tries=1 --timeout=3600
+StartLimitInterval=180
+StartLimitBurst=30
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+EOF
 systemctl daemon-reload
-systemctl enable "$QUEUE_SERVICE" >/dev/null 2>&1
-systemctl restart "$QUEUE_SERVICE"
-info "Queue-Worker ($QUEUE_SERVICE) ok"
+systemctl enable "$QUEUE_SERVICE" "$QUEUE_LONG_SERVICE" >/dev/null 2>&1
+systemctl restart "$QUEUE_SERVICE" "$QUEUE_LONG_SERVICE"
+info "Queue-Worker ($QUEUE_SERVICE, $QUEUE_LONG_SERVICE) ok"
 
 install -d -m 755 "$CONF_DIR" "$CONF_DIR/panel.d"
 if (( SSL )); then SITE_ADDRESS="$DOMAIN"; else SITE_ADDRESS="http://$DOMAIN, http://:80"; fi

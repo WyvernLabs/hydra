@@ -130,6 +130,12 @@ return [
     |               max_items checklist entries per card.
     | plugins:      plugin manager for Minecraft servers with a plugins folder
     |               (Modrinth always, "hangar" and "spigot" optional).
+    | mods:         mod manager for Minecraft servers with a mods folder
+    |               (Modrinth always, "curseforge" with "curseforge_key",
+    |               "dependencies" installs required mods along).
+    | modpacks:     modpack installer for Minecraft servers of the chosen eggs
+    |               (Modrinth always, "curseforge" with "curseforge_key" or the
+    |               key of the mod manager).
     | privacy_blur: blurs IP addresses ("ips") and email addresses ("emails")
     |               until hovered, with "strength" px; "admin" also in the
     |               admin area.
@@ -247,6 +253,19 @@ return [
             'enabled' => false,
             'hangar' => true,
             'spigot' => true,
+            'hide_without_folder' => true,
+        ],
+        'mods' => [
+            'enabled' => false,
+            'curseforge' => false,
+            'curseforge_key' => null,
+            'dependencies' => true,
+            'hide_without_folder' => true,
+        ],
+        'modpacks' => [
+            'enabled' => false,
+            'curseforge' => false,
+            'curseforge_key' => null,
         ],
         'privacy_blur' => [
             'enabled' => false,

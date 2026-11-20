@@ -97,6 +97,14 @@ class Permission extends Model
     public const ACTION_PLUGINS_READ = 'plugins.read';
     public const ACTION_PLUGINS_MANAGE = 'plugins.manage';
 
+    // Hydra: mod manager of modded Minecraft servers (addon "mods").
+    public const ACTION_MODS_READ = 'mods.read';
+    public const ACTION_MODS_MANAGE = 'mods.manage';
+
+    // Hydra: modpack installer of Minecraft servers (addon "modpacks").
+    public const ACTION_MODPACKS_READ = 'modpacks.read';
+    public const ACTION_MODPACKS_INSTALL = 'modpacks.install';
+
     /**
      * Should timestamps be used on this model.
      */
@@ -271,6 +279,24 @@ class Permission extends Model
             'keys' => [
                 'read' => 'Allows a user to see the installed plugins and to search Modrinth, Hangar and SpigotMC.',
                 'manage' => 'Allows a user to install, update, switch off and delete plugins. Danger: plugins run code on the server.',
+            ],
+        ],
+
+        // Hydra: mod manager of modded Minecraft servers (addon "mods").
+        'mods' => [
+            'description' => 'Permissions that control access to the mod manager of this server.',
+            'keys' => [
+                'read' => 'Allows a user to see the installed mods and to search Modrinth and CurseForge.',
+                'manage' => 'Allows a user to install, update, switch off and delete mods. Danger: mods run code on the server.',
+            ],
+        ],
+
+        // Hydra: modpack installer of Minecraft servers (addon "modpacks").
+        'modpacks' => [
+            'description' => 'Permissions that control access to the modpack installer of this server.',
+            'keys' => [
+                'read' => 'Allows a user to search modpacks and to see the progress of an installation.',
+                'install' => 'Allows a user to install a modpack, which replaces the server software and can delete all files. Danger: modpacks run code on the server.',
             ],
         ],
     ];

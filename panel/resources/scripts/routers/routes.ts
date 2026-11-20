@@ -34,6 +34,8 @@ const PropertiesContainer = lazy(() => import('@/components/server/properties/Pr
 const GamesContainer = lazy(() => import('@/components/server/games/GamesContainer'));
 const VersionsContainer = lazy(() => import('@/components/server/versions/VersionsContainer'));
 const PluginsContainer = lazy(() => import('@/components/server/plugins/PluginsContainer'));
+const ModsContainer = lazy(() => import('@/components/server/mods/ModsContainer'));
+const ModpacksContainer = lazy(() => import('@/components/server/modpacks/ModpacksContainer'));
 const EnvContainer = lazy(() => import('@/components/server/env/EnvContainer'));
 const BoardContainer = lazy(() => import('@/components/server/board/BoardContainer'));
 const TicketsContainer = lazy(() => import('@/components/dashboard/tickets/TicketsContainer'));
@@ -233,6 +235,22 @@ export default {
             permission: 'plugins.read',
             name: 'routes.plugins',
             component: PluginsContainer,
+        },
+        {
+            // Hydra: only reachable while the addon "Mod manager" is on and the server has a mods folder.
+            path: '/mods',
+            navKey: 'mods',
+            permission: 'mods.read',
+            name: 'routes.mods',
+            component: ModsContainer,
+        },
+        {
+            // Hydra: only reachable while the addon "Modpack installer" is on (eggs of its button).
+            path: '/modpacks',
+            navKey: 'modpacks',
+            permission: 'modpacks.read',
+            name: 'routes.modpacks',
+            component: ModpacksContainer,
         },
         {
             // Hydra: only reachable while the addon ".env editor" is on.

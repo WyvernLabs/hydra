@@ -1,6 +1,47 @@
 {
     "releases": [
         {
+            "version": "1.10.0",
+            "build": 64,
+            "date": "2026-11-20",
+            "title": {
+                "de": "Mod-Manager und Modpack-Installer",
+                "en": "Mod manager and modpack installer"
+            },
+            "changes": [
+                {
+                    "type": "new",
+                    "de": "Addon Mods: Mods für Fabric-, Forge-, NeoForge- und Quilt-Server von Modrinth und CurseForge suchen, installieren, aktualisieren, deaktivieren und löschen. Seitenleiste mit Kategorien (Abenteuer, Optimierung, Technik …), Minecraft-Version und Mod-Loader, der Loader wird automatisch erkannt. Benötigte Abhängigkeiten wie die Fabric API werden mitinstalliert, reine Client-Mods ausgeblendet. Eigene Rechte-Gruppe „Mods“ für Subuser.",
+                    "en": "Mods addon: search, install, update, disable and delete mods for Fabric, Forge, NeoForge and Quilt servers from Modrinth and CurseForge. Sidebar with categories (adventure, optimization, technology …), Minecraft version and mod loader, the loader is detected automatically. Required dependencies such as Fabric API are installed along, client-only mods are hidden. Own permission group \"Mods\" for subusers."
+                },
+                {
+                    "type": "new",
+                    "de": "Addon Modpack-Installer: Modpacks von Modrinth und CurseForge mit einem Klick installieren. Das Panel installiert die Minecraft-Version und den Mod-Loader in genau der Version, die das Pack braucht, samt passendem Java-Image, danach Configs und Mods. Vorhandene Dateien lassen sich löschen, als Spielprofil behalten oder bei Updates samt Welt behalten. Fortschritt live auf der Seite, installierte Mods erscheinen im Mod-Manager.",
+                    "en": "Modpack installer addon: install modpacks from Modrinth and CurseForge with one click. The panel installs the Minecraft version and the mod loader in exactly the version the pack needs, with the matching Java image, then its configs and mods. Existing files can be deleted, kept as a game profile or, for updates, kept with the world. Live progress on the page, installed mods show up in the mod manager."
+                },
+                {
+                    "type": "new",
+                    "de": "Plugin- und Mod-Manager: neue Einstellung „Auf Servern ohne Ordner ausblenden“. An: Der Menüpunkt erscheint nur, wenn der Ordner existiert. Aus: Die Seite erklärt, wie man zu dem Ordner kommt.",
+                    "en": "Plugin and mod manager: new setting \"Hide on servers without the folder\". On: the menu item only shows where the folder exists. Off: the page explains how to get the folder."
+                },
+                {
+                    "type": "improved",
+                    "de": "CurseForge-API-Key: Die Prüfung beim Speichern testet Key und Suche getrennt und zeigt das Ergebnis unter dem Feld; der Key wird immer gespeichert.",
+                    "en": "CurseForge API key: the check on saving tests the key and the search separately and shows the result below the field; the key is always saved."
+                },
+                {
+                    "type": "improved",
+                    "de": "Installer: zweiter Queue-Worker „hydra-queue-long“ für lange Aufgaben wie Modpack-Installationen, damit E-Mails und Synchronisierungen nicht warten müssen.",
+                    "en": "Installer: second queue worker \"hydra-queue-long\" for long tasks such as modpack installs, so mails and syncs do not have to wait."
+                },
+                {
+                    "type": "fixed",
+                    "de": "Plugin-Seite: Wer auf der Seite stand, während der Plugin-Ordner verschwand, landete auf „Seite nicht gefunden“; jetzt geht es zur Startseite des Servers.",
+                    "en": "Plugin page: whoever was on the page while the plugins folder disappeared ended up on \"page not found\"; now it goes to the start page of the server."
+                }
+            ]
+        },
+        {
             "version": "1.9.0",
             "build": 62,
             "date": "2026-11-19",

@@ -78,6 +78,15 @@ class AssetComposer
             'versions' => app(\Pterodactyl\Services\Hydra\Addons\VersionsAddon::class)->enabled(),
             // Hydra: plugin manager (Design > Addons).
             'plugins' => app(\Pterodactyl\Services\Hydra\Addons\PluginsAddon::class)->enabled(),
+            // Hydra: mod manager (Design > Addons).
+            'mods' => app(\Pterodactyl\Services\Hydra\Addons\ModsAddon::class)->enabled(),
+            // Hydra: modpack installer (Design > Addons).
+            'modpacks' => app(\Pterodactyl\Services\Hydra\Addons\ModpacksAddon::class)->enabled(),
+            // Hydra: whether plugin and mod manager disappear on servers without their folder.
+            'folderPages' => [
+                'plugins' => app(\Pterodactyl\Services\Hydra\Addons\PluginsAddon::class)->hidesWithoutFolder(),
+                'mods' => app(\Pterodactyl\Services\Hydra\Addons\ModsAddon::class)->hidesWithoutFolder(),
+            ],
             // Hydra: storage and sync of configs in the file editor (Design > Addons).
             'configSync' => app(\Pterodactyl\Services\Hydra\Addons\ConfigSyncAddon::class)->toArray(),
             // Hydra: Kanban board per server (Design > Addons).

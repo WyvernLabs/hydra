@@ -69,6 +69,17 @@ return [
             'block_for' => null,
             'after_commit' => false,
         ],
+
+        // Hydra: long jobs such as modpack installs, worked by their own worker
+        // (hydra-queue-long) that may run a job for up to an hour.
+        'redis_long' => [
+            'driver' => 'redis',
+            'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
+            'queue' => 'long',
+            'retry_after' => 3700,
+            'block_for' => null,
+            'after_commit' => false,
+        ],
     ],
 
     /*

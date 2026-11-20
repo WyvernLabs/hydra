@@ -78,6 +78,8 @@ return [
         'versions' => 'Versions',
         'env' => '.env',
         'plugins' => 'Plugins',
+        'mods' => 'Mods',
+        'modpacks' => 'Modpacks',
         'board' => 'Board',
         'dashboard' => 'Dashboard',
         'console' => 'Console',

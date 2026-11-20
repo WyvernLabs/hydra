@@ -127,6 +127,17 @@ return [
             'disable' => 'Switched off the plugin :file',
             'delete' => 'Deleted the plugin :name',
         ],
+        'mods' => [
+            'install' => 'Installed the mod :name :version from :source',
+            'update' => 'Updated the mod :name to :version from :source',
+            'dependency' => 'Installed the mod :name :version as dependency of :for',
+            'enable' => 'Switched on the mod :file',
+            'disable' => 'Switched off the mod :file',
+            'delete' => 'Deleted the mod :name',
+        ],
+        'modpacks' => [
+            'install' => 'Started installing the modpack :name :version from :source (:mode)',
+        ],
         'minecraft' => [
             'install' => 'Installed :software :version (build :build)',
         ],

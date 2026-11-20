@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useStoreState } from '@/state/hooks';
 import { pluginsAvailable } from '@/api/server/plugins';
+import { modsAvailable } from '@/api/server/mods';
 import { ServerContext } from '@/state/server';
 import routes from '@/routers/routes';
 import { ServerNavCategory, ServerNavItem } from '@/state/settings';
@@ -31,17 +32,78 @@ const can = (userPermissions: string[], permission: string | string[] | null): b
     );
 };
 
-// Hydra: whether a server has a plugins folder (addon "plugins"), asked once a
-// minute per server, shared by every component that shows the navigation.
-const pluginFolders = new Map<string, { at: number; value: Promise<boolean> }>();
+// Hydra: whether a server has a plugins folder (addon "plugins") or a mods
+// folder (addon "mods"), asked once a minute per server, shared by every
+// component that shows the navigation.
+const FOLDER_CHECKS = { plugins: pluginsAvailable, mods: modsAvailable };
 
-const hasPluginsFolder = (uuid: string): Promise<boolean> => {
-    const cached = pluginFolders.get(uuid);
+type FolderKey = keyof typeof FOLDER_CHECKS;
+
+const folders = new Map<string, { at: number; value: Promise<boolean> }>();
+
+// Components that show the navigation, told to ask again after forgetFolder().
+const folderListeners = new Set<() => void>();
+
+// Forgets what is known about the folder, e.g. when a page found it missing.
+export const forgetFolder = (key: FolderKey, uuid: string) => {
+    folders.delete(`${key}:${uuid}`);
+    folderListeners.forEach((listener) => listener());
+};
+
+const hasFolder = (key: FolderKey, uuid: string): Promise<boolean> => {
+    const cached = folders.get(`${key}:${uuid}`);
     if (cached && Date.now() - cached.at < 60000) return cached.value;
-    const value = pluginsAvailable(uuid).catch(() => false);
-    pluginFolders.set(uuid, { at: Date.now(), value });
+    const value = FOLDER_CHECKS[key](uuid).catch(() => false);
+    folders.set(`${key}:${uuid}`, { at: Date.now(), value });
 
     return value;
+};
+
+// Whether the page of a folder addon is wanted (addon on, permission, egg) and
+// whether the folder exists: null while the check runs. Without "hide", the
+// page is shown everywhere and explains a missing folder itself.
+const useFolderPage = (
+    key: FolderKey,
+    enabled: boolean,
+    hide: boolean,
+    buttons: ServerNavItem[],
+    permissions: string[],
+    eggId: number | undefined,
+    uuid: string | undefined
+) => {
+    const [folder, setFolder] = useState<boolean | null>(null);
+    const [tick, setTick] = useState(0);
+    const button = buttons.find((item) => item.key === key);
+    const wanted =
+        enabled &&
+        !!uuid &&
+        can(permissions, `${key}.read`) &&
+        (!button?.eggs || eggId === undefined || button.eggs.indexOf(eggId) >= 0);
+
+    useEffect(() => {
+        const listener = () => setTick((value) => value + 1);
+        folderListeners.add(listener);
+
+        return () => {
+            folderListeners.delete(listener);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!wanted || !uuid || !hide) {
+            setFolder(wanted && !hide);
+            return;
+        }
+        setFolder(null);
+        let active = true;
+        hasFolder(key, uuid).then((value) => active && setFolder(value));
+
+        return () => {
+            active = false;
+        };
+    }, [wanted, uuid, hide, tick]);
+
+    return { wanted, folder };
 };
 
 export interface VisibleNavItem extends ServerNavItem {
@@ -67,32 +129,23 @@ export const useServerNavigation = () => {
     const env = useStoreState((state) => state.settings.data!.env?.enabled || false);
     const board = useStoreState((state) => state.settings.data!.board || false);
     const plugins = useStoreState((state) => state.settings.data!.plugins || false);
+    const mods = useStoreState((state) => state.settings.data!.mods || false);
+    const folderPages = useStoreState((state) => state.settings.data!.folderPages);
+    const modpacks = useStoreState((state) => state.settings.data!.modpacks || false);
     const uuid = ServerContext.useStoreState((state) => state.server.data?.uuid);
-    // null while the check runs.
-    const [pluginFolder, setPluginFolder] = useState<boolean | null>(null);
 
     const buttons = navigation.flatMap((category) => category.items);
-    const pluginsButton = buttons.find((item) => item.key === 'plugins');
-    const pluginsWanted =
-        plugins &&
-        !!uuid &&
-        can(permissions, 'plugins.read') &&
-        (!pluginsButton?.eggs || eggId === undefined || pluginsButton.eggs.indexOf(eggId) >= 0);
-
-    // The plugin manager additionally needs a plugins folder on the server.
-    useEffect(() => {
-        if (!pluginsWanted || !uuid) {
-            setPluginFolder(false);
-            return;
-        }
-        setPluginFolder(null);
-        let active = true;
-        hasPluginsFolder(uuid).then((value) => active && setPluginFolder(value));
-
-        return () => {
-            active = false;
-        };
-    }, [pluginsWanted, uuid]);
+    // The plugin and mod managers additionally need their folder on the server.
+    const pluginPage = useFolderPage(
+        'plugins',
+        plugins,
+        folderPages?.plugins ?? true,
+        buttons,
+        permissions,
+        eggId,
+        uuid
+    );
+    const modPage = useFolderPage('mods', mods, folderPages?.mods ?? true, buttons, permissions, eggId, uuid);
 
     // Pages of buttons hidden for this egg are not reachable either. Buttons the
     // navigation does not know (yet) stay visible. The dashboard is an addon.
@@ -103,7 +156,9 @@ export const useServerNavigation = () => {
         if (navKey === 'versions' && !versions) return false;
         if (navKey === 'env' && !env) return false;
         if (navKey === 'board' && !board) return false;
-        if (navKey === 'plugins' && (!plugins || pluginFolder !== true)) return false;
+        if (navKey === 'plugins' && (!plugins || pluginPage.folder !== true)) return false;
+        if (navKey === 'mods' && (!mods || modPage.folder !== true)) return false;
+        if (navKey === 'modpacks' && !modpacks) return false;
         const button = buttons.find((item) => item.key === navKey);
 
         return !button || !button.eggs || eggId === undefined || button.eggs.indexOf(eggId) >= 0;
@@ -123,10 +178,14 @@ export const useServerNavigation = () => {
         // Categories without visible buttons are hidden.
         .filter((category) => category.items.length > 0);
 
-    // Pages stay reachable while the plugins folder is still being checked, the
-    // page itself says when there is none.
-    const isRoutable = (navKey: string): boolean =>
-        navKey === 'plugins' && pluginFolder === null && pluginsWanted ? true : isVisible(navKey);
+    // The pages of the folder addons stay reachable whatever the folder check
+    // says: they leave by themselves when the folder is missing, so nobody ends
+    // up on a "page not found" when the route vanishes under them.
+    const isRoutable = (navKey: string): boolean => {
+        const page = navKey === 'plugins' ? pluginPage : navKey === 'mods' ? modPage : null;
+
+        return page ? page.wanted : isVisible(navKey);
+    };
 
     return { categories, isVisible, isRoutable };
 };

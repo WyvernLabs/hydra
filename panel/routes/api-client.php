@@ -289,6 +289,32 @@ Route::group([
         Route::post('/delete', [Client\Servers\PluginController::class, 'delete'])->middleware('throttle:60,1');
     });
 
+    // Hydra: mod manager (addon "mods").
+    Route::prefix('/mods')->middleware('addon:mods')->group(function () {
+        Route::get('/', [Client\Servers\ModController::class, 'index']);
+        Route::get('/available', [Client\Servers\ModController::class, 'available']);
+        Route::get('/search', [Client\Servers\ModController::class, 'search'])->middleware('throttle:60,1');
+        Route::get('/installed', [Client\Servers\ModController::class, 'installed']);
+        Route::get('/updates', [Client\Servers\ModController::class, 'updates'])->middleware('throttle:10,1');
+        Route::get('/icon', [Client\Servers\ModController::class, 'icon']);
+        Route::get('/projects/{source}/{project}/versions', [Client\Servers\ModController::class, 'versions'])
+            ->where(['source' => 'modrinth|curseforge', 'project' => '[A-Za-z0-9_.-]+'])->middleware('throttle:60,1');
+        Route::post('/install', [Client\Servers\ModController::class, 'install'])->middleware('throttle:20,1');
+        Route::post('/toggle', [Client\Servers\ModController::class, 'toggle'])->middleware('throttle:60,1');
+        Route::post('/delete', [Client\Servers\ModController::class, 'delete'])->middleware('throttle:60,1');
+    });
+
+    // Hydra: modpack installer (addon "modpacks").
+    Route::prefix('/modpacks')->middleware('addon:modpacks')->group(function () {
+        Route::get('/', [Client\Servers\ModpackController::class, 'index']);
+        Route::get('/search', [Client\Servers\ModpackController::class, 'search'])->middleware('throttle:60,1');
+        Route::get('/status', [Client\Servers\ModpackController::class, 'status']);
+        Route::get('/icon', [Client\Servers\ModpackController::class, 'icon']);
+        Route::get('/projects/{source}/{project}/versions', [Client\Servers\ModpackController::class, 'versions'])
+            ->where(['source' => 'modrinth|curseforge', 'project' => '[A-Za-z0-9_.-]+'])->middleware('throttle:60,1');
+        Route::post('/install', [Client\Servers\ModpackController::class, 'install'])->middleware('throttle:5,1');
+    });
+
     // Hydra: storage of configs for the config sync (addon "config_sync").
     Route::prefix('/config-stash')->middleware('addon:config_sync')->group(function () {
         Route::get('/', [Client\Servers\ConfigStashController::class, 'index']);

@@ -69,4 +69,12 @@ return [
         'title' => 'Plugins',
         'labels' => ['read' => 'View', 'manage' => 'Install & Manage'],
     ],
+    'mods' => [
+        'title' => 'Mods',
+        'labels' => ['read' => 'View', 'manage' => 'Install & Manage'],
+    ],
+    'modpacks' => [
+        'title' => 'Modpacks',
+        'labels' => ['read' => 'View', 'install' => 'Install'],
+    ],
 ];

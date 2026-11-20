@@ -7,13 +7,11 @@ use Illuminate\Http\Response;
 use Pterodactyl\Models\Server;
 use Pterodactyl\Facades\Activity;
 use Pterodactyl\Models\Permission;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Pterodactyl\Services\Hydra\Addons\PluginsAddon;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Pterodactyl\Http\Controllers\Api\Client\ClientApiController;
+use Pterodactyl\Http\Controllers\Api\Client\Servers\Concerns\ProxiesProjectIcons;
 use Pterodactyl\Services\Hydra\Minecraft\Plugins\PluginSource;
 use Pterodactyl\Services\Hydra\Minecraft\Plugins\ModrinthSource;
 use Pterodactyl\Services\Hydra\Minecraft\Plugins\PluginManagerService;
@@ -23,12 +21,9 @@ use Pterodactyl\Services\Hydra\Minecraft\Plugins\PluginManagerService;
  */
 class PluginController extends ClientApiController
 {
+    use ProxiesProjectIcons;
+
     private const PER_PAGE = 20;
-
-    // Largest icon that is passed through, in bytes.
-    private const ICON_LIMIT = 1048576;
-
-    private const ICON_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
 
     public function __construct(private PluginsAddon $addon, private PluginManagerService $manager)
     {
@@ -173,37 +168,9 @@ class PluginController extends ClientApiController
     public function icon(Request $request, Server $server): Response
     {
         $this->check($request, $server);
-        $url = (string) $request->query('u', '');
-        $parts = parse_url($url);
         $hosts = collect($this->manager->sources())->flatMap(fn (PluginSource $source) => $source->iconHosts())->all();
-        if (($parts['scheme'] ?? '') !== 'https' || !in_array(strtolower($parts['host'] ?? ''), $hosts, true) || isset($parts['user']) || isset($parts['port'])) {
-            throw new NotFoundHttpException();
-        }
 
-        $icon = Cache::remember('hydra:plugins:icon:' . sha1($url), now()->addDay(), function () use ($url) {
-            try {
-                $response = Http::withHeaders(['User-Agent' => PluginSource::USER_AGENT])->withoutRedirecting()->timeout(8)->get($url);
-            } catch (ConnectionException) {
-                return ['type' => null];
-            }
-            $type = strtolower(trim(explode(';', (string) $response->header('Content-Type'))[0]));
-            if (!$response->successful() || !in_array($type, self::ICON_TYPES, true) || strlen($response->body()) > self::ICON_LIMIT) {
-                return ['type' => null];
-            }
-
-            return ['type' => $type, 'data' => base64_encode($response->body())];
-        });
-
-        if (empty($icon['type'])) {
-            throw new NotFoundHttpException();
-        }
-
-        return new Response(base64_decode($icon['data']), 200, [
-            'Content-Type' => $icon['type'],
-            'Cache-Control' => 'private, max-age=86400',
-            'X-Content-Type-Options' => 'nosniff',
-            'Content-Security-Policy' => "default-src 'none'",
-        ]);
+        return $this->proxyIcon((string) $request->query('u', ''), $hosts);
     }
 
     /**

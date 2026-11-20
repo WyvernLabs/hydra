@@ -24,6 +24,11 @@
                     <label for="pluginsSpigot">{{ __('admin/addons.plugins.spigot') }}</label>
                 </div>
                 <p class="text-muted small" style="margin: 0 0 16px 20px;">{{ __('admin/addons.plugins.spigot_help') }}</p>
+                <div class="checkbox checkbox-primary no-margin-bottom">
+                    <input type="checkbox" id="pluginsHide" name="hide_without_folder" value="1" @checked(old('hide_without_folder', $addon->hidesWithoutFolder()))>
+                    <label for="pluginsHide">{{ __('admin/addons.plugins.hide_without_folder') }}</label>
+                </div>
+                <p class="text-muted small" style="margin: 0 0 16px 20px;">{{ __('admin/addons.plugins.hide_without_folder_help') }}</p>
                 <div class="form-group no-margin">
                     <label for="pluginsEggs" class="control-label">{{ __('admin/addons.plugins.eggs') }}</label>
                     <select id="pluginsEggs" name="eggs[]" class="form-control" multiple>

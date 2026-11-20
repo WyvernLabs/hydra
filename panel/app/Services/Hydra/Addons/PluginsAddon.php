@@ -35,7 +35,7 @@ class PluginsAddon extends Addon
 
     public function booleans(): array
     {
-        return ['hangar', 'spigot'];
+        return ['hangar', 'spigot', 'hide_without_folder'];
     }
 
     public function prepare(array $values): array
@@ -58,6 +58,15 @@ class PluginsAddon extends Addon
                 ? trans('admin/addons.plugins.summary_all_eggs')
                 : trans('admin/addons.plugins.summary_eggs', ['count' => count($eggs)]),
         ];
+    }
+
+    /**
+     * Whether the page and its button disappear on servers without the
+     * folder (otherwise the page explains what is missing).
+     */
+    public function hidesWithoutFolder(): bool
+    {
+        return (bool) $this->get('hide_without_folder', true);
     }
 
     /**

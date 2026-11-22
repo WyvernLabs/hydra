@@ -95,6 +95,8 @@ func (c backupTestRemoteClient) SetCredentials(id, token string) {
 	}
 }
 
+func (backupTestRemoteClient) SetBaseURL(string) {}
+
 type backupTestEnvironment struct{}
 
 func (backupTestEnvironment) Type() string { return "test" }

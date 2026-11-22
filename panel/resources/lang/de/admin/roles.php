@@ -62,6 +62,7 @@ return [
         'addons' => 'Addons',
         'announcements' => 'Ankündigungen',
         'updates' => 'Updates',
+        'domain' => 'Domain',
         'api' => 'Application-API',
         'databases' => 'Datenbank-Hosts',
         'locations' => 'Standorte',
@@ -96,6 +97,10 @@ return [
         'updates' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Die installierten Versionen von Panel und Nodes sehen.'],
             'run' => ['title' => 'Ausführen', 'description' => 'Nach Updates suchen und Panel sowie Nodes aktualisieren.'],
+        ],
+        'domain' => [
+            'view' => ['title' => 'Ansehen', 'description' => 'Die Adresse des Panels sehen und ob die Nodes sie nutzen.'],
+            'update' => ['title' => 'Ändern', 'description' => 'Die Domain des Panels ändern, Weiterleitungen entfernen und die Nodes erneut umstellen.'],
         ],
         'api' => [
             'view' => ['title' => 'Ansehen', 'description' => 'Die eigenen Application-API-Schlüssel sehen.'],

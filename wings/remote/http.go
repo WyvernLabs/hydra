@@ -37,6 +37,9 @@ type Client interface {
 	// TriggerSchedule (Hydra) asks the panel to run a schedule of the server.
 	TriggerSchedule(ctx context.Context, uuid string, schedule int, reason string) error
 	SetCredentials(id, token string)
+	// SetBaseURL (Hydra) points the client at another panel URL, e.g. after the
+	// domain of the panel changed.
+	SetBaseURL(base string)
 }
 
 type client struct {
@@ -82,6 +85,20 @@ func (c *client) SetCredentials(id, token string) {
 	c.token = token
 }
 
+// SetBaseURL replaces the panel URL that requests are sent to.
+func (c *client) SetBaseURL(base string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.baseUrl = strings.TrimSuffix(base, "/") + "/api/remote"
+}
+
+// endpoint returns the URL of the remote API currently in use.
+func (c *client) endpoint() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.baseUrl
+}
+
 // credentials returns the credentials currently in use by this client.
 func (c *client) credentials() (string, string) {
 	c.mu.RLock()
@@ -121,7 +138,7 @@ func (c *client) Post(ctx context.Context, path string, data interface{}) (*Resp
 // over this method when possible. It appends the path to the endpoint of the
 // client and adds the authentication token to the request.
 func (c *client) requestOnce(ctx context.Context, method, path string, body io.Reader, opts ...func(r *http.Request)) (*Response, error) {
-	req, err := http.NewRequestWithContext(ctx, method, c.baseUrl+path, body)
+	req, err := http.NewRequestWithContext(ctx, method, c.endpoint()+path, body)
 	if err != nil {
 		return nil, err
 	}

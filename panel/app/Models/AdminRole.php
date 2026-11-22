@@ -34,6 +34,7 @@ class AdminRole extends Model
         'addons' => ['view', 'update'],
         'announcements' => ['view', 'update'],
         'updates' => ['view', 'run'],
+        'domain' => ['view', 'update'],
         'api' => ['view', 'create', 'delete'],
         'databases' => ['view', 'create', 'update', 'delete'],
         'locations' => ['view', 'create', 'update', 'delete'],
@@ -59,6 +60,8 @@ class AdminRole extends Model
         'roles.assign' => 'users.update',
         // The update page is a tab of the settings.
         'updates.view' => 'settings.view',
+        // The domain page is a tab of the settings.
+        'domain.view' => 'settings.view',
         // The addons are a tab of the design area.
         'addons.view' => 'design.view',
         // The announcements are a tab of the design area.

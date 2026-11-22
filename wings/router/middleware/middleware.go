@@ -94,10 +94,12 @@ func CaptureErrors() gin.HandlerFunc {
 func SetAccessControlHeaders() gin.HandlerFunc {
 	cfg := config.Get()
 	origins := cfg.AllowedOrigins
-	location := cfg.PanelLocation
 	allowPrivateNetwork := cfg.AllowCORSPrivateNetwork
 
 	return func(c *gin.Context) {
+		// Hydra: read on every request, the panel can move to another domain
+		// while Wings keeps running (PUT /api/system/remote).
+		location := config.Get().PanelLocation
 		c.Header("Access-Control-Allow-Origin", location)
 		c.Header("Access-Control-Allow-Credentials", "true")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")

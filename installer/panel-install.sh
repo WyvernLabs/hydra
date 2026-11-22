@@ -21,6 +21,9 @@
 #    sudo hydra-panel update
 #  (.env, hochgeladene Logos und alle Daten bleiben erhalten)
 #
+#  Domain ändern (auch im Adminbereich unter Einstellungen > Domain):
+#    sudo hydra-panel domain --domain panel.example.com [--redirect-old]
+#
 #  Nicht-interaktiv:
 #    sudo HYDRA_ADMIN_PASSWORD='…' bash installer/panel-install.sh --yes \
 #      --domain panel.example.com --email admin@example.com --admin admin
@@ -64,7 +67,10 @@ REF=""
 GIT_TOKEN="${HYDRA_GIT_TOKEN:-}"
 SSL=""              # leer = automatisch (Domain → HTTPS, IP → HTTP)
 ASSUME_YES=0
-MODE=install        # install | update | status
+MODE=install        # install | update | status | domain
+REDIRECT_OLD=0      # domain: bisherige Domain auf die neue weiterleiten
+DROP_REDIRECTS=()   # domain: diese Weiterleitungen entfernen
+FORCE=0             # domain: DNS-Prüfung überspringen
 
 # ------------------------------------------------------------------ Ausgabe
 
@@ -192,6 +198,8 @@ Befehle:
   install            Installieren bzw. aktualisieren (Standard)
   update             Nur aktualisieren (nutzt die gespeicherten Einstellungen)
   status             Zustand aller Dienste anzeigen
+  domain             Domain des Panels ändern (mit --domain); passt .env, Caddy,
+                     phpMyAdmin und die Nodes an
 
 Optionen:
   --domain <fqdn>    Domain des Panels, z. B. panel.example.com (oder IP-Adresse)
@@ -204,7 +212,12 @@ Optionen:
   --git-token <tok>  Token mit Lesezugriff für ein privates GitHub-Repository
                      (wird für Updates in /etc/hydra/panel.conf gespeichert)
   --ssl / --no-ssl   HTTPS über Let's Encrypt erzwingen bzw. abschalten
-  --yes              Keine Rückfragen, Standardwerte verwenden
+  --redirect-old     (domain) Bisherige Domain auf die neue weiterleiten
+  --drop-redirect <d>
+                     (domain) Weiterleitung der Domain <d> entfernen
+  --force            (domain) Auch umstellen, wenn die Domain (noch) nicht auf
+                     diesen Server zeigt
+  --yes             Keine Rückfragen, Standardwerte verwenden
   --help             Diese Hilfe
 EOF
 }
@@ -213,7 +226,7 @@ EOF
 
 while (( $# )); do
   case "$1" in
-    install|update|status) MODE="$1" ;;
+    install|update|status|domain) MODE="$1" ;;
     --domain) DOMAIN="${2:-}"; shift ;;
     --email) EMAIL="${2:-}"; shift ;;
     --admin) ADMIN_USER="${2:-}"; shift ;;
@@ -223,6 +236,9 @@ while (( $# )); do
     --git-token) GIT_TOKEN="${2:-}"; shift ;;
     --ssl) SSL=1 ;;
     --no-ssl) SSL=0 ;;
+    --redirect-old) REDIRECT_OLD=1 ;;
+    --drop-redirect) DROP_REDIRECTS+=("${2:-}"); shift ;;
+    --force) FORCE=1 ;;
     --yes|-y) ASSUME_YES=1 ;;
     --help|-h) usage; exit 0 ;;
     *) die "Unbekannte Option: $1 (siehe --help)" ;;
@@ -233,6 +249,8 @@ done
 [[ $EUID -eq 0 ]] || die "Bitte als root ausführen (sudo)."
 
 # Gespeicherte Einstellungen einer früheren Installation laden (Update).
+SSL_ARG="$SSL"
+HYDRA_REDIRECTS=""
 if [[ -f "$CONF_FILE" ]]; then
   # shellcheck disable=SC1090
   source "$CONF_FILE"
@@ -247,6 +265,108 @@ if [[ -f "$CONF_FILE" ]]; then
 else
   INSTALLED=0
 fi
+# Frühere Domains, die auf die aktuelle weiterleiten (durch Leerzeichen getrennt).
+REDIRECTS="${HYDRA_REDIRECTS:-}"
+
+# ------------------------------------------------------------------ Domain, Caddy, Einstellungen
+#
+# Gebraucht bei Installation, Update und Domainwechsel (hydra-panel domain).
+
+is_ip() { [[ "$1" =~ ^[0-9.]+$ || "$1" == *:* ]]; }
+
+valid_domain() { # valid_domain <name> – Hostname mit mindestens einem Punkt oder IPv4-Adresse
+  [[ "$1" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}$ ]] && return 0
+  (( ${#1} <= 253 )) && [[ "$1" =~ ^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]([a-z0-9-]{0,61}[a-z0-9])?$ ]]
+}
+
+points_here() { # points_here <domain> – zeigt der DNS-Eintrag auf diesen Server?
+  local ips mine ip
+  ips="$(getent ahosts "$1" 2>/dev/null | awk '{print $1}' | sort -u || true)"
+  [[ -n "$ips" ]] || return 1
+  mine=" $(hostname -I 2>/dev/null || true) $(curl -fsS4 --max-time 5 https://api.ipify.org 2>/dev/null || true) $(curl -fsS6 --max-time 5 https://api64.ipify.org 2>/dev/null || true) "
+  for ip in $ips; do
+    if [[ "$mine" == *" $ip "* ]]; then return 0; fi
+  done
+  return 1
+}
+
+set_env() { # set_env KEY VALUE – setzt oder ergänzt einen Eintrag in der .env (im aktuellen Verzeichnis)
+  local key="$1" value="$2"
+  if [[ "$value" =~ [[:space:]\#\"\'] ]]; then value="\"${value//\"/\\\"}\""; fi
+  if grep -q "^${key}=" .env; then
+    local escaped
+    escaped="$(printf '%s' "$value" | sed -e 's/[\/&|]/\\&/g')"
+    sed -i "s|^${key}=.*|${key}=${escaped}|" .env
+  else
+    printf '%s=%s\n' "$key" "$value" >> .env
+  fi
+}
+
+caddy_site() { # Caddy-Site des Panels samt Weiterleitungen der früheren Domains schreiben
+  local site old
+  if (( SSL )); then site="$DOMAIN"; else site="http://$DOMAIN, http://:80"; fi
+  {
+    cat <<EOF
+# Hydra Panel – wird vom Installer erzeugt, Änderungen gehen beim Update verloren.
+$site {
+	root * $INSTALL_DIR/public
+	encode zstd gzip
+
+	request_body {
+		max_size 100MB
+	}
+
+	header {
+		-Server
+		X-Content-Type-Options nosniff
+		X-Frame-Options SAMEORIGIN
+		Referrer-Policy same-origin
+		Strict-Transport-Security "max-age=31536000"
+	}
+
+	# Zusätze wie phpMyAdmin (Adminbereich > Design > Addons)
+	import $CONF_DIR/panel.d/*.caddy
+
+	php_fastcgi unix/$PHP_FPM_SOCK {
+		env HTTP_PROXY ""
+	}
+	file_server
+}
+EOF
+    # Frühere Domains (Adminbereich > Einstellungen > Domain) leiten auf die aktuelle weiter.
+    for old in $REDIRECTS; do
+      if [[ "$old" == "$DOMAIN" ]]; then continue; fi
+      if (( SSL )) && ! is_ip "$old"; then printf '\n%s {\n' "$old"; else printf '\nhttp://%s {\n' "$old"; fi
+      printf '\tredir %s{uri} permanent\n}\n' "$APP_URL"
+    done
+  } > "$CADDY_SITE"
+}
+
+write_panel_conf() {
+  install -d -m 755 "$CONF_DIR"
+  cat > "$CONF_FILE" <<EOF
+# Hydra Panel – vom Installer gespeicherte Einstellungen (für Updates)
+HYDRA_DOMAIN=$(printf '%q' "$DOMAIN")
+HYDRA_EMAIL=$(printf '%q' "$EMAIL")
+HYDRA_TIMEZONE=$(printf '%q' "$TIMEZONE")
+HYDRA_SOURCE=$(printf '%q' "$SOURCE")
+HYDRA_REF=$(printf '%q' "$REF")
+HYDRA_GIT_TOKEN=$(printf '%q' "$GIT_TOKEN")
+HYDRA_SSL=$SSL
+HYDRA_REDIRECTS=$(printf '%q' "$REDIRECTS")
+EOF
+  chmod 600 "$CONF_FILE"
+}
+
+DOMAIN_DIR="$INSTALL_DIR/storage/app/hydra/domain"
+
+domain_state() { # Aktuelle Domain für den Adminbereich (Einstellungen > Domain)
+  install -d -m 775 -o "$WEB_USER" -g "$WEB_USER" "$DOMAIN_DIR"
+  local tmp; tmp="$(mktemp "$DOMAIN_DIR/.current.XXXXXX")"
+  "$PHP_BIN" -r 'echo json_encode(["domain" => $argv[1], "ssl" => $argv[2] === "1", "url" => $argv[3], "redirects" => array_values(array_filter(explode(" ", $argv[4]))), "updated_at" => date("c")]);' -- \
+    "$DOMAIN" "$SSL" "$APP_URL" "$REDIRECTS" > "$tmp"
+  chmod 644 "$tmp" && mv -f "$tmp" "$DOMAIN_DIR/current.json"
+}
 
 # ------------------------------------------------------------------ Status
 
@@ -255,6 +375,90 @@ if [[ "$MODE" == status ]]; then
     printf '  %-28s %s\n' "$unit" "$(systemctl is-active "$unit" 2>/dev/null || true)"
   done
   [[ -f "$INSTALL_DIR/config/app.php" ]] && printf '  %-28s %s\n' "Version" "$(cd "$INSTALL_DIR" && php artisan --version 2>/dev/null | head -n1)"
+  exit 0
+fi
+
+# ------------------------------------------------------------------ Domain ändern
+
+if [[ "$MODE" == domain ]]; then
+  if (( ! INSTALLED )) || [[ ! -f "$INSTALL_DIR/.env" ]]; then die "Hydra Panel ist noch nicht installiert."; fi
+  OLD_DOMAIN="${HYDRA_DOMAIN:-}"
+  DOMAIN="${DOMAIN,,}"; DOMAIN="${DOMAIN%.}"
+  valid_domain "$DOMAIN" || die "Ungültige Domain: '$DOMAIN' (z. B. panel.example.com oder eine IPv4-Adresse)."
+  if [[ -n "$SSL_ARG" ]]; then
+    SSL="$SSL_ARG"
+  elif [[ "$DOMAIN" != "$OLD_DOMAIN" ]]; then
+    if is_ip "$DOMAIN"; then SSL=0; else SSL=1; fi
+  else
+    SSL="${HYDRA_SSL:-1}"
+  fi
+  if (( SSL )) && is_ip "$DOMAIN"; then die "Für IP-Adressen gibt es kein Let's-Encrypt-Zertifikat (--no-ssl)."; fi
+  if (( SSL )); then APP_URL="https://$DOMAIN"; else APP_URL="http://$DOMAIN"; fi
+
+  # Weiterleitungen: bisherige Domain dazu, entfernte und die neue Domain selbst heraus.
+  LIST=" $REDIRECTS "
+  if (( REDIRECT_OLD )) && [[ -n "$OLD_DOMAIN" && "$OLD_DOMAIN" != "$DOMAIN" ]]; then LIST+="$OLD_DOMAIN "; fi
+  for d in "${DROP_REDIRECTS[@]}" "$DOMAIN"; do LIST="${LIST// $d / }"; done
+  REDIRECTS=""
+  for d in $LIST; do
+    valid_domain "$d" || continue
+    [[ " $REDIRECTS " == *" $d "* ]] || REDIRECTS="${REDIRECTS:+$REDIRECTS }$d"
+  done
+
+  step "Domain prüfen" 0
+  info "Bisher: ${OLD_DOMAIN:--}"
+  info "Neu:    $APP_URL"
+  if [[ -n "$REDIRECTS" ]]; then info "Weiterleitungen: $REDIRECTS"; fi
+  if [[ "$DOMAIN" != "$OLD_DOMAIN" ]] && ! is_ip "$DOMAIN"; then
+    if points_here "$DOMAIN"; then
+      info "DNS: $DOMAIN zeigt auf diesen Server"
+    elif (( FORCE )); then
+      warn "$DOMAIN zeigt (noch) nicht auf diesen Server – wird trotzdem umgestellt (--force)."
+    else
+      die "$DOMAIN zeigt nicht auf diesen Server. Erst den A-/AAAA-Record anlegen (oder --force)."
+    fi
+  fi
+
+  PHP_BIN="$(awk -v u="$WEB_USER" '$6 == u {print $7; exit}' /etc/cron.d/hydra-panel 2>/dev/null || true)"
+  [[ -x "$PHP_BIN" ]] || PHP_BIN="$(command -v php)"
+  PHP_VER="$("$PHP_BIN" -r 'echo PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;')"
+  PHP_FPM_SOCK="/run/php/php${PHP_VER}-fpm.sock"
+  cd "$INSTALL_DIR"
+
+  step "Caddy umstellen" 20
+  if [[ -f "$CADDY_SITE" ]]; then cp "$CADDY_SITE" "$CADDY_SITE.bak"; fi
+  caddy_site
+  if ! caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null 2>&1; then
+    if [[ -f "$CADDY_SITE.bak" ]]; then mv -f "$CADDY_SITE.bak" "$CADDY_SITE"; fi
+    die "Caddy-Konfiguration ungültig – nichts geändert."
+  fi
+  rm -f "$CADDY_SITE.bak"
+  systemctl reload caddy
+  if (( SSL )); then info "Caddy liefert $DOMAIN aus, das Zertifikat wird im Hintergrund geholt"; else info "Caddy liefert $DOMAIN aus"; fi
+
+  step "Panel umstellen" 45
+  set_env APP_URL "$APP_URL"
+  if [[ -n "$OLD_DOMAIN" ]] && ! is_ip "$DOMAIN"; then
+    if [[ "$(sed -n 's/^MAIL_FROM_ADDRESS=//p' .env | tr -d '"')" == "no-reply@$OLD_DOMAIN" ]]; then set_env MAIL_FROM_ADDRESS "no-reply@$DOMAIN"; fi
+    if [[ "$(sed -n 's/^MAIL_EHLO_DOMAIN=//p' .env | tr -d '"')" == "$OLD_DOMAIN" ]]; then set_env MAIL_EHLO_DOMAIN "$DOMAIN"; fi
+  fi
+  write_panel_conf
+  domain_state
+  info ".env und $CONF_FILE angepasst"
+  if [[ -x /usr/local/lib/hydra/phpmyadmin-helper ]]; then
+    sed -i "s|^PANEL_URL=.*|PANEL_URL=$(printf '%q' "$APP_URL")|" /usr/local/lib/hydra/phpmyadmin-helper
+    /usr/local/lib/hydra/phpmyadmin-helper refresh || warn "phpMyAdmin konnte nicht angepasst werden"
+  fi
+  runuser -u "$WEB_USER" -- "$PHP_BIN" artisan optimize:clear >/dev/null 2>&1 || runuser -u "$WEB_USER" -- "$PHP_BIN" artisan config:clear >/dev/null
+  runuser -u "$WEB_USER" -- "$PHP_BIN" artisan queue:restart >/dev/null 2>&1 || true
+
+  # Nodes auf die neue Adresse umstellen, Absenderadresse der Mail-Einstellungen nachziehen.
+  step "Nodes umstellen" 70
+  runuser -u "$WEB_USER" -- "$PHP_BIN" artisan hydra:domain:changed --old-domain="$OLD_DOMAIN" \
+    || warn "Nicht alle Nodes konnten umgestellt werden (Adminbereich > Einstellungen > Domain)."
+
+  step "Fertig" 100
+  info "Hydra Panel läuft jetzt unter ${C_B}$APP_URL${C_0}"
   exit 0
 fi
 
@@ -570,18 +774,6 @@ progress 84
 
 # ------------------------------------------------------------------ Datenbank & .env
 
-set_env() { # set_env KEY VALUE – setzt oder ergänzt einen Eintrag in der .env
-  local key="$1" value="$2"
-  if [[ "$value" =~ [[:space:]\#\"\'] ]]; then value="\"${value//\"/\\\"}\""; fi
-  if grep -q "^${key}=" .env; then
-    local escaped
-    escaped="$(printf '%s' "$value" | sed -e 's/[\/&|]/\\&/g')"
-    sed -i "s|^${key}=.*|${key}=${escaped}|" .env
-  else
-    printf '%s=%s\n' "$key" "$value" >> .env
-  fi
-}
-
 if [[ ! -f .env ]]; then
   step "Datenbank und Konfiguration einrichten" 86
   DB_PASSWORD="$(random_string 32)"
@@ -717,34 +909,7 @@ systemctl restart "$QUEUE_SERVICE" "$QUEUE_LONG_SERVICE"
 info "Queue-Worker ($QUEUE_SERVICE, $QUEUE_LONG_SERVICE) ok"
 
 install -d -m 755 "$CONF_DIR" "$CONF_DIR/panel.d"
-if (( SSL )); then SITE_ADDRESS="$DOMAIN"; else SITE_ADDRESS="http://$DOMAIN, http://:80"; fi
-cat > "$CADDY_SITE" <<EOF
-# Hydra Panel – wird vom Installer erzeugt, Änderungen gehen beim Update verloren.
-$SITE_ADDRESS {
-	root * $INSTALL_DIR/public
-	encode zstd gzip
-
-	request_body {
-		max_size 100MB
-	}
-
-	header {
-		-Server
-		X-Content-Type-Options nosniff
-		X-Frame-Options SAMEORIGIN
-		Referrer-Policy same-origin
-		Strict-Transport-Security "max-age=31536000"
-	}
-
-	# Zusätze wie phpMyAdmin (Adminbereich > Design > Addons)
-	import $CONF_DIR/panel.d/*.caddy
-
-	php_fastcgi unix/$PHP_FPM_SOCK {
-		env HTTP_PROXY ""
-	}
-	file_server
-}
-EOF
+caddy_site
 CADDY_MAIN=/etc/caddy/Caddyfile
 IMPORT_LINE="import $CADDY_SITE"
 if ! grep -qxF "$IMPORT_LINE" "$CADDY_MAIN" 2>/dev/null; then
@@ -784,17 +949,7 @@ fi
 (cd "$INSTALL_DIR" && runuser -u "$WEB_USER" -- "$PHP_BIN" artisan up >/dev/null 2>&1 || true)
 runuser -u "$WEB_USER" -- "$PHP_BIN" "$INSTALL_DIR/artisan" queue:restart >/dev/null 2>&1 || true
 
-cat > "$CONF_FILE" <<EOF
-# Hydra Panel – vom Installer gespeicherte Einstellungen (für Updates)
-HYDRA_DOMAIN=$(printf '%q' "$DOMAIN")
-HYDRA_EMAIL=$(printf '%q' "$EMAIL")
-HYDRA_TIMEZONE=$(printf '%q' "$TIMEZONE")
-HYDRA_SOURCE=$(printf '%q' "$SOURCE")
-HYDRA_REF=$(printf '%q' "$REF")
-HYDRA_GIT_TOKEN=$(printf '%q' "$GIT_TOKEN")
-HYDRA_SSL=$SSL
-EOF
-chmod 600 "$CONF_FILE"
+write_panel_conf
 
 # Das Skript selbst als "hydra-panel" bereitstellen (update/status).
 [[ "$SCRIPT_PATH" == /usr/local/bin/hydra-panel ]] || install -m 755 "$SCRIPT_PATH" /usr/local/bin/hydra-panel
@@ -900,6 +1055,88 @@ systemctl enable hydra-panel-update.path >/dev/null 2>&1
 # Während eines Updates aus dem Adminbereich läuft der Updater gerade selbst – nicht neu starten.
 [[ -n "${HYDRA_UPDATER:-}" ]] || systemctl restart hydra-panel-update.path
 info "Updates aus dem Adminbereich ok"
+
+# ------------------------------------------------------------------ Domain aus dem Adminbereich
+#
+# Wie bei den Updates: Das Panel legt unter storage/app/hydra/domain eine Datei "request"
+# (JSON mit domain, ssl, redirect_old, drop, force) an, die systemd-Pfad-Unit startet den
+# Helfer als root, der daraus genau ein "hydra-panel domain …" macht. Alle Werte werden
+# vor der Übergabe auf erlaubte Zeichen beschränkt und vom Installer noch einmal geprüft.
+domain_state
+cat > /usr/local/lib/hydra/domain-helper <<EOF
+#!/usr/bin/env bash
+# Hydra Panel – ändert die im Adminbereich angeforderte Domain (Einstellungen > Domain).
+# Wird vom Installer erzeugt und von hydra-panel-domain.service als root gestartet.
+set -u
+export LC_ALL=C.UTF-8 LANG=C.UTF-8
+DIR=$(printf '%q' "$DOMAIN_DIR")
+PHP=$(printf '%q' "$PHP_BIN")
+EOF
+cat >> /usr/local/lib/hydra/domain-helper <<'EOF'
+REQUEST="$DIR/request"
+if [[ ! -f "$REQUEST" || -L "$REQUEST" ]]; then rm -f "$REQUEST"; exit 0; fi
+RAW="$(head -c 4096 "$REQUEST")"
+rm -f "$REQUEST"
+
+# Dateien im Verzeichnis des Panels (gehört www-data) entstehen per mktemp und mv, damit
+# root keinen dort angelegten Links folgt.
+put() { # put <datei> <quelldatei>
+  local tmp; tmp="$(mktemp "$DIR/.put.XXXXXX")" || return 1
+  cat "$2" > "$tmp" && chmod 644 "$tmp" && mv -f "$tmp" "$DIR/$1"
+}
+field() { # field <name> – Wert aus der Anfrage, Listen durch Leerzeichen getrennt
+  printf '%s' "$RAW" | "$PHP" -r '$d = json_decode(stream_get_contents(STDIN), true); $v = is_array($d) ? ($d[$argv[1]] ?? "") : ""; echo is_array($v) ? implode(" ", array_map("strval", $v)) : (is_bool($v) ? (int) $v : (string) $v);' -- "$1"
+}
+status() { # status <state> <domain>
+  local tmp; tmp="$(mktemp)"
+  "$PHP" -r 'echo json_encode(["state" => $argv[1], "domain" => $argv[2], ($argv[1] === "running" ? "started_at" : "finished_at") => date("c")]);' -- "$1" "$2" > "$tmp"
+  put status.json "$tmp"; rm -f "$tmp"
+}
+
+DOMAIN="$(field domain | tr -cd 'a-z0-9.-')"
+[[ -n "$DOMAIN" ]] || exit 0
+args=(domain --yes --domain "$DOMAIN")
+case "$(field ssl | tr -cd 'a-z')" in
+  on) args+=(--ssl) ;;
+  off) args+=(--no-ssl) ;;
+esac
+[[ "$(field redirect_old | tr -cd '01')" == 1 ]] && args+=(--redirect-old)
+[[ "$(field force | tr -cd '01')" == 1 ]] && args+=(--force)
+for d in $(field drop | tr -cd 'a-z0-9. -'); do args+=(--drop-redirect "$d"); done
+
+status running "$DOMAIN"
+LOG="$(mktemp)"
+if /usr/local/bin/hydra-panel "${args[@]}" > "$LOG" 2>&1; then STATE=success; else STATE=failed; fi
+put domain.log "$LOG"; rm -f "$LOG"
+status "$STATE" "$DOMAIN"
+EOF
+chmod 755 /usr/local/lib/hydra/domain-helper
+
+cat > /etc/systemd/system/hydra-panel-domain.service <<'EOF'
+[Unit]
+Description=Hydra Panel Domain (Adminbereich > Einstellungen > Domain)
+
+[Service]
+Type=oneshot
+Environment=HOME=/root
+ExecStart=/usr/local/lib/hydra/domain-helper
+TimeoutStartSec=600
+EOF
+cat > /etc/systemd/system/hydra-panel-domain.path <<EOF
+[Unit]
+Description=Hydra Panel Domain – wartet auf Anfragen aus dem Adminbereich
+
+[Path]
+PathExists=$DOMAIN_DIR/request
+Unit=hydra-panel-domain.service
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable hydra-panel-domain.path >/dev/null 2>&1
+systemctl restart hydra-panel-domain.path
+info "Domainwechsel aus dem Adminbereich ok"
 
 # ------------------------------------------------------------------ phpMyAdmin (Addon)
 #
@@ -1059,8 +1296,14 @@ do_uninstall() {
 }
 
 # "refresh" ruft der Installer bei Updates auf (z. B. neuer PHP-FPM-Socket).
+# Dabei wird auch die Panel-Adresse nachgezogen (Domainwechsel, Einstellungen > Domain).
 if [[ "${1:-}" == refresh ]]; then
-  [[ -f "$TARGET/index.php" ]] && caddy_snippet
+  if [[ -f "$TARGET/index.php" ]]; then
+    q="'"
+    sed -i -E 's#^(.cfg\[.Servers.\]\[1\]\[.(SignonURL|LogoutURL).\] = ).*$#\1'"$q$PANEL_URL$q"';#' "$TARGET/config.inc.php"
+    sed -i -E 's#^(.panel = ).*$#\1'"$q$PANEL_URL$q"';#' "$TARGET/hydra-signon.php"
+    caddy_snippet
+  fi
   exit 0
 fi
 

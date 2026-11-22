@@ -122,6 +122,13 @@ Route::group(['prefix' => 'settings'], function () {
     Route::post('/updates/panel', [Admin\Settings\UpdateController::class, 'updatePanel'])->name('admin.settings.updates.panel')->middleware('admin.can:updates.run');
     Route::post('/updates/nodes/{node:id}', [Admin\Settings\UpdateController::class, 'updateNode'])->middleware('admin.can:updates.run');
 
+    // Hydra: domain of the panel.
+    Route::get('/domain', [Admin\Settings\DomainController::class, 'index'])->name('admin.settings.domain')->middleware('admin.can:domain.view');
+    Route::get('/domain/status', [Admin\Settings\DomainController::class, 'status'])->name('admin.settings.domain.status')->middleware('admin.can:domain.view');
+    Route::get('/domain/lookup', [Admin\Settings\DomainController::class, 'lookup'])->name('admin.settings.domain.lookup')->middleware(['admin.can:domain.update', 'throttle:30,1']);
+    Route::post('/domain', [Admin\Settings\DomainController::class, 'update'])->name('admin.settings.domain.update')->middleware('admin.can:domain.update');
+    Route::post('/domain/nodes', [Admin\Settings\DomainController::class, 'syncNodes'])->name('admin.settings.domain.nodes')->middleware('admin.can:domain.update');
+
     Route::post('/mail/test', [Admin\Settings\MailController::class, 'test'])->name('admin.settings.mail.test')->middleware('admin.can:settings.update');
 
     Route::patch('/', [Admin\Settings\IndexController::class, 'update'])->middleware('admin.can:settings.update');

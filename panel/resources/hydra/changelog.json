@@ -1,6 +1,32 @@
 {
     "releases": [
         {
+            "version": "1.11.0",
+            "build": 65,
+            "date": "2026-11-22",
+            "title": {
+                "de": "Domain im Adminbereich ändern",
+                "en": "Change the domain in the admin area"
+            },
+            "changes": [
+                {
+                    "type": "new",
+                    "de": "Einstellungen > Domain: Die Adresse des Panels mit einem Klick ändern. Caddy, HTTPS-Zertifikat, .env, phpMyAdmin und alle Nodes werden umgestellt; die bisherige Domain kann auf die neue weiterleiten. Vorher wird geprüft, ob die Domain auf den Server zeigt, Weiterleitungen lassen sich später wieder entfernen. Eigene Rechte „Domain ansehen“ und „Domain ändern“.",
+                    "en": "Settings > Domain: change the address of the panel with one click. Caddy, the HTTPS certificate, the .env, phpMyAdmin and every node are switched; the previous domain can redirect to the new one. The panel checks first whether the domain points to the server, redirects can be removed later. Own permissions \"View domain\" and \"Change domain\"."
+                },
+                {
+                    "type": "new",
+                    "de": "Installer: neuer Befehl „hydra-panel domain --domain <domain> [--redirect-old]“ für denselben Wechsel auf dem Server.",
+                    "en": "Installer: new command \"hydra-panel domain --domain <domain> [--redirect-old]\" for the same change on the server."
+                },
+                {
+                    "type": "improved",
+                    "de": "Wings übernimmt eine neue Panel-Adresse ohne Neustart (Konsole, Uploads und Rückmeldungen ans Panel laufen sofort über die neue Domain). Dafür muss die Node aktualisiert sein.",
+                    "en": "Wings takes a new panel address without a restart (console, uploads and reports to the panel use the new domain right away). This needs the node to be updated."
+                }
+            ]
+        },
+        {
             "version": "1.10.0",
             "build": 64,
             "date": "2026-11-20",

@@ -62,6 +62,7 @@ return [
         'addons' => 'Addons',
         'announcements' => 'Announcements',
         'updates' => 'Updates',
+        'domain' => 'Domain',
         'api' => 'Application API',
         'databases' => 'Database Hosts',
         'locations' => 'Locations',
@@ -96,6 +97,10 @@ return [
         'updates' => [
             'view' => ['title' => 'View', 'description' => 'See the installed versions of the panel and the nodes.'],
             'run' => ['title' => 'Run', 'description' => 'Look for updates and update the panel and the nodes.'],
+        ],
+        'domain' => [
+            'view' => ['title' => 'View', 'description' => 'See the address of the panel and whether the nodes use it.'],
+            'update' => ['title' => 'Change', 'description' => 'Change the domain of the panel, remove redirects and point the nodes at the panel again.'],
         ],
         'api' => [
             'view' => ['title' => 'View', 'description' => 'See their own application API keys.'],

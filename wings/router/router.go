@@ -119,6 +119,7 @@ func Configure(m *wserver.Manager, client remote.Client) *gin.Engine {
 	protected.PUT("/api/system/proxies", putProxies)
 	// Hydra: custom MOTD of Minecraft servers (addon "motd").
 	protected.PUT("/api/system/motd", putMotd)
+	protected.PUT("/api/system/remote", putRemote)
 	protected.POST("/api/hydra/sftp/test", postSftpTest)
 	protected.POST("/api/hydra/sftp/list", postSftpList)
 	protected.POST("/api/hydra/sftp/delete", postSftpDelete)
